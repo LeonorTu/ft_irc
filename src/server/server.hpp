@@ -20,6 +20,10 @@ public:
     void stop();
     void broadcastMessage(const std::string &message);
 
+    // getters
+    const int getServerFD() const;
+    const int getPort() const;
+
 private:
     bool running;
     int serverFD;

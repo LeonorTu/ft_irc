@@ -64,6 +64,16 @@ void Server::stop()
     cleanup();
 }
 
+const int Server::getServerFD() const
+{
+    return this->serverFD;
+}
+
+const int Server::getPort() const
+{
+    return this->port;
+}
+
 void Server::handleNewClient(int clientSocket)
 {
     sockaddr_in clientAddr;
