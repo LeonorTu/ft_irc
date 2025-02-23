@@ -1,14 +1,15 @@
 #include <iostream>
-#include "server/server.h"
+#include "server/server.hpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <iostream>
 
-int main() {
+int main()
+{
     // std::cout << "Hello" << std::endl;
 
-    Server myserver = Server(6667);
+    Server myserver = Server();
 
     myserver.start();
 }
