@@ -6,7 +6,7 @@
 #include <iostream>
 
 int main() {
-    std::cout << "Hello" << std::endl;
+    // std::cout << "Hello" << std::endl;
 
     Server myserver = Server(6667);
 

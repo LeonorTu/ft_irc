@@ -19,11 +19,17 @@ void Server::start() {
     bind(server_fd, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
     listen(server_fd, -1);
 
-    int clientSocket = accept(server_fd, nullptr, nullptr);
+    sockaddr_in client_fd;
+    socklen_t client_len = sizeof(client_fd);
 
-    char buffer[1024] = {0};
-    recv(clientSocket, buffer, sizeof(buffer), 0);
+    while (true) {
+        int clientSocket =
+            accept(server_fd, (struct sockaddr *)&client_fd, &client_len);
 
-    std::cout << "message from client: " << buffer << std::endl;
+        char buffer[1024] = {0};
+        recv(clientSocket, buffer, sizeof(buffer), 0);
+
+        std::cout << "message from client: " << buffer << std::endl;
+    }
     close(server_fd);
 }
