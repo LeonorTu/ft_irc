@@ -4,7 +4,7 @@ project(ft_irc)
 
 include_directories(include)
 
-file(GLOB SOURCES
+file(GLOB_RECURSE SOURCES
     src/*.cpp
     src/*.hpp
 )
