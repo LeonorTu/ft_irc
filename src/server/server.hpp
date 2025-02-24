@@ -33,6 +33,7 @@ private:
     std::unordered_map<int, Client *> clients;
 
     void handleNewClient(int clientSocket);
+    void removeClient(Client *client);
     void parseMessage(Client *from);
     void cleanup();
 };
