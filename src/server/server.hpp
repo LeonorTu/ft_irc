@@ -25,6 +25,14 @@ public:
     const int getPort() const;
 
 private:
+    // server info
+    const std::string serverName;
+    const std::string networkName;
+    const std::string serverVersion;
+    std::string createdTime;
+    const std::string userModes;
+    const std::string channelModes;
+
     bool running;
     int serverFD;
     int port;
@@ -34,6 +42,7 @@ private:
 
     void handleNewClient(int clientSocket);
     void removeClient(Client *client);
+    void sendWelcome(int clientFD);
     void parseMessage(Client *from);
     void cleanup();
 };

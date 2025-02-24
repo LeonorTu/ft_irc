@@ -1,10 +1,21 @@
 #include "server.hpp"
 #include "Client.hpp"
 #include <common.hpp>
+#include <sstream>
 #include <fcntl.h>
+#include <chrono>
 
-Server::Server() : port(SERVER_PORT), serverFD(-1)
+Server::Server()
+    : port(SERVER_PORT), serverFD(-1), serverName(SERVER_NAME), networkName(NETWORK_NAME),
+      serverVersion(SERVER_VERSION), userModes(USER_MODES), channelModes(CHANNEL_MODES)
 {
+    // get current time for server start time with chrono
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
+    char buffer[80];
+    std::strftime(buffer, sizeof(buffer), "%a %d %b %H:%M:%S %Y", std::localtime(&now_time_t));
+    createdTime = std::string(buffer);
+
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons(port);
     serverAddress.sin_addr.s_addr = INADDR_ANY;
@@ -93,6 +104,7 @@ void Server::handleNewClient(int clientSocket)
     pollFDs.emplace_back(nextPollable(clientFD, POLLIN));
     clients[clientFD]->setPollIndex(pollFDs.size() - 1);
     std::cout << "New client connected. Socket: " << clientFD << std::endl;
+    sendWelcome(clientFD);
     std::cout << "Client's IP: " << ipAddress << std::endl;
 }
 
@@ -112,6 +124,30 @@ void Server::removeClient(Client *client)
 
     close(removedFD);
     delete client;
+}
+
+// ":<source> <command/REPL> <parameters> <crlf>"
+void Server::sendWelcome(int clientFD)
+{
+    // 001 RPL_WELCOME
+    std::stringstream welcome;
+    welcome << ":" << serverName << " 001 " << clientFD << " :Welcome to " << networkName << " Network, " << clientFD
+            << "\r\n";
+    send(clientFD, welcome.str().c_str(), welcome.str().size(), 0);
+    // 002 RPL_YOURHOST
+    std::stringstream yourHost;
+    yourHost << ":" << serverName << " 002 " << clientFD << " :Your host is " << serverName << ", running version "
+             << serverVersion << "\r\n";
+    send(clientFD, yourHost.str().c_str(), yourHost.str().size(), 0);
+    // 003 RPL_CREATED
+    std::stringstream created;
+    created << ":" << serverName << " 003 " << clientFD << " :This server was created " << createdTime << "\r\n";
+    send(clientFD, created.str().c_str(), created.str().size(), 0);
+    // 004 RPL_MYINFO
+    std::stringstream myInfo;
+    myInfo << ":" << serverName << " 004 " << clientFD << " " << serverName << " " << serverVersion << " " << userModes
+           << " " << channelModes << "\r\n";
+    send(clientFD, myInfo.str().c_str(), myInfo.str().size(), 0);
 }
 
 void Server::parseMessage(Client *from)
