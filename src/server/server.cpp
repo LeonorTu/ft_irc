@@ -92,6 +92,24 @@ void Server::handleNewClient(int clientSocket)
     std::cout << "Client's IP: " << ipAddress << std::endl;
 }
 
+void Server::removeClient(Client *client)
+{
+    int removedFD = client->getFd();
+    size_t removedIndex = client->getPollIndex();
+
+    // swap removed client to the back and update the pollindex of the other client that got swapped
+    if (clients.size() != 1){
+        std::swap(pollFDs[removedIndex], pollFDs.back());
+        clients[removedFD]->setPollIndex(removedIndex);
+    }
+    // remove client from map and vector
+    clients.erase(client->getFd());
+    pollFDs.pop_back();
+
+    close(removedFD);
+    delete client;
+}
+
 void Server::parseMessage(Client *from)
 {
     char buffer[BUFFER_SIZE] = {0};
@@ -99,6 +117,8 @@ void Server::parseMessage(Client *from)
     if (bytesRead <= 0) {
         // Client disconnected or error
         std::cout << "Client disconnected: " << from->getFd() << std::endl;
+        // remove client from map and vector
+        removeClient(from);
     }
     else {
         std::cout << "Message from " << from->getIP() << ": " << buffer << std::endl;
