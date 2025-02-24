@@ -1,6 +1,7 @@
 #include "server.hpp"
 #include "Client.hpp"
 #include <common.hpp>
+#include <fcntl.h>
 
 Server::Server() : port(SERVER_PORT), serverFD(-1)
 {
@@ -31,9 +32,10 @@ void Server::start()
         std::cout << "failed to start the server" << std::endl;
         cleanup();
     }
+    fcntl(serverFD, F_SETFL, O_NONBLOCK);
     pollFDs.push_back(nextPollable(serverFD, POLLIN));
     bind(serverFD, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
-    listen(serverFD, -1);
+    listen(serverFD, 10);
     running = true;
     loop();
 }
