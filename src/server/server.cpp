@@ -90,6 +90,7 @@ void Server::handleNewClient(int clientSocket)
     std::string ipAddress = inet_ntoa(clientAddr.sin_addr);
     clients[clientFD] = new Client(clientFD, ipAddress);
     pollFDs.emplace_back(nextPollable(clientFD, POLLIN));
+    clients[clientFD]->setPollIndex(pollFDs.size() - 1);
     std::cout << "New client connected. Socket: " << clientFD << std::endl;
     std::cout << "Client's IP: " << ipAddress << std::endl;
 }
