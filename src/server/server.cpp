@@ -51,9 +51,10 @@ void Server::loop()
         if (pollFDs[0].revents & POLLIN) {
             handleNewClient(serverFD);
         }
-        for (pollfd pfd : pollFDs) {
-            if (pfd.fd != serverFD && pfd.revents & POLLIN) {
-                Client *client = clients.at(pfd.fd);
+        for (size_t i = 1; i < pollFDs.size(); ++i) {
+            int fd = pollFDs[i].fd;
+            if (pollFDs[i].revents & POLLIN) {
+                Client *client = clients[fd];
                 parseMessage(client);
             }
         }
@@ -101,12 +102,12 @@ void Server::removeClient(Client *client)
     size_t removedIndex = client->getPollIndex();
 
     // swap removed client to the back and update the pollindex of the other client that got swapped
-    if (clients.size() != 1){
+    if (clients.size() > 1) {
         std::swap(pollFDs[removedIndex], pollFDs.back());
-        clients[removedFD]->setPollIndex(removedIndex);
+        clients[pollFDs[removedIndex].fd]->setPollIndex(removedIndex);
     }
     // remove client from map and vector
-    clients.erase(client->getFd());
+    clients.erase(removedFD);
     pollFDs.pop_back();
 
     close(removedFD);
