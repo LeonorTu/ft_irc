@@ -1,5 +1,6 @@
 #include "server.hpp"
 #include "Client.hpp"
+#include "../utils/message.hpp"
 #include <common.hpp>
 #include <sstream>
 #include <fcntl.h>
@@ -161,10 +162,18 @@ void Server::parseMessage(Client *from)
         removeClient(from);
     }
     else {
-        std::cout << "Message from " << from->getIP() << ": " << buffer << std::endl;
+        std::string rawMessage(buffer);
+        std::cout << "Raw message: " << rawMessage << std::endl;
+        message parsedMessage(rawMessage); // Use the new message struct!
+
+        std::cout << "Parsed command: " << parsedMessage.command << std::endl;
         std::string message(buffer);
         if (message.find("quit") != std::string::npos) {
             stop();
+        }
+        else if (parsedMessage.command == "PRIVMSG") {
+            std::cout << parsedMessage.prefix << " sent message to " << parsedMessage.parameters[0] << ": "
+                      << parsedMessage.parameters[1] << std::endl;
         }
     }
 }
