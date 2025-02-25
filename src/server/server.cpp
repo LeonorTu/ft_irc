@@ -3,6 +3,8 @@
 #include <message.hpp>
 #include <common.hpp>
 
+Server *Server::instance = nullptr;
+
 Server::Server()
     : port(SERVER_PORT), serverFD(-1), serverName(SERVER_NAME), networkName(NETWORK_NAME),
       serverVersion(SERVER_VERSION), userModes(USER_MODES), channelModes(CHANNEL_MODES)
@@ -22,6 +24,13 @@ Server::Server()
     if (m_epoll_fd == -1) {
         std::cerr << "epoll create error" << std::endl;
     }
+
+    // setup signalshandlers
+    setInstance(this);
+    signal(SIGINT, signalHandler);  // Handle Ctrl+C
+    signal(SIGTERM, signalHandler); // Handle termination request
+    signal(SIGTSTP, signalHandler); // handle server pause
+    signal(SIGPIPE, SIG_IGN);       // Ignore SIGPIPE (broken pipe)
 }
 
 Server::~Server()
@@ -50,7 +59,7 @@ void Server::loop()
         epoll_event events[EPOLL_MAX_EVENTS] = {0};
         int nfds = epoll_wait(m_epoll_fd, events, EPOLL_MAX_EVENTS, 100);
         if (nfds < 0) {
-            std::cerr << "epoll failed" << std::endl;
+            std::cerr << "epoll failed: " << strerror(errno) << std::endl;
             continue;
         }
         for (int i = 0; i < nfds; i++) {
@@ -61,13 +70,19 @@ void Server::loop()
                 parseMessage(msg);
             }
         }
+        if (paused) {
+            std::cout << "Server paused. Waiting for SIGTSTP to resume..." << std::endl;
+            while (paused && running) {
+                sleep(1);
+            }
+            std::cout << "Server resumed!" << std::endl;
+        }
     }
 }
 
 void Server::stop()
 {
     running = false;
-    cleanup();
 }
 
 const int Server::getServerFD() const
@@ -78,6 +93,40 @@ const int Server::getServerFD() const
 const int Server::getPort() const
 {
     return this->port;
+}
+
+void Server::setInstance(Server *server)
+{
+    instance = server;
+}
+
+void Server::pause()
+{
+    paused = true;
+    std::cout << "Server pausing..." << std::endl;
+}
+
+void Server::resume()
+{
+    paused = false;
+    std::cout << "Server resuming..." << std::endl;
+}
+
+void Server::signalHandler(int signum)
+{
+    if (instance) {
+        if (signum == SIGTSTP) {
+            if (instance->paused) {
+                instance->resume();
+            }
+            else
+                instance->pause();
+        }
+        else {
+            std::cout << "\nCaught signal " << signum << std::endl;
+            instance->stop();
+        }
+    }
 }
 
 void Server::handleNewClient()

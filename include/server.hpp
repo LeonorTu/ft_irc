@@ -12,6 +12,7 @@
 #include <sstream>
 #include <fcntl.h>
 #include <chrono>
+#include <csignal>
 
 class Client;
 class Server {
@@ -26,8 +27,16 @@ public:
     // getters
     const int getServerFD() const;
     const int getPort() const;
+    // setters
+    static void setInstance(Server *server);
+
+    bool paused;
+    void pause();
+    void resume();
 
 private:
+    static Server *instance;
+    static void signalHandler(int signum);
     // server info
     const std::string serverName;
     const std::string networkName;
