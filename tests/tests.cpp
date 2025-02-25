@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../src/server/server.hpp"
+#include <server.hpp>
 
 TEST(ServerTest, InitializationTest)
 {
