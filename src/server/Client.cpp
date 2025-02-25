@@ -33,3 +33,8 @@ void Client::setPollIndex(size_t index)
 {
     this->pollIndex = index;
 }
+
+void Client::setNickname(const std::string &newNickname)
+{
+    nickname = newNickname;
+}
