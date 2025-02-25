@@ -24,16 +24,6 @@ const std::string &Client::getIP() const
     return this->ip;
 }
 
-const size_t &Client::getPollIndex() const
-{
-    return this->pollIndex;
-}
-
-void Client::setPollIndex(size_t index)
-{
-    this->pollIndex = index;
-}
-
 void Client::setNickname(const std::string &newNickname)
 {
     nickname = newNickname;
