@@ -1,6 +1,6 @@
-#include "server.hpp"
-#include "Client.hpp"
-#include "../utils/message.hpp"
+#include <server.hpp>
+#include <Client.hpp>
+#include <message.hpp>
 #include <common.hpp>
 #include <sstream>
 #include <fcntl.h>

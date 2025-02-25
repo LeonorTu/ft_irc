@@ -1,4 +1,4 @@
-#include "message.hpp"
+#include <message.hpp>
 
 message::message(const std::string &rawMessage)
 {
