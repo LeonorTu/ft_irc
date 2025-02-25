@@ -46,7 +46,8 @@ private:
     void handleNewClient();
     void removeClient(int fd);
     void sendWelcome(int clientFD);
-    void parseMessage(int fd);
+    void parseMessage(std::string msg);
+    std::string recieveMessage(int fd);
     void cleanup();
 
     void addPoll(int fd, uint32_t event);
