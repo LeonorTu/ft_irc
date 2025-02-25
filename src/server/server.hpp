@@ -9,6 +9,10 @@
 #include <poll.h>
 #include <iostream>
 #include <arpa/inet.h>
+#include <sys/epoll.h>
+#include <cstring>
+
+#include <common.hpp>
 
 class Client;
 class Server {
@@ -37,12 +41,15 @@ private:
     int serverFD;
     int port;
     sockaddr_in serverAddress;
-    std::vector<pollfd> pollFDs;
     std::unordered_map<int, Client *> clients;
+    int m_epoll_fd;
 
-    void handleNewClient(int clientSocket);
-    void removeClient(Client *client);
+    void handleNewClient();
+    void removeClient(int fd);
     void sendWelcome(int clientFD);
-    void parseMessage(Client *from);
+    void parseMessage(int fd);
     void cleanup();
+
+    void addPoll(int fd, uint32_t event);
+    void removePoll(int fd);
 };
