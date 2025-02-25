@@ -40,7 +40,7 @@ void Server::start()
     bind(serverFD, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
     listen(serverFD, 10);
     running = true;
-    addPoll(serverFD, EPOLLIN);
+    addPoll(serverFD, EPOLLIN | EPOLLET);
     loop();
 }
 
@@ -56,8 +56,10 @@ void Server::loop()
         for (int i = 0; i < nfds; i++) {
             if (events[i].data.fd == serverFD)
                 handleNewClient();
-            else
-                parseMessage(events[i].data.fd);
+            else {
+                std::string msg = recieveMessage(events[i].data.fd);
+                parseMessage(msg);
+            }
         }
     }
 }
@@ -88,10 +90,11 @@ void Server::handleNewClient()
     if (clientFD < 0) {
         std::cerr << "Failed to accept connection" << std::endl;
     }
+    fcntl(clientFD, F_SETFL, O_NONBLOCK);
     // get client's IP and add new Client to the map and poll list
     std::string ipAddress = inet_ntoa(clientAddr.sin_addr);
     clients[clientFD] = new Client(clientFD, ipAddress);
-    addPoll(clientFD, EPOLLIN);
+    addPoll(clientFD, EPOLLIN | EPOLLET);
     std::cout << "New client connected. Socket: " << clientFD << std::endl;
     sendWelcome(clientFD);
     std::cout << "Client's IP: " << ipAddress << std::endl;
@@ -130,31 +133,55 @@ void Server::sendWelcome(int clientFD)
     send(clientFD, myInfo.str().c_str(), myInfo.str().size(), 0);
 }
 
-void Server::parseMessage(int fd)
+void Server::parseMessage(std::string msg)
+{
+    std::cout << "Raw message: " << msg << std::endl;
+    message parsedMessage(msg); // Use the new message struct!
+
+    std::cout << "Parsed command: " << parsedMessage.command << std::endl;
+    if (msg.find("quit") != std::string::npos) {
+        stop();
+    }
+    else if (parsedMessage.command == "PRIVMSG") {
+        std::cout << parsedMessage.prefix << " sent message to " << parsedMessage.parameters[0] << ": "
+                  << parsedMessage.parameters[1] << std::endl;
+    }
+}
+
+std::string Server::recieveMessage(int fd)
 {
     char buffer[MSG_BUFFER_SIZE] = {0};
-    int bytesRead = recv(fd, buffer, sizeof(buffer), 0);
-    if (bytesRead <= 0) {
-        // Client disconnected or error
-        std::cout << "Client disconnected: " << fd << std::endl;
-        // remove client from map and vector
-        removeClient(fd);
-    }
-    else {
-        std::string rawMessage(buffer);
-        std::cout << "Raw message: " << rawMessage << std::endl;
-        message parsedMessage(rawMessage); // Use the new message struct!
-
-        std::cout << "Parsed command: " << parsedMessage.command << std::endl;
-        std::string message(buffer);
-        if (message.find("quit") != std::string::npos) {
-            stop();
+    std::string rawMessage;
+    while (true) {
+        int bytesRead = recv(fd, buffer, sizeof(buffer), 0);
+        if (bytesRead < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                // No more data to read
+                break;
+            }
+            else {
+                // Error or client disconnected
+                std::cerr << "Error reading from client: " << strerror(errno) << std::endl;
+                removeClient(fd);
+                return "oops";
+            }
         }
-        else if (parsedMessage.command == "PRIVMSG") {
-            std::cout << parsedMessage.prefix << " sent message to " << parsedMessage.parameters[0] << ": "
-                      << parsedMessage.parameters[1] << std::endl;
+        else if (bytesRead == 0) {
+            // Client disconnected
+            std::cout << "Client disconnected: " << fd << std::endl;
+            removeClient(fd);
+            return "oops";
+        }
+        else {
+            rawMessage.append(buffer, bytesRead);
+            if (rawMessage.size() > MSG_BUFFER_SIZE) {
+                std::cerr << "Message too large from client: " << fd << std::endl;
+                removeClient(fd);
+                return "oops";
+            }
         }
     }
+    return rawMessage;
 }
 
 void Server::cleanup()
