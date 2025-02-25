@@ -3,6 +3,8 @@
 #include <message.hpp>
 #include <common.hpp>
 
+Server *Server::instance = nullptr;
+
 Server::Server()
     : port(SERVER_PORT), serverFD(-1), serverName(SERVER_NAME), networkName(NETWORK_NAME),
       serverVersion(SERVER_VERSION), userModes(USER_MODES), channelModes(CHANNEL_MODES)
@@ -22,6 +24,12 @@ Server::Server()
     if (m_epoll_fd == -1) {
         std::cerr << "epoll create error" << std::endl;
     }
+
+    // setup signalshandlers
+    setInstance(this);
+    signal(SIGINT, signalHandler);  // Handle Ctrl+C
+    signal(SIGTERM, signalHandler); // Handle termination request
+    signal(SIGPIPE, SIG_IGN);       // Ignore SIGPIPE (broken pipe)
 }
 
 Server::~Server()
@@ -50,7 +58,7 @@ void Server::loop()
         epoll_event events[EPOLL_MAX_EVENTS] = {0};
         int nfds = epoll_wait(m_epoll_fd, events, EPOLL_MAX_EVENTS, 100);
         if (nfds < 0) {
-            std::cerr << "epoll failed" << std::endl;
+            std::cerr << "epoll failed: " << strerror(errno) << std::endl;
             continue;
         }
         for (int i = 0; i < nfds; i++) {
@@ -67,7 +75,6 @@ void Server::loop()
 void Server::stop()
 {
     running = false;
-    cleanup();
 }
 
 const int Server::getServerFD() const
@@ -78,6 +85,19 @@ const int Server::getServerFD() const
 const int Server::getPort() const
 {
     return this->port;
+}
+
+void Server::setInstance(Server *server)
+{
+    instance = server;
+}
+
+void Server::signalHandler(int signum)
+{
+    if (instance) {
+        std::cout << "\nCaught signal " << signum << std::endl;
+        instance->stop();
+    }
 }
 
 void Server::handleNewClient()
