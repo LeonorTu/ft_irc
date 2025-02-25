@@ -1,9 +1,9 @@
 #include "message.hpp"
 
-int message::parseCommand(const std::string &rawMessage)
+message::message(const std::string &rawMessage)
 {
     if (rawMessage.empty())
-        return (0);
+        return ;
 
     std::istringstream stream(rawMessage);
     std::string word;
