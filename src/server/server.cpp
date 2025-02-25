@@ -1,9 +1,7 @@
 #include <server.hpp>
 #include <Client.hpp>
 #include <message.hpp>
-#include <sstream>
-#include <fcntl.h>
-#include <chrono>
+#include <common.hpp>
 
 Server::Server()
     : port(SERVER_PORT), serverFD(-1), serverName(SERVER_NAME), networkName(NETWORK_NAME),
@@ -42,7 +40,7 @@ void Server::start()
     bind(serverFD, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
     listen(serverFD, 10);
     running = true;
-    addPoll(serverFD, POLLIN);
+    addPoll(serverFD, EPOLLIN);
     loop();
 }
 
@@ -93,7 +91,7 @@ void Server::handleNewClient()
     // get client's IP and add new Client to the map and poll list
     std::string ipAddress = inet_ntoa(clientAddr.sin_addr);
     clients[clientFD] = new Client(clientFD, ipAddress);
-    addPoll(clientFD, POLLIN);
+    addPoll(clientFD, EPOLLIN);
     std::cout << "New client connected. Socket: " << clientFD << std::endl;
     sendWelcome(clientFD);
     std::cout << "Client's IP: " << ipAddress << std::endl;
@@ -134,7 +132,7 @@ void Server::sendWelcome(int clientFD)
 
 void Server::parseMessage(int fd)
 {
-    char buffer[BUFFER_SIZE] = {0};
+    char buffer[MSG_BUFFER_SIZE] = {0};
     int bytesRead = recv(fd, buffer, sizeof(buffer), 0);
     if (bytesRead <= 0) {
         // Client disconnected or error
