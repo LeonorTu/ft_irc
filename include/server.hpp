@@ -30,6 +30,10 @@ public:
     // setters
     static void setInstance(Server *server);
 
+    bool paused;
+    void pause();
+    void resume();
+
 private:
     static Server *instance;
     static void signalHandler(int signum);

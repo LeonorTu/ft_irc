@@ -29,6 +29,7 @@ Server::Server()
     setInstance(this);
     signal(SIGINT, signalHandler);  // Handle Ctrl+C
     signal(SIGTERM, signalHandler); // Handle termination request
+    signal(SIGTSTP, signalHandler); // handle server pause
     signal(SIGPIPE, SIG_IGN);       // Ignore SIGPIPE (broken pipe)
 }
 
@@ -69,6 +70,13 @@ void Server::loop()
                 parseMessage(msg);
             }
         }
+        if (paused) {
+            std::cout << "Server paused. Waiting for SIGTSTP to resume..." << std::endl;
+            while (paused && running) {
+                sleep(1);
+            }
+            std::cout << "Server resumed!" << std::endl;
+        }
     }
 }
 
@@ -92,11 +100,32 @@ void Server::setInstance(Server *server)
     instance = server;
 }
 
+void Server::pause()
+{
+    paused = true;
+    std::cout << "Server pausing..." << std::endl;
+}
+
+void Server::resume()
+{
+    paused = false;
+    std::cout << "Server resuming..." << std::endl;
+}
+
 void Server::signalHandler(int signum)
 {
     if (instance) {
-        std::cout << "\nCaught signal " << signum << std::endl;
-        instance->stop();
+        if (signum == SIGTSTP) {
+            if (instance->paused) {
+                instance->resume();
+            }
+            else
+                instance->pause();
+        }
+        else {
+            std::cout << "\nCaught signal " << signum << std::endl;
+            instance->stop();
+        }
     }
 }
 
