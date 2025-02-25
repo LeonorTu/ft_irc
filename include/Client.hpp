@@ -16,6 +16,7 @@ public:
     const size_t &getPollIndex() const;
     // setters
     void setPollIndex(size_t index);
+    void setNickname(const std::string &newNickname);
 
 private:
     size_t pollIndex;
