@@ -14,9 +14,12 @@ public:
     const std::string &getNickname() const;
     const std::string &getIP() const;
     void setNickname(const std::string &newNickname);
+    void registerUser();
+    const bool getIsRegistered() const;
 
 private:
     int fd;
     std::string nickname;
     std::string ip;
+    bool isRegistered;
 };
