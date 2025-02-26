@@ -14,7 +14,8 @@
 #include <chrono>
 #include <csignal>
 
-class Client;
+class ClientIndex;
+
 class Server {
 public:
     Server();
@@ -27,6 +28,7 @@ public:
     // getters
     const int getServerFD() const;
     const int getPort() const;
+    ClientIndex *getClients();
     // setters
     static void setInstance(Server *server);
 
@@ -49,7 +51,7 @@ private:
     int serverFD;
     int port;
     sockaddr_in serverAddress;
-    std::unordered_map<int, Client *> clients;
+    ClientIndex *clients;
     int m_epoll_fd;
 
     void handleNewClient();
