@@ -209,7 +209,7 @@ BreakBeforeBraces: Stroustrup
 
 # BreakConstructorInitializersBeforeComma (bool)
 # Always break constructor initializers before commas and align the commas with the colon.
-#BreakConstructorInitializersBeforeComma: false
+BreakConstructorInitializersBeforeComma: true
 
 # BreakStringLiterals (bool)
 # Allow breaking string literals when formatting.
