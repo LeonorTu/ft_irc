@@ -1,6 +1,6 @@
 #include <Client.hpp>
 
-Client::Client(int fd, std::string &ip) : fd(fd), nickname("Test"), ip(ip)
+Client::Client(int fd, std::string &ip) : fd(fd), nickname("Test"), ip(ip), isRegistered(false)
 {
 }
 
@@ -27,4 +27,14 @@ const std::string &Client::getIP() const
 void Client::setNickname(const std::string &newNickname)
 {
     nickname = newNickname;
+}
+
+void Client::registerUser()
+{
+    isRegistered = true;
+}
+
+const bool Client::getIsRegistered() const
+{
+    return isRegistered;
 }
