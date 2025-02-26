@@ -16,13 +16,17 @@ Channel::Channel(const std::string &name, Client &creator)
     , key("")
     , userLimit(0)
 {
-    connectedClients[creator.getFd()] = creator;
-    ops[creator.getFd()] = creator;
+    // validate channel name
+    join(creator);
+    giveOp(creator);
 }
 
 void Channel::join(Client &client)
 {
-    connectedClients[client.getFd()] = client;
+    int fd = client.getFd();
+    if (connectedClients.find(fd) == connectedClients.end()) {
+        connectedClients.at(fd) = client;
+    }
 }
 
 void Channel::leave(Client &client)
@@ -40,6 +44,11 @@ void Channel::toggleMode(char mode)
     else {
         modes.erase(index);
     }
+}
+
+void Channel::giveOp(Client &creator)
+{
+    ops.at(creator.getFd()) = creator;
 }
 
 bool Channel::hasMode(const char mode) const

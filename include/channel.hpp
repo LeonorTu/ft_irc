@@ -14,6 +14,7 @@ public:
     void leave(Client &client);
     void message(const std::string &message);
     void toggleMode(char mode);
+    void giveOp(Client &creator);
 
     bool hasMode(const char mode) const;
 
