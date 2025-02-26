@@ -6,8 +6,13 @@
 Server *Server::instance = nullptr;
 
 Server::Server()
-    : port(SERVER_PORT), serverFD(-1), serverName(SERVER_NAME), networkName(NETWORK_NAME),
-      serverVersion(SERVER_VERSION), userModes(USER_MODES), channelModes(CHANNEL_MODES)
+    : port(SERVER_PORT)
+    , serverFD(-1)
+    , serverName(SERVER_NAME)
+    , networkName(NETWORK_NAME)
+    , serverVersion(SERVER_VERSION)
+    , userModes(USER_MODES)
+    , channelModes(CHANNEL_MODES)
 {
     // get current time for server start time with chrono
     auto now = std::chrono::system_clock::now();
@@ -235,7 +240,7 @@ std::string Server::recieveMessage(int fd)
 
 void Server::cleanup()
 {
-    for (std::pair client : clients) {
+    for (const auto &client : clients) {
         close(client.first);
         delete (client.second);
     }
