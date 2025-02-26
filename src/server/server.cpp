@@ -2,6 +2,7 @@
 #include <Client.hpp>
 #include <message.hpp>
 #include <common.hpp>
+#include <ClientIndex.hpp>
 
 Server *Server::instance = nullptr;
 
@@ -13,6 +14,7 @@ Server::Server()
     , serverVersion(SERVER_VERSION)
     , userModes(USER_MODES)
     , channelModes(CHANNEL_MODES)
+    , clients(new ClientIndex())
 {
     // get current time for server start time with chrono
     auto now = std::chrono::system_clock::now();
@@ -41,6 +43,7 @@ Server::Server()
 Server::~Server()
 {
     cleanup();
+    delete clients;
 }
 
 void Server::start()
@@ -100,6 +103,11 @@ const int Server::getPort() const
     return this->port;
 }
 
+ClientIndex *Server::getClients()
+{
+    return this->clients;
+}
+
 void Server::setInstance(Server *server)
 {
     instance = server;
@@ -147,7 +155,9 @@ void Server::handleNewClient()
     fcntl(clientFD, F_SETFL, O_NONBLOCK);
     // get client's IP and add new Client to the map and poll list
     std::string ipAddress = inet_ntoa(clientAddr.sin_addr);
-    clients[clientFD] = new Client(clientFD, ipAddress);
+
+    Client *newClient = new Client(clientFD, ipAddress);
+    clients->addUnregistered(newClient);
     addPoll(clientFD, EPOLLIN | EPOLLET);
     std::cout << "New client connected. Socket: " << clientFD << std::endl;
     sendWelcome(clientFD);
@@ -156,9 +166,9 @@ void Server::handleNewClient()
 
 void Server::removeClient(int fd)
 {
-    Client *client = clients[fd];
+    Client *client = clients->getByFd(fd);
     removePoll(fd);
-    clients.erase(fd);
+    clients->remove(client);
     close(fd);
     delete client;
 }
@@ -240,11 +250,11 @@ std::string Server::recieveMessage(int fd)
 
 void Server::cleanup()
 {
-    for (const auto &client : clients) {
+    std::unordered_map<int, Client *> &clientsByFd = clients->getClientsForCleanup();
+    for (const auto &client : clientsByFd) {
         close(client.first);
         delete (client.second);
     }
-    clients.clear();
     if (serverFD >= 0) {
         close(serverFD);
     }

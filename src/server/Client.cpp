@@ -2,7 +2,7 @@
 
 Client::Client(int fd, std::string &ip)
     : fd(fd)
-    , nickname("Test")
+    , nickname("*")
     , ip(ip)
     , isRegistered(false)
 {
