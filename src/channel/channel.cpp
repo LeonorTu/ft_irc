@@ -10,7 +10,7 @@ Channel::Channel()
 {
 }
 
-Channel::Channel(const std::string &name, Client &creator)
+Channel::Channel(const std::string &name, Client *creator)
     : name(name)
     , modes("")
     , key("")
@@ -21,18 +21,22 @@ Channel::Channel(const std::string &name, Client &creator)
     giveOp(creator);
 }
 
-void Channel::join(Client &client)
+void Channel::join(Client *client)
 {
-    int fd = client.getFd();
+    if (!client)
+        return;
+    int fd = client->getFd();
     if (connectedClients.find(fd) == connectedClients.end()) {
-        connectedClients.at(fd) = client;
+        connectedClients[fd] = client;
     }
 }
 
-void Channel::leave(Client &client)
+void Channel::leave(Client *client)
 {
-    connectedClients.erase(client.getFd());
-    ops.erase(client.getFd());
+    if (!client)
+        return;
+    connectedClients.erase(client->getFd());
+    ops.erase(client->getFd());
 }
 
 void Channel::toggleMode(char mode)
@@ -46,9 +50,11 @@ void Channel::toggleMode(char mode)
     }
 }
 
-void Channel::giveOp(Client &creator)
+void Channel::giveOp(Client *client)
 {
-    ops.at(creator.getFd()) = creator;
+    if (!client)
+        return;
+    ops[client->getFd()] = client;
 }
 
 bool Channel::hasMode(const char mode) const
