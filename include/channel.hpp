@@ -16,6 +16,9 @@ public:
     void message(const std::string &message);
     void toggleMode(char mode);
     void giveOp(Client *creator);
+    bool hasOp(Client *client);
+    std::string prefixNick(Client *client);
+    void nameReply(Client *client);
 
     const std::string &getName() const;
     bool hasMode(const char mode) const;

@@ -75,8 +75,37 @@ void Channel::giveOp(Client *client)
     ops[client->getFd()] = client;
 }
 
+bool Channel::hasOp(Client *client)
+{
+    return ops.find(client->getFd()) != ops.end();
+}
+
+std::string Channel::prefixNick(Client *client)
+{
+    std::string nick = client->getNickname();
+    if (hasOp(client))
+        return "@" + nick;
+    return nick;
+}
+
 void Channel::nameReply(Client *client)
 {
+    std::string nameReply;
+    std::string nextNick;
+    for (auto &[fd, memberClient] : connectedClients) {
+        nextNick = prefixNick(client);
+        if (nameReply.size() + nextNick.size() + 1 > MSG_BUFFER_SIZE) {
+            sendToClient(client->getFd(), nameReply);
+            nameReply.erase();
+        }
+        if (nameReply.empty()) {
+            nameReply = RPL_NAMREPLY(client->getNickname(), this->name, nextNick);
+            continue;
+        }
+        nameReply.append(" " + nextNick);
+    }
+    sendToClient(client->getFd(), RPL_ENDOFNAMES(client->getNickname(), this->name));
+}
 
 const std::string &Channel::getName() const
 {
