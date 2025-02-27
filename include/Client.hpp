@@ -3,7 +3,9 @@
 #include <iostream>
 #include <string>
 #include <netinet/in.h>
+#include <unordered_map>
 
+class Channel;
 class Client {
 public:
     Client(int fd, std::string &ip);
@@ -16,10 +18,13 @@ public:
     void setNickname(const std::string &newNickname);
     void registerUser();
     const bool getIsRegistered() const;
+    void untrackChannel(Channel *channel);
+    void trackChannel(Channel *channel);
 
 private:
     int fd;
     std::string nickname;
     std::string ip;
     bool isRegistered;
+    std::unordered_map<std::string, Channel *> myChannels;
 };
