@@ -6,32 +6,6 @@
 #include <regex>
 #include <ClientIndex.hpp>
 
-void nick(Server &server, Client &client, message cmd)
-{
-    std::string nickname = cmd.parameters[0];
-
-    if (!client.getIsRegistered()) {
-        client.setNickname(nickname);
-    }
-    if (nickname.empty()) {
-        send(client.getFd(), ERR_NONICKNAMEGIVEN(client.getNickname()).c_str(),
-             ERR_NONICKNAMEGIVEN(client.getNickname()).size(), 0);
-    }
-    else if (!isValidNickname(nickname)) {
-        send(client.getFd(), ERR_ERRONEUSNICKNAME(client.getNickname(), nickname).c_str(),
-             ERR_ERRONEUSNICKNAME(client.getNickname(), nickname).size(), 0);
-    }
-    else if (isUsed(server, client.getFd(), nickname)) {
-        send(client.getFd(), ERR_NICKNAMEINUSE(client.getNickname(), nickname).c_str(),
-             ERR_NICKNAMEINUSE(client.getNickname(), nickname).size(), 0);
-    }
-    else {
-        send(client.getFd(), NICKNAMECHANGE(client.getNickname(), nickname).c_str(),
-             NICKNAMECHANGE(client.getNickname(), nickname).size(), 0);
-        client.setNickname(nickname);
-    }
-}
-
 // can now search for clients getClients() function, that returns a brand new 2am ClientIndex that has special functions
 // to get clients by name and fd
 bool isUsed(Server &server, int clientFd, std::string &nickname)
@@ -55,4 +29,30 @@ bool isValidNickname(const std::string &nickname)
     std::regex nicknamePattern("^[a-zA-Z\\[\\]\\\\`_^{|}][a-zA-Z0-9\\[\\]\\\\`_^{|}-]*$");
 
     return std::regex_match(nickname, nicknamePattern);
+}
+
+void nick(Server &server, Client &client, message cmd)
+{
+    std::string nickname = cmd.parameters[0];
+    std::string oldNickname = client.getNickname();
+
+    if (!client.getIsRegistered())
+    {
+        client.setNickname(nickname);
+        // server.getClients()->add(client);
+    }
+    if (nickname.empty()) {
+        sendToClient(client.getFd(), ERR_NONICKNAMEGIVEN(oldNickname));
+    }
+    else if (!isValidNickname(nickname)) {
+        sendToClient(client.getFd(), ERR_ERRONEUSNICKNAME(oldNickname, nickname));
+    }
+    else if (isUsed(server, client.getFd(), nickname)) {
+        sendToClient(client.getFd(), ERR_NICKNAMEINUSE(oldNickname, nickname));
+    }
+    else {
+        sendToClient(client.getFd(), NICKNAMECHANGE(oldNickname, nickname));
+        client.setNickname(nickname);
+        // server.getClients()->updateNick(nickname);
+    }
 }
