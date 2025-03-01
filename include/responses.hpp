@@ -12,6 +12,16 @@ inline std::string ERR_NONICKNAMEGIVEN(const std::string &client)
     return "431 " + client + " :No nickname given";
 }
 
+inline std::string JOIN(const std::string &sourceNick, const std::string &channel)
+{
+    return ":" + sourceNick + " JOIN " + channel;
+}
+
+inline std::string TOPIC(const std::string &channel, const std::string &topic)
+{
+    return "TOPIC " + channel + " :" + topic;
+}
+
 inline std::string ERR_NICKNAMEINUSE(const std::string &client, const std::string &nickname)
 {
     return "433 " + client + " " + nickname + " :Nickname is already in use";
@@ -27,7 +37,10 @@ inline std::string NICKNAMECHANGE(const std::string &old_nickname, const std::st
     return old_nickname + " changed their nickname to " + new_nickname;
 }
 
-// channel Errors
+inline std::string ERR_NOTONCHANNEL(const std::string &client, const std::string &channel)
+{
+    return "442 " + client + " " + channel + " :You're not on that channel";
+}
 inline std::string ERR_NEEDMOREPARAMS(const std::string &client, const std::string &command)
 {
     return "461 " + client + " " + command + " :Not enough parameters";
@@ -36,6 +49,11 @@ inline std::string ERR_NEEDMOREPARAMS(const std::string &client, const std::stri
 inline std::string ERR_NOSUCHCHANNEL(const std::string &client, const std::string &channel)
 {
     return "403 " + client + " " + channel + " :No such channel";
+}
+
+inline std::string ERR_CHANNELISFULL(const std::string &client, const std::string &channel)
+{
+    return "471 " + client + " " + channel + " :Cannot join channel (+l) - channel full";
 }
 
 inline std::string ERR_BADCHANNELKEY(const std::string &client, const std::string &channel)
@@ -47,8 +65,16 @@ inline std::string ERR_INVITEONLYCHAN(const std::string &client, const std::stri
 {
     return "473 " + client + " " + channel + " :Cannot join channel (+i) - invite only";
 }
+inline std::string ERR_CHANOPRIVSNEEDED(const std::string &client, const std::string &channel)
+{
+    return "482 " + client + " " + channel + " You're not channel operator";
+}
 
 // Topic replies
+inline std::string RPL_NOTOPIC(const std::string &client, const std::string &channel)
+{
+    return "331 " + client + " " + channel + " :No topic is set";
+}
 inline std::string RPL_TOPIC(const std::string &client, const std::string &channel, const std::string &topic)
 {
     return "332 " + client + " " + channel + " :" + topic;
