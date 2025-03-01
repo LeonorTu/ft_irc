@@ -8,7 +8,6 @@ class Server;
 
 class Channel {
 public:
-    Channel();
     Channel(const std::string &name, Client *creator);
     ~Channel();
     void join(Client *client, std::string key = "");

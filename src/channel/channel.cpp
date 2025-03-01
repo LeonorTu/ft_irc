@@ -4,21 +4,12 @@
 #include <responses.hpp>
 #include <common.hpp>
 
-Channel::Channel()
-    : name("Default")
-    , modes("")
-    , key("")
-    , userLimit(0)
-{
-}
-
 Channel::Channel(const std::string &name, Client *creator)
     : name(name)
     , modes("")
     , key("")
     , userLimit(0)
 {
-    // validate channel name
     join(creator);
     giveOp(creator);
 }
@@ -44,7 +35,7 @@ void Channel::join(Client *client, std::string key)
         connectedClients.at(fd) = client;
     }
     client->trackChannel(this);
-    
+
     sendToClient(fd, RPL_TOPIC(client->getNickname(), this->name, this->topic));
     nameReply(client);
 }
@@ -92,6 +83,7 @@ void Channel::nameReply(Client *client)
 {
     std::string nameReply;
     std::string nextNick;
+
     for (auto &[fd, memberClient] : connectedClients) {
         nextNick = prefixNick(client);
         if (nameReply.size() + nextNick.size() + 1 > MSG_BUFFER_SIZE) {
