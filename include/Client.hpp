@@ -20,6 +20,7 @@ public:
     const bool getIsRegistered() const;
     void untrackChannel(Channel *channel);
     void trackChannel(Channel *channel);
+    bool isOnChannel(Channel *channel);
 
 private:
     int fd;

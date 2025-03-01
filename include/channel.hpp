@@ -13,7 +13,8 @@ public:
     void join(Client *client, std::string key = "");
     void leave(Client *client);
     void changeTopic(Client *client, std::string &newTopic);
-    void giveOp(Client *creator);
+    void giveOp(Client *client);
+    void changeKey(Client *client, std::string key);
 
     const std::string &getName() const;
     bool hasMode(const char mode) const;

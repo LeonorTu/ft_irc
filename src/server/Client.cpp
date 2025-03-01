@@ -53,3 +53,8 @@ void Client::trackChannel(Channel *channel)
 {
     this->myChannels[channel->getName()] = channel;
 }
+
+bool Client::isOnChannel(Channel *channel)
+{
+    return this->myChannels.find(channel->getName()) != this->myChannels.end();
+}

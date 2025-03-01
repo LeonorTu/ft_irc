@@ -69,6 +69,15 @@ void Channel::giveOp(Client *client)
     ops.at(client->getFd()) = client;
 }
 
+void Channel::changeKey(Client *client, std::string key)
+{
+    if (!hasOp(client)) {
+        ERR_CHANOPRIVSNEEDED(client->getNickname(), channelName);
+        return;
+    }
+    this->key = key;
+}
+
 const std::string &Channel::getName() const
 {
     return channelName;
