@@ -19,7 +19,7 @@ bool isUsed(Server &server, int clientFd, std::string &nickname)
     // }
     // return (false);
     ClientIndex *clients = server.getClients();
-    clients->nickExists(nickname);
+    return clients->nickExists(nickname);
 }
 
 bool isValidNickname(const std::string &nickname)
@@ -36,8 +36,7 @@ void nick(Server &server, Client &client, message cmd)
     std::string nickname = cmd.parameters[0];
     std::string oldNickname = client.getNickname();
 
-    if (!client.getIsRegistered())
-    {
+    if (!client.getIsRegistered()) {
         client.setNickname(nickname);
         // server.getClients()->add(client);
     }

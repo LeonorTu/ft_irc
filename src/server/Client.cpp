@@ -1,4 +1,5 @@
 #include <Client.hpp>
+#include <channel.hpp>
 
 Client::Client(int fd, std::string &ip)
     : fd(fd)
@@ -41,4 +42,19 @@ void Client::registerUser()
 const bool Client::getIsRegistered() const
 {
     return isRegistered;
+}
+
+void Client::untrackChannel(Channel *channel)
+{
+    this->myChannels.erase(channel->getName());
+}
+
+void Client::trackChannel(Channel *channel)
+{
+    this->myChannels[channel->getName()] = channel;
+}
+
+bool Client::isOnChannel(Channel *channel)
+{
+    return this->myChannels.find(channel->getName()) != this->myChannels.end();
 }
