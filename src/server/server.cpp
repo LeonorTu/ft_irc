@@ -15,6 +15,7 @@ Server::Server()
     , userModes(USER_MODES)
     , channelModes(CHANNEL_MODES)
     , clients(new ClientIndex())
+    , _socketManager(std::make_unique<SocketManager>(SERVER_PORT))
 {
     // get current time for server start time with chrono
     auto now = std::chrono::system_clock::now();
@@ -22,10 +23,6 @@ Server::Server()
     char buffer[80];
     std::strftime(buffer, sizeof(buffer), "%a %d %b %H:%M:%S %Y", std::localtime(&now_time_t));
     createdTime = std::string(buffer);
-
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(port);
-    serverAddress.sin_addr.s_addr = INADDR_ANY;
 
     m_epoll_fd = epoll_create1(0);
     if (m_epoll_fd == -1) {
@@ -48,14 +45,7 @@ Server::~Server()
 
 void Server::start()
 {
-    serverFD = socket(AF_INET, SOCK_STREAM, 0);
-    if (serverFD < 0) {
-        std::cout << "failed to start the server" << std::endl;
-        cleanup();
-    }
-    fcntl(serverFD, F_SETFL, O_NONBLOCK);
-    bind(serverFD, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
-    listen(serverFD, 10);
+    serverFD = getSocketManager().initialize();
     running = true;
     addPoll(serverFD, EPOLLIN | EPOLLET);
     loop();
@@ -108,6 +98,11 @@ ClientIndex *Server::getClients()
     return this->clients;
 }
 
+SocketManager &Server::getSocketManager()
+{
+    return *_socketManager;
+}
+
 void Server::setInstance(Server *server)
 {
     instance = server;
@@ -145,14 +140,9 @@ void Server::signalHandler(int signum)
 void Server::handleNewClient()
 {
     sockaddr_in clientAddr;
-    socklen_t clientLen = sizeof(clientAddr);
 
     // accept new client connection
-    int clientFD = accept(serverFD, (struct sockaddr *)&clientAddr, &clientLen);
-    if (clientFD < 0) {
-        std::cerr << "Failed to accept connection" << std::endl;
-    }
-    fcntl(clientFD, F_SETFL, O_NONBLOCK);
+    int clientFD = getSocketManager().acceptConnection(&clientAddr);
     // get client's IP and add new Client to the map and poll list
     std::string ipAddress = inet_ntoa(clientAddr.sin_addr);
 

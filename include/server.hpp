@@ -2,7 +2,6 @@
 
 #include <string>
 #include <unordered_map>
-#include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <iostream>
@@ -10,13 +9,16 @@
 #include <sys/epoll.h>
 #include <cstring>
 #include <sstream>
-#include <fcntl.h>
 #include <chrono>
 #include <csignal>
+#include <memory>
+
+#include <SocketManager.hpp>
 
 class ClientIndex;
 
-class Server {
+class Server
+{
 public:
     Server();
     ~Server();
@@ -29,6 +31,9 @@ public:
     const int getServerFD() const;
     const int getPort() const;
     ClientIndex *getClients();
+    SocketManager &getSocketManager();
+    // ChannelManager* getChannelManager();
+    // ClientIndex* getClients();
     // setters
     static void setInstance(Server *server);
 
@@ -37,6 +42,7 @@ public:
     void resume();
 
 private:
+    std::unique_ptr<SocketManager> _socketManager;
     static Server *instance;
     static void signalHandler(int signum);
     // server info
