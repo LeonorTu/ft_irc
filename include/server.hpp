@@ -14,6 +14,7 @@
 #include <memory>
 
 #include <SocketManager.hpp>
+#include <EventLoop.hpp>
 
 class ClientIndex;
 
@@ -25,13 +26,13 @@ public:
     void start();
     void loop();
     void stop();
-    void broadcastMessage(const std::string &message);
 
     // getters
     const int getServerFD() const;
     const int getPort() const;
     ClientIndex *getClients();
     SocketManager &getSocketManager();
+    EventLoop &getEventLoop();
     // ChannelManager* getChannelManager();
     // ClientIndex* getClients();
     // setters
@@ -43,6 +44,7 @@ public:
 
 private:
     std::unique_ptr<SocketManager> _socketManager;
+    std::unique_ptr<EventLoop> _eventLoop;
     static Server *instance;
     static void signalHandler(int signum);
     // server info
@@ -56,9 +58,7 @@ private:
     bool running;
     int serverFD;
     int port;
-    sockaddr_in serverAddress;
     ClientIndex *clients;
-    int m_epoll_fd;
 
     void handleNewClient();
     void removeClient(int fd);
@@ -66,7 +66,4 @@ private:
     void parseMessage(std::string msg);
     std::string recieveMessage(int fd);
     void cleanup();
-
-    void addPoll(int fd, uint32_t event);
-    void removePoll(int fd);
 };

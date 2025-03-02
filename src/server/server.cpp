@@ -16,6 +16,7 @@ Server::Server()
     , channelModes(CHANNEL_MODES)
     , clients(new ClientIndex())
     , _socketManager(std::make_unique<SocketManager>(SERVER_PORT))
+    , _eventLoop(std::make_unique<EventLoop>())
 {
     // get current time for server start time with chrono
     auto now = std::chrono::system_clock::now();
@@ -23,11 +24,6 @@ Server::Server()
     char buffer[80];
     std::strftime(buffer, sizeof(buffer), "%a %d %b %H:%M:%S %Y", std::localtime(&now_time_t));
     createdTime = std::string(buffer);
-
-    m_epoll_fd = epoll_create1(0);
-    if (m_epoll_fd == -1) {
-        std::cerr << "epoll create error" << std::endl;
-    }
 
     // setup signalshandlers
     setInstance(this);
@@ -46,25 +42,20 @@ Server::~Server()
 void Server::start()
 {
     serverFD = getSocketManager().initialize();
+    getEventLoop().addToWatch(serverFD, EPOLLIN | EPOLLET);
     running = true;
-    addPoll(serverFD, EPOLLIN | EPOLLET);
     loop();
 }
 
 void Server::loop()
 {
     while (running) {
-        epoll_event events[EPOLL_MAX_EVENTS] = {0};
-        int nfds = epoll_wait(m_epoll_fd, events, EPOLL_MAX_EVENTS, 100);
-        if (nfds < 0) {
-            std::cerr << "epoll failed: " << strerror(errno) << std::endl;
-            continue;
-        }
-        for (int i = 0; i < nfds; i++) {
-            if (events[i].data.fd == serverFD)
+        std::vector<Event> events = getEventLoop().waitForEvents(100);
+        for (const Event &event : events) {
+            if (event.fd == serverFD)
                 handleNewClient();
             else {
-                std::string msg = recieveMessage(events[i].data.fd);
+                std::string msg = recieveMessage(event.fd);
                 parseMessage(msg);
             }
         }
@@ -101,6 +92,11 @@ ClientIndex *Server::getClients()
 SocketManager &Server::getSocketManager()
 {
     return *_socketManager;
+}
+
+EventLoop &Server::getEventLoop()
+{
+    return *_eventLoop;
 }
 
 void Server::setInstance(Server *server)
@@ -148,7 +144,7 @@ void Server::handleNewClient()
 
     Client *newClient = new Client(clientFD, ipAddress);
     clients->addUnregistered(newClient);
-    addPoll(clientFD, EPOLLIN | EPOLLET);
+    getEventLoop().addToWatch(clientFD, EPOLLIN | EPOLLET);
     std::cout << "New client connected. Socket: " << clientFD << std::endl;
     sendWelcome(clientFD);
     std::cout << "Client's IP: " << ipAddress << std::endl;
@@ -157,7 +153,7 @@ void Server::handleNewClient()
 void Server::removeClient(int fd)
 {
     Client *client = clients->getByFd(fd);
-    removePoll(fd);
+    getEventLoop().removeFromWatch(fd);
     clients->remove(client);
     close(fd);
     delete client;
@@ -241,32 +237,12 @@ std::string Server::recieveMessage(int fd)
 void Server::cleanup()
 {
     std::unordered_map<int, Client *> &clientsByFd = clients->getClientsForCleanup();
-    for (const auto &client : clientsByFd) {
-        close(client.first);
-        delete (client.second);
+    for (const auto &[fd, client] : clientsByFd) {
+        close(fd);
+        delete (client);
     }
     if (serverFD >= 0) {
         close(serverFD);
     }
-    if (m_epoll_fd >= 0) {
-        close(m_epoll_fd);
-    }
     std::cout << "Server shutdown complete" << std::endl;
-}
-
-void Server::addPoll(int fd, uint32_t event)
-{
-    epoll_event ev;
-    ev.data.fd = fd;
-    ev.events = event;
-    if (epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, fd, &ev) == -1) {
-        std::cerr << "Failed to add fd to epoll: " << strerror(errno) << std::endl;
-    }
-}
-
-void Server::removePoll(int fd)
-{
-    if (epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
-        std::cerr << "Failed to remove fd from epoll: " << strerror(errno) << std::endl;
-    }
 }
