@@ -75,6 +75,8 @@ void Channel::quit(Client *client, const std::string &reason)
 
 void Channel::changeTopic(Client *client, std::string &newTopic)
 {
+    if (!client)
+        return;
     if (!isOnChannel(client)) {
         sendToClient(client->getFd(), ERR_NOTONCHANNEL(client->getNickname(), channelName));
         return;
@@ -93,6 +95,8 @@ void Channel::changeTopic(Client *client, std::string &newTopic)
 
 void Channel::checkTopic(Client *client)
 {
+    if (!client)
+        return;
     if (!isOnChannel(client)) {
         sendToClient(client->getFd(), ERR_NOTONCHANNEL(client->getNickname(), channelName));
         return;
@@ -117,6 +121,8 @@ bool Channel::hasMode(const char mode) const
 
 void Channel::setMode(Client *client, bool enable, ChannelMode mode, std::string param)
 {
+    if (!client)
+        return;
     if (!hasOp(client)) {
         sendToClient(client->getFd(), ERR_CHANOPRIVSNEEDED(client->getNickname(), channelName));
         return;
@@ -199,6 +205,8 @@ void Channel::disableMode(ChannelMode mode)
 
 std::string Channel::prefixNick(Client *client)
 {
+    if (!client)
+        return;
     std::string nick = client->getNickname();
     if (hasOp(client))
         return "@" + nick;
@@ -207,6 +215,8 @@ std::string Channel::prefixNick(Client *client)
 
 void Channel::sendNameReply(Client *client)
 {
+    if (!client)
+        return;
     std::string nameReply;
     std::string nextNick;
 
@@ -229,6 +239,8 @@ void Channel::sendNameReply(Client *client)
 
 void Channel::sendTopic(Client *client)
 {
+    if (!client)
+        return;
     int fd = client->getFd();
 
     if (topic.empty()) {
@@ -242,16 +254,22 @@ void Channel::sendTopic(Client *client)
 
 bool Channel::hasOp(Client *client)
 {
+    if (!client)
+        return;
     return ops.find(client->getNickname()) != ops.end();
 }
 
 bool Channel::isInvited(Client *client)
 {
+    if (!client)
+        return;
     return invites.find(client->getNickname()) != invites.end();
 }
 
 bool Channel::isJoinable(Client *client, std::string key)
 {
+    if (!client)
+        return;
     int fd = client->getFd();
 
     if (hasMode(ChannelMode::INVITE_ONLY) && !isInvited(client)) {
@@ -274,11 +292,15 @@ bool Channel::isJoinable(Client *client, std::string key)
 
 bool Channel::isOnChannel(Client *client)
 {
+    if (!client)
+        return;
     return connectedClients.find(client->getNickname()) != connectedClients.end();
 }
 
 void Channel::removeFromInvites(Client *client)
 {
+    if (!client)
+        return;
     if (invites.find(client->getNickname()) != invites.end())
         invites.erase(client->getNickname());
 }
