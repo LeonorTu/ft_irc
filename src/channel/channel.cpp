@@ -10,9 +10,9 @@ Channel::Channel(const std::string &name, Client *creator)
     , userLimit(0)
     , topic("")
 {
-    join(creator);
     ops.insert_or_assign(creator->getNickname(), creator);
     setMode(creator, true, ChannelMode::OP, creator->getNickname());
+    join(creator);
 }
 
 Channel::~Channel()
@@ -29,13 +29,14 @@ void Channel::join(Client *client, const std::string &key)
     if (!isJoinable(client, key))
         return;
     std::string nick = client->getNickname();
+    std::string joinMessage = JOIN(nick, channelName);
 
     connectedClients.insert_or_assign(nick, client);
     client->trackChannel(this);
     removeFromInvites(client);
 
     // required server reply on join success
-    JOIN(nick, channelName);
+    broadcastMessage(joinMessage);
     sendTopic(client);
     sendNameReply(client);
 }
@@ -51,10 +52,10 @@ void Channel::part(Client *client, const std::string &reason)
     std::string nick = client->getNickname();
     std::string partMessage = PART(nick, channelName, reason);
 
+    broadcastMessage(partMessage);
     connectedClients.erase(nick);
     removeOp(nick);
     client->untrackChannel(this);
-    broadcastMessage(partMessage);
 }
 
 void Channel::quit(Client *client, const std::string &reason)
@@ -68,6 +69,7 @@ void Channel::quit(Client *client, const std::string &reason)
 
     connectedClients.erase(nick);
     removeOp(nick);
+    client->untrackChannel(this);
     broadcastMessage(quitMessage);
 }
 
@@ -119,6 +121,16 @@ void Channel::setMode(Client *client, bool enable, ChannelMode mode, std::string
         ERR_CHANOPRIVSNEEDED(client->getNickname(), channelName);
         return;
     }
+    // For basic modes (i, t), keep the check
+    if (mode == ChannelMode::INVITE_ONLY || mode == ChannelMode::PROTECTED_TOPIC) {
+        if (hasMode(mode) == enable)
+            return;
+    }
+    // For parametrized modes with same values, skip
+    if (mode == ChannelMode::KEY && enable && hasMode(mode) && this->key == param)
+        return;
+    if (mode == ChannelMode::LIMIT && enable && hasMode(mode) && this->userLimit == std::stoi(param))
+        return;
 
     std::string operation = enable ? "+" : "-";
     std::string modeStr = operation + static_cast<char>(mode);
@@ -136,20 +148,23 @@ void Channel::setMode(Client *client, bool enable, ChannelMode mode, std::string
                 this->userLimit = std::stoi(param);
             break;
         case ChannelMode::OP:
-            addOp(param);
-            break;
+            addOp(param, modeMsg);
+            return;
         default:
             break;
         }
     }
     else {
         disableMode(mode);
-        if (mode == ChannelMode::OP)
-            removeOp(param);
+        switch (mode) {
+        case ChannelMode::OP:
+            removeOp(param, modeMsg);
+            return;
+        default:
+            break;
+        }
     }
-
     broadcastMessage(modeMsg);
-    return;
 }
 
 bool Channel::isEmpty() const
@@ -159,6 +174,8 @@ bool Channel::isEmpty() const
 
 void Channel::broadcastMessage(const std::string &message)
 {
+    if (message.empty())
+        return;
     for (auto &[_, client] : connectedClients) {
         sendToClient(client->getFd(), message);
     }
@@ -202,9 +219,11 @@ void Channel::sendNameReply(Client *client)
         }
         if (nameReply.empty()) {
             nameReply = RPL_NAMREPLY(client->getNickname(), channelName, nextNick);
+            continue;
         }
         nameReply.append(" " + nextNick);
     }
+    sendToClient(client->getFd(), nameReply);
     sendToClient(client->getFd(), RPL_ENDOFNAMES(client->getNickname(), channelName));
 }
 
@@ -235,15 +254,15 @@ bool Channel::isJoinable(Client *client, std::string key)
 {
     int fd = client->getFd();
 
-    if (hasMode(ChannelMode::KEY) && key != this->key) {
-        sendToClient(fd, ERR_BADCHANNELKEY(client->getNickname(), channelName));
-        return false;
-    }
     if (hasMode(ChannelMode::INVITE_ONLY) && !isInvited(client)) {
         sendToClient(fd, ERR_INVITEONLYCHAN(client->getNickname(), channelName));
         return false;
     }
-    if (hasMode(ChannelMode::LIMIT) && connectedClients.size() > userLimit) {
+    if (hasMode(ChannelMode::KEY) && key != this->key) {
+        sendToClient(fd, ERR_BADCHANNELKEY(client->getNickname(), channelName));
+        return false;
+    }
+    if (hasMode(ChannelMode::LIMIT) && connectedClients.size() >= userLimit) {
         sendToClient(fd, ERR_CHANNELISFULL(client->getNickname(), channelName));
         return false;
     }
@@ -264,15 +283,19 @@ void Channel::removeFromInvites(Client *client)
         invites.erase(client->getNickname());
 }
 
-void Channel::addOp(std::string &nick)
+void Channel::addOp(std::string &nick, const std::string &modeMsg)
 {
     auto it = connectedClients.find(nick);
-    if (it != connectedClients.end())
+    if (it != connectedClients.end() && !hasOp(it->second)) {
         ops.insert_or_assign(nick, it->second);
+        broadcastMessage(modeMsg);
+    }
 }
 
-void Channel::removeOp(std::string &nick)
+void Channel::removeOp(std::string &nick, const std::string &modeMsg)
 {
-    if (ops.find(nick) != ops.end())
+    if (ops.find(nick) != ops.end()) {
         ops.erase(nick);
+        broadcastMessage(modeMsg);
+    }
 }

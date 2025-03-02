@@ -54,6 +54,6 @@ private:
     bool isJoinable(Client *client, std::string key);
     bool isOnChannel(Client *client);
     void removeFromInvites(Client *client);
-    void addOp(std::string &nick);
-    void removeOp(std::string &nick);
+    void addOp(std::string &nick, const std::string &modeMsg = "");
+    void removeOp(std::string &nick, const std::string &modeMsg = "");
 };
