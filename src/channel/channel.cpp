@@ -46,7 +46,7 @@ void Channel::part(Client *client, const std::string &reason)
     if (!client)
         return;
     if (!isOnChannel(client)) {
-        ERR_NOTONCHANNEL(client->getNickname(), channelName);
+        sendToClient(client->getFd(), ERR_NOTONCHANNEL(client->getNickname(), channelName));
         return;
     }
     std::string nick = client->getNickname();
@@ -76,11 +76,11 @@ void Channel::quit(Client *client, const std::string &reason)
 void Channel::changeTopic(Client *client, std::string &newTopic)
 {
     if (!isOnChannel(client)) {
-        ERR_NOTONCHANNEL(client->getNickname(), channelName);
+        sendToClient(client->getFd(), ERR_NOTONCHANNEL(client->getNickname(), channelName));
         return;
     }
     if (hasMode(ChannelMode::PROTECTED_TOPIC) && !hasOp(client)) {
-        ERR_CHANOPRIVSNEEDED(client->getNickname(), channelName);
+        sendToClient(client->getFd(), ERR_CHANOPRIVSNEEDED(client->getNickname(), channelName));
         return;
     }
     topic = newTopic;
@@ -94,7 +94,7 @@ void Channel::changeTopic(Client *client, std::string &newTopic)
 void Channel::checkTopic(Client *client)
 {
     if (!isOnChannel(client)) {
-        ERR_NOTONCHANNEL(client->getNickname(), channelName);
+        sendToClient(client->getFd(), ERR_NOTONCHANNEL(client->getNickname(), channelName));
         return;
     }
     sendTopic(client);
@@ -118,7 +118,7 @@ bool Channel::hasMode(const char mode) const
 void Channel::setMode(Client *client, bool enable, ChannelMode mode, std::string param)
 {
     if (!hasOp(client)) {
-        ERR_CHANOPRIVSNEEDED(client->getNickname(), channelName);
+        sendToClient(client->getFd(), ERR_CHANOPRIVSNEEDED(client->getNickname(), channelName));
         return;
     }
     // For basic modes (i, t), keep the check

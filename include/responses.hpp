@@ -86,7 +86,7 @@ inline std::string ERR_INVITEONLYCHAN(const std::string &client, const std::stri
 }
 inline std::string ERR_CHANOPRIVSNEEDED(const std::string &client, const std::string &channel)
 {
-    return "482 " + client + " " + channel + " You're not channel operator";
+    return "482 " + client + " " + channel + " :You're not channel operator";
 }
 
 // Topic replies
