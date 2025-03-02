@@ -205,8 +205,6 @@ void Channel::disableMode(ChannelMode mode)
 
 std::string Channel::prefixNick(Client *client)
 {
-    if (!client)
-        return;
     std::string nick = client->getNickname();
     if (hasOp(client))
         return "@" + nick;
@@ -255,21 +253,21 @@ void Channel::sendTopic(Client *client)
 bool Channel::hasOp(Client *client)
 {
     if (!client)
-        return;
+        return false;
     return ops.find(client->getNickname()) != ops.end();
 }
 
 bool Channel::isInvited(Client *client)
 {
     if (!client)
-        return;
+        return false;
     return invites.find(client->getNickname()) != invites.end();
 }
 
 bool Channel::isJoinable(Client *client, std::string key)
 {
     if (!client)
-        return;
+        return false;
     int fd = client->getFd();
 
     if (hasMode(ChannelMode::INVITE_ONLY) && !isInvited(client)) {
@@ -293,7 +291,7 @@ bool Channel::isJoinable(Client *client, std::string key)
 bool Channel::isOnChannel(Client *client)
 {
     if (!client)
-        return;
+        return false;
     return connectedClients.find(client->getNickname()) != connectedClients.end();
 }
 
