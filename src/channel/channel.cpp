@@ -1,5 +1,4 @@
 #include <channel.hpp>
-#include <server.hpp>
 #include <Client.hpp>
 #include <responses.hpp>
 #include <common.hpp>
@@ -23,7 +22,7 @@ Channel::~Channel()
     }
 }
 
-void Channel::join(Client *client, std::string key)
+void Channel::join(Client *client, const std::string &key)
 {
     if (!client)
         return;
@@ -31,21 +30,45 @@ void Channel::join(Client *client, std::string key)
         return;
     std::string nick = client->getNickname();
 
-    JOIN(nick, channelName);
     connectedClients.insert_or_assign(nick, client);
     client->trackChannel(this);
+    removeFromInvites(client);
+
+    // required server reply on join success
+    JOIN(nick, channelName);
     sendTopic(client);
     sendNameReply(client);
-    removeFromInvites(client);
 }
 
-void Channel::leave(Client *client)
+void Channel::part(Client *client, const std::string &reason)
 {
     if (!client)
         return;
-    connectedClients.erase(client->getNickname());
-    ops.erase(client->getNickname());
+    if (!isOnChannel(client)) {
+        ERR_NOTONCHANNEL(client->getNickname(), channelName);
+        return;
+    }
+    std::string nick = client->getNickname();
+    std::string partMessage = PART(nick, channelName, reason);
+
+    connectedClients.erase(nick);
+    removeOp(nick);
     client->untrackChannel(this);
+    broadcastMessage(partMessage);
+}
+
+void Channel::quit(Client *client, const std::string &reason)
+{
+    if (!client)
+        return;
+    if (!isOnChannel(client))
+        return;
+    std::string nick = client->getNickname();
+    std::string quitMessage = QUIT(client->getNickname(), reason);
+
+    connectedClients.erase(nick);
+    removeOp(nick);
+    broadcastMessage(quitMessage);
 }
 
 void Channel::changeTopic(Client *client, std::string &newTopic)
@@ -64,6 +87,15 @@ void Channel::changeTopic(Client *client, std::string &newTopic)
     for (auto &[_, client] : connectedClients) {
         sendTopic(client);
     }
+}
+
+void Channel::checkTopic(Client *client)
+{
+    if (!isOnChannel(client)) {
+        ERR_NOTONCHANNEL(client->getNickname(), channelName);
+        return;
+    }
+    sendTopic(client);
 }
 
 const std::string &Channel::getName() const
@@ -104,7 +136,7 @@ void Channel::setMode(Client *client, bool enable, ChannelMode mode, std::string
                 this->userLimit = std::stoi(param);
             break;
         case ChannelMode::OP:
-            ops.insert_or_assign(param, connectedClients.at(param));
+            addOp(param);
             break;
         default:
             break;
@@ -113,14 +145,19 @@ void Channel::setMode(Client *client, bool enable, ChannelMode mode, std::string
     else {
         disableMode(mode);
         if (mode == ChannelMode::OP)
-            ops.erase(param);
+            removeOp(param);
     }
 
     broadcastMessage(modeMsg);
     return;
 }
 
-void Channel::broadcastMessage(std::string &message)
+bool Channel::isEmpty() const
+{
+    return connectedClients.empty();
+}
+
+void Channel::broadcastMessage(const std::string &message)
 {
     for (auto &[_, client] : connectedClients) {
         sendToClient(client->getFd(), message);
@@ -225,4 +262,17 @@ void Channel::removeFromInvites(Client *client)
 {
     if (invites.find(client->getNickname()) != invites.end())
         invites.erase(client->getNickname());
+}
+
+void Channel::addOp(std::string &nick)
+{
+    auto it = connectedClients.find(nick);
+    if (it != connectedClients.end())
+        ops.insert_or_assign(nick, it->second);
+}
+
+void Channel::removeOp(std::string &nick)
+{
+    if (ops.find(nick) != ops.end())
+        ops.erase(nick);
 }

@@ -12,7 +12,7 @@ const int NICKNAME_MAX = 512;
 const std::string SERVER_NAME = "localhost";
 const std::string NETWORK_NAME = "J-A";
 const std::string SERVER_VERSION = "v1.0";
-const std::string USER_MODES = "o";
-const std::string CHANNEL_MODES = "itkl";
+const std::string USER_MODES = "";
+const std::string CHANNEL_MODES = "itklo";
 
 const int EPOLL_MAX_EVENTS = 10;

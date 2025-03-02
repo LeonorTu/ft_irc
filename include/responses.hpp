@@ -17,6 +17,16 @@ inline std::string JOIN(const std::string &sourceNick, const std::string &channe
     return ":" + sourceNick + " JOIN " + channel;
 }
 
+inline std::string QUIT(const std::string &sourceNick, const std::string &reason)
+{
+    return ":" + sourceNick + " QUIT " + "Quit: " + reason;
+}
+
+inline std::string PART(const std::string &sourceNick, const std::string &channel, const std::string &reason)
+{
+    return ":" + sourceNick + " PART " + channel + " " + reason;
+}
+
 inline std::string TOPIC(const std::string &channel, const std::string &topic)
 {
     return "TOPIC " + channel + " :" + topic;

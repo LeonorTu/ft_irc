@@ -4,7 +4,6 @@
 #include <unordered_map>
 
 class Client;
-class Server;
 
 enum ChannelMode
 {
@@ -20,13 +19,16 @@ class Channel
 public:
     Channel(const std::string &name, Client *creator);
     ~Channel();
-    void join(Client *client, std::string key = "");
-    void leave(Client *client);
+    void join(Client *client, std::string const &key = "");
+    void part(Client *client, std::string const &reason);
+    void quit(Client *client, std::string const &reason);
     void changeTopic(Client *client, std::string &newTopic);
+    void checkTopic(Client *client);
     const std::string &getName() const;
     bool hasMode(ChannelMode mode) const;
     bool hasMode(const char mode) const;
     void setMode(Client *client, bool enable, ChannelMode mode, std::string param = "");
+    bool isEmpty() const;
 
 private:
     std::string channelName;
@@ -41,7 +43,7 @@ private:
     std::string key;
     int userLimit;
 
-    void broadcastMessage(std::string &message);
+    void broadcastMessage(const std::string &message);
     void enableMode(ChannelMode mode);
     void disableMode(ChannelMode mode);
     std::string prefixNick(Client *client);
@@ -52,4 +54,6 @@ private:
     bool isJoinable(Client *client, std::string key);
     bool isOnChannel(Client *client);
     void removeFromInvites(Client *client);
+    void addOp(std::string &nick);
+    void removeOp(std::string &nick);
 };
