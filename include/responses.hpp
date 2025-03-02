@@ -22,6 +22,12 @@ inline std::string TOPIC(const std::string &channel, const std::string &topic)
     return "TOPIC " + channel + " :" + topic;
 }
 
+inline std::string MODE(const std::string &sourceNick, const std::string &tar, const std::string &modeChange,
+                        const std::string &args = "")
+{
+    return ":" + sourceNick + " MODE " + tar + " " + modeChange + " " + args;
+}
+
 inline std::string ERR_NICKNAMEINUSE(const std::string &client, const std::string &nickname)
 {
     return "433 " + client + " " + nickname + " :Nickname is already in use";
