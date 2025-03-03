@@ -74,3 +74,8 @@ int SocketManager::acceptConnection(sockaddr_in *clientAddr)
     fcntl(clientFd, F_SETFL, O_NONBLOCK);
     return clientFd;
 }
+
+void SocketManager::closeConnection(int fd)
+{
+    close(fd);
+}

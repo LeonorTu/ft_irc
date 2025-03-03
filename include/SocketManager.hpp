@@ -16,6 +16,7 @@ public:
     int initialize();
     void closeAllConnections();
     int acceptConnection(sockaddr_in *clientAddr);
+    void closeConnection(int fd);
 
 private:
     int _serverFd;

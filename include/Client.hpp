@@ -6,7 +6,8 @@
 #include <unordered_map>
 
 class Channel;
-class Client {
+class Client
+{
 public:
     Client(int fd, std::string &ip);
     ~Client();
@@ -18,12 +19,15 @@ public:
     void setNickname(const std::string &newNickname);
     void registerUser();
     const bool getIsRegistered() const;
+    std::string &getMessageBuf();
+    void setIsRegistered(bool registered);
     void untrackChannel(Channel *channel);
     void trackChannel(Channel *channel);
     bool isOnChannel(Channel *channel);
 
 private:
     int fd;
+    std::string _messageBuf;
     std::string nickname;
     std::string ip;
     bool isRegistered;

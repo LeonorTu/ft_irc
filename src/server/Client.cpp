@@ -6,8 +6,7 @@ Client::Client(int fd, std::string &ip)
     , nickname("*")
     , ip(ip)
     , isRegistered(false)
-{
-}
+{}
 
 Client::~Client()
 {
@@ -42,6 +41,16 @@ void Client::registerUser()
 const bool Client::getIsRegistered() const
 {
     return isRegistered;
+}
+
+std::string &Client::getMessageBuf()
+{
+    return _messageBuf;
+}
+
+void Client::setIsRegistered(bool registered)
+{
+    this->isRegistered = registered;
 }
 
 void Client::untrackChannel(Channel *channel)
