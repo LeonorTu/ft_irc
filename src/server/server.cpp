@@ -29,7 +29,7 @@ Server::Server()
     setInstance(this);
     signal(SIGINT, signalHandler);  // Handle Ctrl+C
     signal(SIGTERM, signalHandler); // Handle termination request
-    signal(SIGTSTP, signalHandler); // handle server pause
+    signal(SIGTSTP, SIG_IGN); // handle server pause
     signal(SIGPIPE, SIG_IGN);       // Ignore SIGPIPE (broken pipe)
 }
 
@@ -118,20 +118,11 @@ void Server::resume()
 
 void Server::signalHandler(int signum)
 {
-    if (instance) {
-        if (signum == SIGTSTP) {
-            if (instance->paused) {
-                instance->resume();
-            }
-            else
-                instance->pause();
-        }
-        else {
             std::cout << "\nCaught signal " << signum << std::endl;
             instance->stop();
-        }
+
     }
-}
+
 
 void Server::handleNewClient()
 {
