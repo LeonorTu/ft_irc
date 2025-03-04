@@ -1,10 +1,10 @@
 #include <Client.hpp>
 #include <channel.hpp>
 
-Client::Client(int fd, std::string &ip)
+Client::Client(int fd)
     : fd(fd)
     , nickname("*")
-    , ip(ip)
+    , ip("")
     , isRegistered(false)
 {}
 
@@ -31,6 +31,11 @@ const std::string &Client::getIP() const
 void Client::setNickname(const std::string &newNickname)
 {
     nickname = newNickname;
+}
+
+void Client::setIp(const std::string &ip)
+{
+    this->ip = ip;
 }
 
 void Client::registerUser()

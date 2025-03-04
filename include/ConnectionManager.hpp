@@ -16,10 +16,10 @@ public:
     ~ConnectionManager();
 
     void handleNewClient();
-    void disconnectClient(Client *client);
+    void disconnectClient(Client &client);
     void recieveData(int clientFd);
-    void extractFullMessages(Client *client, std::string &messageBuffer);
-    void handleOversized(Client *client, std::string &messageBuffer);
+    void extractFullMessages(Client &client, std::string &messageBuffer);
+    void handleOversized(Client &client, std::string &messageBuffer);
 
 private:
     ClientIndex &_clients;
