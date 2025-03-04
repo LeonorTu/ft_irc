@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <functional>
 
 class Client;
 
@@ -22,6 +23,7 @@ public:
     Client &getByNick(const std::string &nick) const;
 
     // Utility functions
+    void forEachClient(std::function<void(Client &)> callback);
     bool nickExists(const std::string &nick) const;
     size_t size() const;
 

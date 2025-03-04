@@ -58,6 +58,12 @@ Client &ClientIndex::getByNick(const std::string &nick) const
     return *it->second;
 }
 
+void ClientIndex::forEachClient(std::function<void(Client&)> callback) {
+    for (auto& [_, clientPtr] : _byFd) {
+        callback(*clientPtr);
+    }
+}
+
 bool ClientIndex::nickExists(const std::string &nick) const
 {
     return _byNick.find(nick) != _byNick.end();
