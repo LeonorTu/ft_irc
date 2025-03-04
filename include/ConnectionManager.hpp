@@ -19,6 +19,7 @@ public:
     void disconnectClient(Client *client);
     void recieveData(int clientFd);
     void extractFullMessages(Client *client, std::string &messageBuffer);
+    void handleOversized(Client *client, std::string &messageBuffer);
 
 private:
     ClientIndex &_clients;

@@ -37,39 +37,51 @@ void ConnectionManager::recieveData(int clientFd)
 
     char buffer[MSG_BUFFER_SIZE];
     std::string &messageBuf = client->getMessageBuf();
-    int bytesRead = recv(clientFd, buffer, sizeof(buffer), 0);
-    if (bytesRead < 0) {
-        if (errno != EAGAIN && errno != EWOULDBLOCK) {
-            std::cerr << "Error reading from client: " << strerror(errno) << std::endl;
+    while (true) { // Keep reading until EAGAIN
+        int bytesRead = recv(clientFd, buffer, sizeof(buffer), 0);
+
+        if (bytesRead < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                break; // No more data, exit the loop
+            }
+            else {
+                // Handle error
+                disconnectClient(client);
+                return;
+            }
+        }
+        else if (bytesRead == 0) {
+            // Client disconnected
             disconnectClient(client);
             return;
         }
-        // we catch EGAIN or EWOULDBLOCK,
-        return;
-    }
-    if (bytesRead == 0) {
-        std::cout << "Client disconnected: " << clientFd << std::endl;
-        disconnectClient(client);
-        return;
-    }
-    messageBuf.append(buffer, bytesRead);
-    extractFullMessages(client, messageBuf);
 
-    if (messageBuf.size() > MSG_BUFFER_SIZE) {
-        std::cerr << "Message too large from client: " << clientFd << std::endl;
-        disconnectClient(client);
-        return;
+        messageBuf.append(buffer, bytesRead);
     }
+    extractFullMessages(client, messageBuf);
 }
 
 void ConnectionManager::extractFullMessages(Client *client, std::string &messageBuffer)
 {
     size_t pos;
-    while ((pos == messageBuffer.find("\r\n")) != std::string::npos) {
+    while ((pos = messageBuffer.find("\r\n")) != std::string::npos) {
         // completed message is already without \r\n
         std::string completedMessage = messageBuffer.substr(0, pos);
         messageBuffer.erase(0, pos + 2);
         // call commandhandler, executer or whatever
         std::cout << "Recieved Message from " << client->getFd() << " : " << completedMessage << std::endl;
+    }
+    handleOversized(client, messageBuffer);
+}
+
+void ConnectionManager::handleOversized(Client *client, std::string &messageBuffer)
+{
+    if (messageBuffer.size() > MSG_BUFFER_SIZE) {
+        std::cerr << "Message too large from client: " << client->getFd() << std::endl;
+        std::cerr << "Truncating message" << std::endl;
+        std::string truncatedMessage = messageBuffer.substr(0, MSG_BUFFER_SIZE - 2);
+        messageBuffer.clear();
+        // call commandhandler, executer or whatever
+        std::cout << "Recieved Message from " << client->getFd() << " : " << truncatedMessage << std::endl;
     }
 }
