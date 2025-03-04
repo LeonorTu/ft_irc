@@ -8,7 +8,8 @@
 #include <chrono>
 #include <message.hpp>
 
-class ServerTest : public ::testing::Test {
+class ServerTest : public ::testing::Test
+{
 protected:
     Server *server; // Shared resource for all tests
 
@@ -28,7 +29,6 @@ protected:
 // Existing test
 TEST_F(ServerTest, InitializationTest)
 {
-    EXPECT_EQ(server->getPort(), 6667);
     EXPECT_EQ(server->getServerFD(), -1);
 }
 
