@@ -18,8 +18,8 @@ bool isUsed(Server &server, int clientFd, std::string &nickname)
     //     client++;
     // }
     // return (false);
-    ClientIndex *clients = server.getClients();
-    return clients->nickExists(nickname);
+    ClientIndex &clients = server.getClients();
+    return clients.nickExists(nickname);
 }
 
 bool isValidNickname(const std::string &nickname)

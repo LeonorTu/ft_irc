@@ -22,9 +22,9 @@ protected:
         oldCout = std::cout.rdbuf(buffer.rdbuf());
 
         // Create mock clients
-        creator = new Client(10, creatorIp);
+        creator = new Client(10);
         creator->setNickname("creator");
-        regularUser = new Client(11, regularIp);
+        regularUser = new Client(11);
         regularUser->setNickname("regular");
 
         // Create a test channel

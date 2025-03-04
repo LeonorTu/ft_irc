@@ -47,7 +47,7 @@ int SocketManager::initialize()
     return _serverFd;
 }
 
-void SocketManager::closeAllConnections()
+void SocketManager::closeServerSocket()
 {
     if (_serverFd >= 0) {
         close(_serverFd);
@@ -77,5 +77,6 @@ int SocketManager::acceptConnection(sockaddr_in *clientAddr)
 
 void SocketManager::closeConnection(int fd)
 {
-    close(fd);
+    if (fd >= 0)
+        close(fd);
 }

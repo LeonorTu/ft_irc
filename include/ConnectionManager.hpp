@@ -12,17 +12,19 @@
 class ConnectionManager
 {
 public:
-    ConnectionManager(ClientIndex &_clients, SocketManager &_socketManager, EventLoop &_EventLoop);
+    ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop, ClientIndex &clients);
     ~ConnectionManager();
 
-    void handleNewClient();
+    int handleNewClient();
     void disconnectClient(Client &client);
     void recieveData(int clientFd);
-    void extractFullMessages(Client &client, std::string &messageBuffer);
-    void handleOversized(Client &client, std::string &messageBuffer);
+    void disconnectAllClients();
 
 private:
     ClientIndex &_clients;
     SocketManager &_socketManager;
     EventLoop &_EventLoop;
+
+    void extractFullMessages(Client &client, std::string &messageBuffer);
+    void handleOversized(Client &client, std::string &messageBuffer);
 };

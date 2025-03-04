@@ -1,33 +1,39 @@
 #include <ConnectionManager.hpp>
 #include <common.hpp>
 
-ConnectionManager::ConnectionManager(ClientIndex &clients, SocketManager &socketManager, EventLoop &EventLoop)
-    : _clients(clients)
-    , _socketManager(socketManager)
+ConnectionManager::ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop, ClientIndex &clients)
+    : _socketManager(socketManager)
     , _EventLoop(EventLoop)
+    , _clients(clients)
 {}
 
-void ConnectionManager::handleNewClient()
+ConnectionManager::~ConnectionManager()
+{
+    disconnectAllClients();
+}
+
+int ConnectionManager::handleNewClient()
 {
     sockaddr_in clientAddr;
 
     int clientFd = _socketManager.acceptConnection(&clientAddr);
     std::string ip = inet_ntoa(clientAddr.sin_addr);
-    //add new client into ClientIndex
+    // add new client into ClientIndex
     _clients.add(clientFd);
     Client &client = _clients.getByFd(clientFd);
     client.setIp(ip);
-    //add new client to epoll list
+    // add new client to epoll list
     _EventLoop.addToWatch(clientFd, EPOLLIN | EPOLLET);
     std::cout << "New client" << std::endl;
     std::cout << "  Socket: " << clientFd << std::endl;
     std::cout << "  IP:     " << ip << std::endl;
+    return clientFd;
 }
 
 void ConnectionManager::disconnectClient(Client &client)
 {
-    _socketManager.closeConnection(client.getFd());
     _EventLoop.removeFromWatch(client.getFd());
+    _socketManager.closeConnection(client.getFd());
     _clients.remove(client);
 }
 
@@ -73,6 +79,11 @@ void ConnectionManager::extractFullMessages(Client &client, std::string &message
         std::cout << "Recieved Message from " << client.getFd() << " : " << completedMessage << std::endl;
     }
     handleOversized(client, messageBuffer);
+}
+
+void ConnectionManager::disconnectAllClients()
+{
+    _clients.forEachClient([this](Client &client) { disconnectClient(client); });
 }
 
 void ConnectionManager::handleOversized(Client &client, std::string &messageBuffer)

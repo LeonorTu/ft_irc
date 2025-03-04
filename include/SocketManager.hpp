@@ -14,7 +14,7 @@ public:
     ~SocketManager();
 
     int initialize();
-    void closeAllConnections();
+    void closeServerSocket();
     int acceptConnection(sockaddr_in *clientAddr);
     void closeConnection(int fd);
 

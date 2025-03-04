@@ -58,8 +58,9 @@ Client &ClientIndex::getByNick(const std::string &nick) const
     return *it->second;
 }
 
-void ClientIndex::forEachClient(std::function<void(Client&)> callback) {
-    for (auto& [_, clientPtr] : _byFd) {
+void ClientIndex::forEachClient(std::function<void(Client &)> callback)
+{
+    for (auto &[_, clientPtr] : _byFd) {
         callback(*clientPtr);
     }
 }
