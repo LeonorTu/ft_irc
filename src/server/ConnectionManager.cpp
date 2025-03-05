@@ -1,5 +1,6 @@
 #include <ConnectionManager.hpp>
 #include <common.hpp>
+#include <responses.hpp>
 
 ConnectionManager::ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop, ClientIndex &clients)
     : _socketManager(socketManager)
@@ -68,6 +69,8 @@ void ConnectionManager::recieveData(int clientFd)
     extractFullMessages(client, messageBuf);
 }
 
+// extract a valid IRC message with /r/n ending, send the message as std::string to commandHandler
+// command handler will get the message WIHTOUT /r/n
 void ConnectionManager::extractFullMessages(Client &client, std::string &messageBuffer)
 {
     size_t pos;
@@ -76,7 +79,7 @@ void ConnectionManager::extractFullMessages(Client &client, std::string &message
         std::string completedMessage = messageBuffer.substr(0, pos);
         messageBuffer.erase(0, pos + 2);
         // call commandhandler, executer or whatever
-        std::cout << "Recieved Message from " << client.getFd() << " : " << completedMessage << std::endl;
+        logMessage(client.getFd(), completedMessage, false);
     }
     handleOversized(client, messageBuffer);
 }
@@ -86,6 +89,7 @@ void ConnectionManager::disconnectAllClients()
     _clients.forEachClient([this](Client &client) { disconnectClient(client); });
 }
 
+// if the message is over buffer limit, truncate and delete therest of the message.
 void ConnectionManager::handleOversized(Client &client, std::string &messageBuffer)
 {
     if (messageBuffer.size() > MSG_BUFFER_SIZE) {
@@ -94,6 +98,6 @@ void ConnectionManager::handleOversized(Client &client, std::string &messageBuff
         std::string truncatedMessage = messageBuffer.substr(0, MSG_BUFFER_SIZE - 2);
         messageBuffer.clear();
         // call commandhandler, executer or whatever
-        std::cout << "Recieved Message from " << client.getFd() << " : " << truncatedMessage << std::endl;
+        logMessage(client.getFd(), truncatedMessage, false);
     }
 }

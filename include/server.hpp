@@ -47,11 +47,11 @@ private:
     static void signalHandler(int signum);
 
     // server info
-    std::string createdTime;
+    std::string _createdTime;
 
     bool running;
     int serverFD;
 
-    void sendWelcome(int clientFD);
+    void sendWelcome(int clientFd);
     void shutdown();
 };

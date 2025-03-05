@@ -4,6 +4,7 @@
 #include <EventLoop.hpp>
 #include <ClientIndex.hpp>
 #include <ConnectionManager.hpp>
+#include <responses.hpp>
 
 Server *Server::instance = nullptr;
 
@@ -15,12 +16,8 @@ Server::Server()
     , _eventLoop(std::make_unique<EventLoop>())
     , _connectionManager(std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop, *_clients))
 {
-    // get current time for server start time with chrono
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
-    char buffer[80];
-    std::strftime(buffer, sizeof(buffer), "%a %d %b %H:%M:%S %Y", std::localtime(&now_time_t));
-    createdTime = std::string(buffer);
+    // get current time for server start time
+    _createdTime = getCurrentTime();
 
     // setup signalshandlers
     setInstance(this);
@@ -130,28 +127,16 @@ void Server::signalHandler(int signum)
     }
 }
 
-// ":<source> <command/REPL> <parameters> <crlf>"
-void Server::sendWelcome(int clientFD)
+// Send welcome messages to new client
+void Server::sendWelcome(int clientFd)
 {
-    // 001 RPL_WELCOME
-    std::stringstream welcome;
-    welcome << ":" << SERVER_NAME << " 001 " << clientFD << " :Welcome to " << NETWORK_NAME << " Network, " << clientFD
-            << "\r\n";
-    send(clientFD, welcome.str().c_str(), welcome.str().size(), 0);
-    // 002 RPL_YOURHOST
-    std::stringstream yourHost;
-    yourHost << ":" << SERVER_NAME << " 002 " << clientFD << " :Your host is " << SERVER_NAME << ", running version "
-             << SERVER_VERSION << "\r\n";
-    send(clientFD, yourHost.str().c_str(), yourHost.str().size(), 0);
-    // 003 RPL_CREATED
-    std::stringstream created;
-    created << ":" << SERVER_NAME << " 003 " << clientFD << " :This server was created " << createdTime << "\r\n";
-    send(clientFD, created.str().c_str(), created.str().size(), 0);
-    // 004 RPL_MYINFO
-    std::stringstream myInfo;
-    myInfo << ":" << SERVER_NAME << " 004 " << clientFD << " " << SERVER_NAME << " " << SERVER_VERSION << " "
-           << USER_MODES << " " << CHANNEL_MODES << "\r\n";
-    send(clientFD, myInfo.str().c_str(), myInfo.str().size(), 0);
+    std::string nickname = getClients().getByFd(clientFd).getNickname();
+    // Send the welcome messages
+    sendToClient(clientFd, RPL_WELCOME(nickname));
+    sendToClient(clientFd, RPL_YOURHOST(nickname));
+    sendToClient(clientFd, RPL_CREATED(nickname, _createdTime));
+    sendToClient(clientFd, RPL_MYINFO(nickname));
+    // still need to include the RPL_ISUPPORT(005) messages based on server
 }
 
 void Server::shutdown()
