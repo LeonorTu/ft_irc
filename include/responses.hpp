@@ -43,23 +43,23 @@ inline void sendToClient(int fd, std::string msg)
 }
 
 /* WELCOME MESSAGES (001-004) */
-inline std::string RPL_WELCOME(std::string &nickname)
+inline std::string RPL_WELCOME(const std::string &nickname)
 {
     return ":" + SERVER_NAME + " 001 " + nickname + " :Welcome to " + NETWORK_NAME + " Network, " + nickname;
 }
 
-inline std::string RPL_YOURHOST(std::string &nickname)
+inline std::string RPL_YOURHOST(const std::string &nickname)
 {
     return ":" + SERVER_NAME + " 002 " + nickname + " :Your host is " + SERVER_NAME + ", running version " +
            SERVER_VERSION;
 }
 
-inline std::string RPL_CREATED(std::string &nickname, const std::string &createdTime)
+inline std::string RPL_CREATED(const std::string &nickname, const std::string &createdTime)
 {
     return ":" + SERVER_NAME + " 003 " + nickname + " :This server was created " + createdTime;
 }
 
-inline std::string RPL_MYINFO(std::string &nickname)
+inline std::string RPL_MYINFO(const std::string &nickname)
 {
     return ":" + SERVER_NAME + " 004 " + nickname + " " + SERVER_NAME + " " + SERVER_VERSION + " " + USER_MODES + " " +
            CHANNEL_MODES;

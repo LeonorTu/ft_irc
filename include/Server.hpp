@@ -44,7 +44,7 @@ private:
     static void signalHandler(int signum);
 
     // server info
-    std::string _createdTime;
+    const std::string _createdTime;
 
     volatile sig_atomic_t _running;
     volatile sig_atomic_t _paused;

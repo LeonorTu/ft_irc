@@ -15,10 +15,8 @@ Server::Server()
     , _socketManager(std::make_unique<SocketManager>(SERVER_PORT))
     , _eventLoop(std::make_unique<EventLoop>())
     , _connectionManager(std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop, *_clients))
+    , _createdTime(getCurrentTime())
 {
-    // get current time for server start time
-    _createdTime = getCurrentTime();
-
     // setup signalshandlers
     setInstance(this);
     signal(SIGINT, signalHandler);  // Handle Ctrl+C
