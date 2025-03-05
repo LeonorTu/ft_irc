@@ -6,11 +6,11 @@
 #include <ConnectionManager.hpp>
 #include <responses.hpp>
 
-Server *Server::instance = nullptr;
+Server *Server::_instance = nullptr;
 
 Server::Server()
-    : serverFD(-1)
-    , paused(false)
+    : _serverFD(-1)
+    , _paused(false)
     , _clients(std::make_unique<ClientIndex>())
     , _socketManager(std::make_unique<SocketManager>(SERVER_PORT))
     , _eventLoop(std::make_unique<EventLoop>())
@@ -34,18 +34,18 @@ Server::~Server()
 
 void Server::start()
 {
-    serverFD = getSocketManager().initialize();
-    getEventLoop().addToWatch(serverFD, EPOLLIN | EPOLLET);
-    running = true;
+    _serverFD = getSocketManager().initialize();
+    getEventLoop().addToWatch(_serverFD, EPOLLIN | EPOLLET);
+    _running = true;
     loop();
 }
 
 void Server::loop()
 {
-    while (running) {
+    while (_running) {
         std::vector<Event> events = getEventLoop().waitForEvents(100);
         for (const Event &event : events) {
-            if (event.fd == serverFD) {
+            if (event.fd == _serverFD) {
                 int clientFd = getConnectionManager().handleNewClient();
                 sendWelcome(clientFd);
             }
@@ -53,9 +53,9 @@ void Server::loop()
                 getConnectionManager().recieveData(event.fd);
             }
         }
-        if (paused) {
+        if (_paused) {
             std::cout << "Server paused. Waiting for SIGTSTP to resume..." << std::endl;
-            while (paused && running) {
+            while (_paused && _running) {
                 sleep(1);
             }
             std::cout << "Server resumed!" << std::endl;
@@ -65,12 +65,12 @@ void Server::loop()
 
 const int Server::getServerFD() const
 {
-    return this->serverFD;
+    return this->_serverFD;
 }
 
 const bool Server::getIsPaused() const
 {
-    return this->paused;
+    return this->_paused;
 }
 
 ClientIndex &Server::getClients()
@@ -95,37 +95,37 @@ ConnectionManager &Server::getConnectionManager()
 
 void Server::setInstance(Server *server)
 {
-    instance = server;
+    _instance = server;
 }
 
 void Server::pause()
 {
-    paused = true;
+    _paused = true;
     std::cout << "Server pausing..." << std::endl;
 }
 
 void Server::resume()
 {
-    paused = false;
+    _paused = false;
     std::cout << "Server resuming..." << std::endl;
 }
 
 void Server::signalHandler(int signum)
 {
-    if (instance) {
+    if (_instance) {
         if (signum == SIGTSTP) {
-            if (instance->paused) {
-                instance->paused = false;
+            if (_instance->_paused) {
+                _instance->_paused = false;
                 std::cout << "Server resuming..." << std::endl;
             }
             else {
-                instance->paused = true;
+                _instance->_paused = true;
                 std::cout << "Server pausing..." << std::endl;
             }
         }
         else {
             std::cout << "\nCaught signal " << signum << std::endl;
-            instance->running = false;
+            _instance->_running = false;
         }
     }
 }
@@ -144,7 +144,7 @@ void Server::sendWelcome(int clientFd)
 
 void Server::shutdown()
 {
-    running = false;
+    _running = false;
     _connectionManager->disconnectAllClients();
     _socketManager->closeServerSocket();
     std::cout << "Server shutdown complete" << std::endl;

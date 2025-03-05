@@ -36,7 +36,7 @@ public:
     void resume();
 
 private:
-    static Server *instance;
+    static Server *_instance;
     std::unique_ptr<ClientIndex> _clients;
     std::unique_ptr<SocketManager> _socketManager;
     std::unique_ptr<EventLoop> _eventLoop;
@@ -46,9 +46,9 @@ private:
     // server info
     std::string _createdTime;
 
-    volatile sig_atomic_t running;
-    volatile sig_atomic_t paused;
-    int serverFD;
+    volatile sig_atomic_t _running;
+    volatile sig_atomic_t _paused;
+    int _serverFD;
 
     void sendWelcome(int clientFd);
 };

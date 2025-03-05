@@ -31,17 +31,17 @@ public:
     bool isEmpty() const;
 
 private:
-    std::string channelName;
-    std::string topic;
-    std::string topicAuthor;
-    std::string topicTime;
-    std::unordered_map<std::string, Client *> connectedClients;
-    std::unordered_map<std::string, Client *> ops;
-    std::unordered_map<std::string, Client *> invites;
+    std::string _channelName;
+    std::string _topic;
+    std::string _topicAuthor;
+    std::string _topicTime;
+    std::unordered_map<std::string, Client *> _connectedClients;
+    std::unordered_map<std::string, Client *> _ops;
+    std::unordered_map<std::string, Client *> _invites;
     // itkl
-    std::string modes;
-    std::string key;
-    int userLimit;
+    std::string _modes;
+    std::string _key;
+    int _userLimit;
 
     void broadcastMessage(const std::string &message);
     void enableMode(ChannelMode mode);
