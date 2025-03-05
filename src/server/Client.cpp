@@ -1,13 +1,12 @@
 #include <Client.hpp>
-#include <channel.hpp>
+#include <Channel.hpp>
 
-Client::Client(int fd, std::string &ip)
+Client::Client(int fd)
     : fd(fd)
     , nickname("*")
-    , ip(ip)
+    , ip("")
     , isRegistered(false)
-{
-}
+{}
 
 Client::~Client()
 {
@@ -34,6 +33,11 @@ void Client::setNickname(const std::string &newNickname)
     nickname = newNickname;
 }
 
+void Client::setIp(const std::string &ip)
+{
+    this->ip = ip;
+}
+
 void Client::registerUser()
 {
     isRegistered = true;
@@ -42,6 +46,16 @@ void Client::registerUser()
 const bool Client::getIsRegistered() const
 {
     return isRegistered;
+}
+
+std::string &Client::getMessageBuf()
+{
+    return _messageBuf;
+}
+
+void Client::setIsRegistered(bool registered)
+{
+    this->isRegistered = registered;
 }
 
 void Client::untrackChannel(Channel *channel)

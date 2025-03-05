@@ -1,0 +1,50 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+
+		// {
+		// 	"type": "by-gdb",
+		// 	"request": "launch",
+		// 	"name": "(ctest) Launch1",
+		// 	"program": "${cmake.testProgram}",
+		// 	"debuggerArgs": [ "${cmake.testArgs}" ],
+		// 	"cwd": "${cmake.testWorkingDirectory}",
+		// 	"stopAtEntry": false,
+		// 	"commandsBeforeExec": [
+		// 		"enable-pretty-printing"
+		// 	]
+		// },
+		{
+            "type": "cppdbg",
+            "request": "launch",
+            "name": "(ctest) Launch",
+            "program": "${cmake.testProgram}",
+            "args": ["${cmake.testArgs}"],
+            "cwd": "${cmake.testWorkingDirectory}",
+            "stopAtEntry": false,
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Load STL pretty printers",
+                    "text": "python import sys;sys.path.insert(0, '/usr/share/gcc/python');from libstdcxx.v6.printers import register_libstdcxx_printers;register_libstdcxx_printers(None)",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Print Settings",
+                    "text": "set print object on\nset print static-members off\nset print vtbl off\nset print demangle on\nset demangle-style gnu-v3\nset print elements unlimited\nset print array-indexes on",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+	]
+}

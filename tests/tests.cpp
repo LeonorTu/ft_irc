@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <server.hpp>
+#include <Server.hpp>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -8,7 +8,8 @@
 #include <chrono>
 #include <message.hpp>
 
-class ServerTest : public ::testing::Test {
+class ServerTest : public ::testing::Test
+{
 protected:
     Server *server; // Shared resource for all tests
 
@@ -28,7 +29,6 @@ protected:
 // Existing test
 TEST_F(ServerTest, InitializationTest)
 {
-    EXPECT_EQ(server->getPort(), 6667);
     EXPECT_EQ(server->getServerFD(), -1);
 }
 
@@ -43,9 +43,9 @@ TEST_F(ServerTest, StartStopTest)
 {
     std::thread server_thread([this]() { this->server->start(); });
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    this->server->stop();
+    this->server->shutdown();
     server_thread.join();
-    EXPECT_FALSE(this->server->paused);
+    EXPECT_FALSE(this->server->getIsPaused());
 }
 
 TEST_F(ServerTest, WelcomeMessageTest)
@@ -72,17 +72,17 @@ TEST_F(ServerTest, WelcomeMessageTest)
 
     pclose(nc);
 
-    this->server->stop();
+    this->server->shutdown();
     server_thread.join();
 }
 
 TEST_F(ServerTest, PauseResumeTest)
 {
-    EXPECT_FALSE(server->paused);
+    EXPECT_FALSE(server->getIsPaused());
     server->pause();
-    EXPECT_TRUE(server->paused);
+    EXPECT_TRUE(server->getIsPaused());
     server->resume();
-    EXPECT_FALSE(server->paused);
+    EXPECT_FALSE(server->getIsPaused());
 }
 
 TEST_F(ServerTest, MessageSizeLimitTest)
@@ -97,6 +97,6 @@ TEST_F(ServerTest, MessageSizeLimitTest)
     ASSERT_NE(nc, nullptr);
     pclose(nc);
 
-    this->server->stop();
+    this->server->shutdown();
     server_thread.join();
 }

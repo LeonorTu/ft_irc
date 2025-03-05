@@ -2,19 +2,70 @@
 
 #include <string>
 #include <sys/socket.h>
+#include <iostream>
+#include <chrono>
+#include <ctime>
+#include <sstream>
+#include <common.hpp>
 
+// Time utilities
+inline std::string getCurrentTime()
+{
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
+    char buffer[80];
+    std::strftime(buffer, sizeof(buffer), "%a %d %b %H:%M:%S %Y", std::localtime(&now_time_t));
+    return std::string(buffer);
+}
+
+inline std::string getLogTimestamp()
+{
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
+    char buffer[80];
+    std::strftime(buffer, sizeof(buffer), "[%Y-%d-%m %H:%M:%S]", std::localtime(&now_time_t));
+    return std::string(buffer);
+}
+
+// Logging function
+inline void logMessage(int fd, const std::string &msg, bool outgoing = true)
+{
+    std::string direction = outgoing ? "to" : "from";
+    std::cout << getLogTimestamp() << " " << direction << " " << fd << ": " << msg << std::endl;
+}
+
+// Client communication
 inline void sendToClient(int fd, std::string msg)
 {
     msg.append("\r\n");
     send(fd, msg.c_str(), msg.length(), 0);
-    std::cout << "to " << fd << ": " << msg;
+    logMessage(fd, msg);
 }
 
-inline std::string ERR_NONICKNAMEGIVEN(const std::string &client)
+/* WELCOME MESSAGES (001-004) */
+inline std::string RPL_WELCOME(const std::string &nickname)
 {
-    return "431 " + client + " :No nickname given";
+    return ":" + SERVER_NAME + " 001 " + nickname + " :Welcome to " + NETWORK_NAME + " Network, " + nickname;
 }
 
+inline std::string RPL_YOURHOST(const std::string &nickname)
+{
+    return ":" + SERVER_NAME + " 002 " + nickname + " :Your host is " + SERVER_NAME + ", running version " +
+           SERVER_VERSION;
+}
+
+inline std::string RPL_CREATED(const std::string &nickname, const std::string &createdTime)
+{
+    return ":" + SERVER_NAME + " 003 " + nickname + " :This server was created " + createdTime;
+}
+
+inline std::string RPL_MYINFO(const std::string &nickname)
+{
+    return ":" + SERVER_NAME + " 004 " + nickname + " " + SERVER_NAME + " " + SERVER_VERSION + " " + USER_MODES + " " +
+           CHANNEL_MODES;
+}
+
+/* COMMAND RESPONSES */
 inline std::string JOIN(const std::string &sourceNick, const std::string &channel)
 {
     return ":" + sourceNick + " JOIN " + channel;
@@ -41,9 +92,42 @@ inline std::string MODE(const std::string &sourceNick, const std::string &tar, c
     return ":" + sourceNick + " MODE " + tar + " " + modeChange + " " + args;
 }
 
-inline std::string ERR_NICKNAMEINUSE(const std::string &client, const std::string &nickname)
+inline std::string NICKNAMECHANGE(const std::string &old_nickname, const std::string &new_nickname)
 {
-    return "433 " + client + " " + nickname + " :Nickname is already in use";
+    return old_nickname + " changed their nickname to " + new_nickname;
+}
+
+/* INFORMATIONAL RESPONSES (RPL_*) */
+inline std::string RPL_NOTOPIC(const std::string &client, const std::string &channel)
+{
+    return "331 " + client + " " + channel + " :No topic is set";
+}
+
+inline std::string RPL_TOPIC(const std::string &client, const std::string &channel, const std::string &topic)
+{
+    return "332 " + client + " " + channel + " :" + topic;
+}
+
+inline std::string RPL_TOPICWHOTIME(const std::string &client, const std::string &channel, const std::string &who,
+                                    const std::string &time)
+{
+    return "333 " + client + " " + channel + " " + who + " " + time;
+}
+
+inline std::string RPL_NAMREPLY(const std::string &client, const std::string &channel, const std::string &names)
+{
+    return "353 " + client + " = " + channel + " :" + names;
+}
+
+inline std::string RPL_ENDOFNAMES(const std::string &client, const std::string &channel)
+{
+    return "366 " + client + " " + channel + " :End of /NAMES list";
+}
+
+/* ERROR RESPONSES */
+inline std::string ERR_NONICKNAMEGIVEN(const std::string &client)
+{
+    return "431 " + client + " :No nickname given";
 }
 
 inline std::string ERR_ERRONEUSNICKNAME(const std::string &client, const std::string &nickname)
@@ -51,15 +135,16 @@ inline std::string ERR_ERRONEUSNICKNAME(const std::string &client, const std::st
     return "432 " + client + " " + nickname + " :Erroneus nickname";
 }
 
-inline std::string NICKNAMECHANGE(const std::string &old_nickname, const std::string &new_nickname)
+inline std::string ERR_NICKNAMEINUSE(const std::string &client, const std::string &nickname)
 {
-    return old_nickname + " changed their nickname to " + new_nickname;
+    return "433 " + client + " " + nickname + " :Nickname is already in use";
 }
 
 inline std::string ERR_NOTONCHANNEL(const std::string &client, const std::string &channel)
 {
     return "442 " + client + " " + channel + " :You're not on that channel";
 }
+
 inline std::string ERR_NEEDMOREPARAMS(const std::string &client, const std::string &command)
 {
     return "461 " + client + " " + command + " :Not enough parameters";
@@ -84,33 +169,8 @@ inline std::string ERR_INVITEONLYCHAN(const std::string &client, const std::stri
 {
     return "473 " + client + " " + channel + " :Cannot join channel (+i) - invite only";
 }
+
 inline std::string ERR_CHANOPRIVSNEEDED(const std::string &client, const std::string &channel)
 {
     return "482 " + client + " " + channel + " :You're not channel operator";
-}
-
-// Topic replies
-inline std::string RPL_NOTOPIC(const std::string &client, const std::string &channel)
-{
-    return "331 " + client + " " + channel + " :No topic is set";
-}
-inline std::string RPL_TOPIC(const std::string &client, const std::string &channel, const std::string &topic)
-{
-    return "332 " + client + " " + channel + " :" + topic;
-}
-
-inline std::string RPL_TOPICWHOTIME(const std::string &client, const std::string &channel, const std::string &who,
-                                    const std::string &time)
-{
-    return "333 " + client + " " + channel + " " + who + " " + time;
-}
-
-inline std::string RPL_NAMREPLY(const std::string &client, const std::string &channel, const std::string &names)
-{
-    return "353 " + client + " = " + channel + " :" + names;
-}
-
-inline std::string RPL_ENDOFNAMES(const std::string &client, const std::string &channel)
-{
-    return "366 " + client + " " + channel + " :End of /NAMES list";
 }

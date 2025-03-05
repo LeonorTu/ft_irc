@@ -3,70 +3,85 @@
 
 ClientIndex::~ClientIndex()
 {
-    byFd.clear();
-    byNick.clear();
+    _byNick.clear();
+    _byFd.clear();
     std::cout << "clientIndex cleared" << std::endl;
 }
 
-void ClientIndex::add(Client *client)
+void ClientIndex::add(int clientFd)
 {
-    if (!client)
-        return;
-
-    byFd[client->getFd()] = client;
-    byNick[client->getNickname()] = client;
+    if (_byFd.find(clientFd) == _byFd.end()) {
+        auto inserted = _byFd.emplace(clientFd, std::make_unique<Client>(clientFd));
+        bool successful = inserted.second;
+        if (successful) {
+            // what a fun way to get the inserted unique_ptr's pointer
+            Client *client = inserted.first->second.get();
+            // Client *client = _byFd[clientFd].get();
+            if (client->getIsRegistered())
+                _byNick[client->getNickname()] = client;
+        }
+    }
 }
 
-void ClientIndex::remove(Client *client)
+void ClientIndex::remove(Client &client)
 {
-    if (!client)
-        return;
-
-    byFd.erase(client->getFd());
-    byNick.erase(client->getNickname());
+    _byNick.erase(client.getNickname());
+    _byFd.erase(client.getFd());
 }
 
 void ClientIndex::updateNick(const std::string &oldNick, const std::string &newNick)
 {
-    auto it = byNick.find(oldNick);
-    if (it == byNick.end())
+    auto it = _byNick.find(oldNick);
+    if (it == _byNick.end())
         return;
 
     Client *client = it->second;
-    byNick.erase(oldNick);
-    byNick[newNick] = client;
+    _byNick.erase(oldNick);
+    _byNick.insert_or_assign(newNick, client);
 }
 
-void ClientIndex::addUnregistered(Client *client)
+Client &ClientIndex::getByFd(int fd) const
 {
-    if (!client)
-        return;
-    byFd[client->getFd()] = client;
+    auto it = _byFd.find(fd);
+    if (it == _byFd.end()) {
+        throw std::out_of_range("Client with fd " + std::to_string(fd) + " not found");
+    }
+    return *it->second;
 }
 
-Client *ClientIndex::getByFd(int fd) const
+Client &ClientIndex::getByNick(const std::string &nick) const
 {
-    auto it = byFd.find(fd);
-    return (it != byFd.end()) ? it->second : nullptr;
+    auto it = _byNick.find(nick);
+    if (it == _byNick.end()) {
+        throw std::out_of_range("Client with nick " + nick + " not found");
+    }
+    return *it->second;
 }
 
-Client *ClientIndex::getByNick(const std::string &nick) const
+void ClientIndex::forEachClient(std::function<void(Client &)> callback)
 {
-    auto it = byNick.find(nick);
-    return (it != byNick.end()) ? it->second : nullptr;
-}
+    // Copy all file descriptors first
+    std::vector<int> fds;
+    for (const auto &[fd, _] : _byFd) {
+        fds.push_back(fd);
+    }
 
-std::unordered_map<int, Client *> &ClientIndex::getClientsForCleanup()
-{
-    return byFd;
+    // Then iterate through the copy
+    for (int fd : fds) {
+        // std::unordered_map<int, std::unique_ptr<Client>>::iterator it = _byFd.find(fd);
+        auto it = _byFd.find(fd);
+        if (it != _byFd.end()) {
+            callback(*it->second);
+        }
+    }
 }
 
 bool ClientIndex::nickExists(const std::string &nick) const
 {
-    return byNick.find(nick) != byNick.end();
+    return _byNick.find(nick) != _byNick.end();
 }
 
 size_t ClientIndex::size() const
 {
-    return byFd.size();
+    return _byFd.size();
 }
