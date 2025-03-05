@@ -2,15 +2,15 @@
 #include <Client.hpp>
 #include <responses.hpp>
 
-Channel::Channel(const std::string &name, Client *creator)
+Channel::Channel(const std::string &name, Client &creator)
     : _channelName(name)
     , _modes("")
     , _key("")
     , _userLimit(0)
     , _topic("")
 {
-    _ops.insert_or_assign(creator->getNickname(), creator);
-    setMode(creator, true, ChannelMode::OP, creator->getNickname());
+    _ops.insert_or_assign(creator.getNickname(), &creator);
+    setMode(creator, true, ChannelMode::OP, creator.getNickname());
     join(creator);
 }
 
@@ -21,17 +21,15 @@ Channel::~Channel()
     }
 }
 
-void Channel::join(Client *client, const std::string &key)
+void Channel::join(Client &client, const std::string &key)
 {
-    if (!client)
-        return;
     if (!isJoinable(client, key))
         return;
-    std::string nick = client->getNickname();
+    std::string nick = client.getNickname();
     std::string joinMessage = JOIN(nick, _channelName);
 
-    _connectedClients.insert_or_assign(nick, client);
-    client->trackChannel(this);
+    _connectedClients.insert_or_assign(nick, &client);
+    client.trackChannel(this);
     removeFromInvites(client);
 
     // required server reply on join success
@@ -40,64 +38,56 @@ void Channel::join(Client *client, const std::string &key)
     sendNameReply(client);
 }
 
-void Channel::part(Client *client, const std::string &reason)
+void Channel::part(Client &client, const std::string &reason)
 {
-    if (!client)
-        return;
     if (!isOnChannel(client)) {
-        sendToClient(client->getFd(), ERR_NOTONCHANNEL(client->getNickname(), _channelName));
+        sendToClient(client.getFd(), ERR_NOTONCHANNEL(client.getNickname(), _channelName));
         return;
     }
-    std::string nick = client->getNickname();
+    std::string nick = client.getNickname();
     std::string partMessage = PART(nick, _channelName, reason);
 
     broadcastMessage(partMessage);
     _connectedClients.erase(nick);
     removeOp(nick);
-    client->untrackChannel(this);
+    client.untrackChannel(this);
 }
 
-void Channel::quit(Client *client, const std::string &reason)
+void Channel::quit(Client &client, const std::string &reason)
 {
-    if (!client)
-        return;
     if (!isOnChannel(client))
         return;
-    std::string nick = client->getNickname();
-    std::string quitMessage = QUIT(client->getNickname(), reason);
+    std::string nick = client.getNickname();
+    std::string quitMessage = QUIT(client.getNickname(), reason);
 
     _connectedClients.erase(nick);
     removeOp(nick);
-    client->untrackChannel(this);
+    client.untrackChannel(this);
     broadcastMessage(quitMessage);
 }
 
-void Channel::changeTopic(Client *client, std::string &newTopic)
+void Channel::changeTopic(Client &client, std::string &newTopic)
 {
-    if (!client)
-        return;
     if (!isOnChannel(client)) {
-        sendToClient(client->getFd(), ERR_NOTONCHANNEL(client->getNickname(), _channelName));
+        sendToClient(client.getFd(), ERR_NOTONCHANNEL(client.getNickname(), _channelName));
         return;
     }
     if (hasMode(ChannelMode::PROTECTED_TOPIC) && !hasOp(client)) {
-        sendToClient(client->getFd(), ERR_CHANOPRIVSNEEDED(client->getNickname(), _channelName));
+        sendToClient(client.getFd(), ERR_CHANOPRIVSNEEDED(client.getNickname(), _channelName));
         return;
     }
     _topic = newTopic;
-    _topicAuthor = client->getNickname();
+    _topicAuthor = client.getNickname();
     _topicTime = std::to_string(time(0));
     for (auto &[_, client] : _connectedClients) {
-        sendTopic(client);
+        sendTopic(*client);
     }
 }
 
-void Channel::checkTopic(Client *client)
+void Channel::checkTopic(Client &client)
 {
-    if (!client)
-        return;
     if (!isOnChannel(client)) {
-        sendToClient(client->getFd(), ERR_NOTONCHANNEL(client->getNickname(), _channelName));
+        sendToClient(client.getFd(), ERR_NOTONCHANNEL(client.getNickname(), _channelName));
         return;
     }
     sendTopic(client);
@@ -118,12 +108,10 @@ bool Channel::hasMode(const char mode) const
     return hasMode(static_cast<ChannelMode>(mode));
 }
 
-void Channel::setMode(Client *client, bool enable, ChannelMode mode, std::string param)
+void Channel::setMode(Client &client, bool enable, ChannelMode mode, std::string param)
 {
-    if (!client)
-        return;
     if (!hasOp(client)) {
-        sendToClient(client->getFd(), ERR_CHANOPRIVSNEEDED(client->getNickname(), _channelName));
+        sendToClient(client.getFd(), ERR_CHANOPRIVSNEEDED(client.getNickname(), _channelName));
         return;
     }
     // For basic modes (i, t), keep the check
@@ -139,7 +127,7 @@ void Channel::setMode(Client *client, bool enable, ChannelMode mode, std::string
 
     std::string operation = enable ? "+" : "-";
     std::string modeStr = operation + static_cast<char>(mode);
-    std::string modeMsg = MODE(client->getNickname(), _channelName, modeStr, param);
+    std::string modeMsg = MODE(client.getNickname(), _channelName, modeStr, param);
 
     if (enable) {
         enableMode(mode);
@@ -202,83 +190,73 @@ void Channel::disableMode(ChannelMode mode)
     _modes.erase(index, 1);
 }
 
-std::string Channel::prefixNick(Client *client)
+std::string Channel::prefixNick(Client &client)
 {
-    std::string nick = client->getNickname();
+    std::string nick = client.getNickname();
     if (hasOp(client))
         return "@" + nick;
     return nick;
 }
 
-void Channel::sendNameReply(Client *client)
+void Channel::sendNameReply(Client &client)
 {
-    if (!client)
-        return;
     std::string nameReply;
     std::string nextNick;
 
     for (auto &[_, memberClient] : _connectedClients) {
-        nextNick = prefixNick(memberClient);
+        nextNick = prefixNick(*memberClient);
         // + 3 to account for <space>\r\n
         if (nameReply.size() + nextNick.size() + 3 > MSG_BUFFER_SIZE) {
-            sendToClient(client->getFd(), nameReply);
+            sendToClient(client.getFd(), nameReply);
             nameReply.erase();
         }
         if (nameReply.empty()) {
-            nameReply = RPL_NAMREPLY(client->getNickname(), _channelName, nextNick);
+            nameReply = RPL_NAMREPLY(client.getNickname(), _channelName, nextNick);
             continue;
         }
         nameReply.append(" " + nextNick);
     }
-    sendToClient(client->getFd(), nameReply);
-    sendToClient(client->getFd(), RPL_ENDOFNAMES(client->getNickname(), _channelName));
+    sendToClient(client.getFd(), nameReply);
+    sendToClient(client.getFd(), RPL_ENDOFNAMES(client.getNickname(), _channelName));
 }
 
-void Channel::sendTopic(Client *client)
+void Channel::sendTopic(Client &client)
 {
-    if (!client)
-        return;
-    int fd = client->getFd();
+    int fd = client.getFd();
 
     if (_topic.empty()) {
-        sendToClient(fd, RPL_NOTOPIC(client->getNickname(), _channelName));
+        sendToClient(fd, RPL_NOTOPIC(client.getNickname(), _channelName));
     }
     else {
-        sendToClient(fd, RPL_TOPIC(client->getNickname(), _channelName, _topic));
-        sendToClient(fd, RPL_TOPICWHOTIME(client->getNickname(), _channelName, _topicAuthor, _topicTime));
+        sendToClient(fd, RPL_TOPIC(client.getNickname(), _channelName, _topic));
+        sendToClient(fd, RPL_TOPICWHOTIME(client.getNickname(), _channelName, _topicAuthor, _topicTime));
     }
 }
 
-bool Channel::hasOp(Client *client)
+bool Channel::hasOp(Client &client)
 {
-    if (!client)
-        return false;
-    return _ops.find(client->getNickname()) != _ops.end();
+    return _ops.find(client.getNickname()) != _ops.end();
 }
 
-bool Channel::isInvited(Client *client)
+bool Channel::isInvited(Client &client)
 {
-    if (!client)
-        return false;
-    return _invites.find(client->getNickname()) != _invites.end();
+    return _invites.find(client.getNickname()) != _invites.end();
 }
 
-bool Channel::isJoinable(Client *client, std::string key)
+bool Channel::isJoinable(Client &client, std::string key)
 {
-    if (!client)
-        return false;
-    int fd = client->getFd();
+    int fd = client.getFd();
 
     if (hasMode(ChannelMode::INVITE_ONLY) && !isInvited(client)) {
-        sendToClient(fd, ERR_INVITEONLYCHAN(client->getNickname(), _channelName));
+        sendToClient(fd, ERR_INVITEONLYCHAN(client.getNickname(), _channelName));
         return false;
     }
     if (hasMode(ChannelMode::KEY) && key != this->_key) {
-        sendToClient(fd, ERR_BADCHANNELKEY(client->getNickname(), _channelName));
+        sendToClient(fd, ERR_BADCHANNELKEY(client.getNickname(), _channelName));
         return false;
     }
     if (hasMode(ChannelMode::LIMIT) && _connectedClients.size() >= _userLimit) {
-        sendToClient(fd, ERR_CHANNELISFULL(client->getNickname(), _channelName));
+        sendToClient(fd, ERR_CHANNELISFULL(client.getNickname(), _channelName));
         return false;
     }
     if (isOnChannel(client)) {
@@ -287,25 +265,21 @@ bool Channel::isJoinable(Client *client, std::string key)
     return true;
 }
 
-bool Channel::isOnChannel(Client *client)
+bool Channel::isOnChannel(Client &client)
 {
-    if (!client)
-        return false;
-    return _connectedClients.find(client->getNickname()) != _connectedClients.end();
+    return _connectedClients.find(client.getNickname()) != _connectedClients.end();
 }
 
-void Channel::removeFromInvites(Client *client)
+void Channel::removeFromInvites(Client &client)
 {
-    if (!client)
-        return;
-    if (_invites.find(client->getNickname()) != _invites.end())
-        _invites.erase(client->getNickname());
+    if (_invites.find(client.getNickname()) != _invites.end())
+        _invites.erase(client.getNickname());
 }
 
 void Channel::addOp(std::string &nick, const std::string &modeMsg)
 {
     auto it = _connectedClients.find(nick);
-    if (it != _connectedClients.end() && !hasOp(it->second)) {
+    if (it != _connectedClients.end() && !hasOp(*it->second)) {
         _ops.insert_or_assign(nick, it->second);
         broadcastMessage(modeMsg);
     }
