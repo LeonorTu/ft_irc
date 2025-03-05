@@ -48,6 +48,10 @@ void ConnectionManager::recieveData(int clientFd)
         int bytesRead = recv(clientFd, buffer, sizeof(buffer), 0);
 
         if (bytesRead < 0) {
+            if (errno == EPIPE) {
+                std::cerr << "Broken pipe when sending to client " << clientFd << std::endl;
+                return;
+            }
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 // No more data, exit the loop
                 break;

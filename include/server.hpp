@@ -3,8 +3,6 @@
 #include <string>
 #include <iostream>
 #include <cstring>
-#include <sstream>
-#include <chrono>
 #include <csignal>
 #include <memory>
 
@@ -20,11 +18,11 @@ public:
     ~Server();
     void start();
     void loop();
-    void stop();
+    void shutdown();
 
     // getters
     const int getServerFD() const;
-    const int getPort() const;
+    const bool getIsPaused() const;
     SocketManager &getSocketManager();
     EventLoop &getEventLoop();
     ClientIndex &getClients();
@@ -34,7 +32,6 @@ public:
     // setters
     static void setInstance(Server *server);
 
-    bool paused;
     void pause();
     void resume();
 
@@ -49,9 +46,9 @@ private:
     // server info
     std::string _createdTime;
 
-    bool running;
+    volatile sig_atomic_t running;
+    volatile sig_atomic_t paused;
     int serverFD;
 
     void sendWelcome(int clientFd);
-    void shutdown();
 };

@@ -60,8 +60,19 @@ Client &ClientIndex::getByNick(const std::string &nick) const
 
 void ClientIndex::forEachClient(std::function<void(Client &)> callback)
 {
-    for (auto &[_, clientPtr] : _byFd) {
-        callback(*clientPtr);
+    // Copy all file descriptors first
+    std::vector<int> fds;
+    for (const auto &[fd, _] : _byFd) {
+        fds.push_back(fd);
+    }
+
+    // Then iterate through the copy
+    for (int fd : fds) {
+        // std::unordered_map<int, std::unique_ptr<Client>>::iterator it = _byFd.find(fd);
+        auto it = _byFd.find(fd);
+        if (it != _byFd.end()) {
+            callback(*it->second);
+        }
     }
 }
 

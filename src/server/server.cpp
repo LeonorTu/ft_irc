@@ -63,14 +63,14 @@ void Server::loop()
     }
 }
 
-void Server::stop()
-{
-    running = false;
-}
-
 const int Server::getServerFD() const
 {
     return this->serverFD;
+}
+
+const bool Server::getIsPaused() const
+{
+    return this->paused;
 }
 
 ClientIndex &Server::getClients()
@@ -115,14 +115,17 @@ void Server::signalHandler(int signum)
     if (instance) {
         if (signum == SIGTSTP) {
             if (instance->paused) {
-                instance->resume();
+                instance->paused = false;
+                std::cout << "Server resuming..." << std::endl;
             }
-            else
-                instance->pause();
+            else {
+                instance->paused = true;
+                std::cout << "Server pausing..." << std::endl;
+            }
         }
         else {
             std::cout << "\nCaught signal " << signum << std::endl;
-            instance->stop();
+            instance->running = false;
         }
     }
 }
