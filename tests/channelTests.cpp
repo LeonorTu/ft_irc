@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <channel.hpp>
+#include <Channel.hpp>
 #include <Client.hpp>
 #include <string>
 

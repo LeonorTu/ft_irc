@@ -1,5 +1,5 @@
 #include <iostream>
-#include <server.hpp>
+#include <Server.hpp>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>

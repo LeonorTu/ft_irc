@@ -1,5 +1,5 @@
 #include <Client.hpp>
-#include <channel.hpp>
+#include <Channel.hpp>
 
 Client::Client(int fd)
     : fd(fd)

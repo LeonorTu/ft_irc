@@ -1,4 +1,4 @@
-#include <channel.hpp>
+#include <Channel.hpp>
 #include <Client.hpp>
 #include <responses.hpp>
 
