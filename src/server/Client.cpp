@@ -13,7 +13,7 @@ Client::~Client()
     std::cout << "Client destructor called" << std::endl;
 }
 
-const int &Client::getFd() const
+const int Client::getFd() const
 {
     return this->fd;
 }

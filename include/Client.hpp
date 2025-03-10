@@ -13,7 +13,7 @@ public:
     ~Client();
 
     // getters
-    const int &getFd() const;
+    const int getFd() const;
     const std::string &getNickname() const;
     const std::string &getIP() const;
     void setNickname(const std::string &newNickname);
