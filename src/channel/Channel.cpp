@@ -251,7 +251,7 @@ bool Channel::isJoinable(Client &client, std::string key)
         sendToClient(fd, ERR_INVITEONLYCHAN(client.getNickname(), _channelName));
         return false;
     }
-    if (hasMode(ChannelMode::KEY) && key != this->_key) {
+    if (hasMode(ChannelMode::KEY) && key != _key) {
         sendToClient(fd, ERR_BADCHANNELKEY(client.getNickname(), _channelName));
         return false;
     }

@@ -27,10 +27,12 @@ public:
     bool isOnChannel(Channel *channel);
 
 private:
-    int fd;
+    int _fd;
     std::string _messageBuf;
-    std::string nickname;
-    std::string ip;
-    bool isRegistered;
-    std::unordered_map<std::string, Channel *> myChannels;
+    std::string _user;
+    bool _userEnteredCorrectPassword;
+    bool _isRegistered;
+    std::string _nickname;
+    std::string _ip;
+    std::unordered_map<std::string, Channel *> _myChannels;
 };

@@ -42,6 +42,7 @@ private:
     std::unique_ptr<EventLoop> _eventLoop;
     std::unique_ptr<ConnectionManager> _connectionManager;
     static void signalHandler(int signum);
+    const std::string _password;
 
     // server info
     const std::string _createdTime;

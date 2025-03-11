@@ -10,6 +10,7 @@ Server *Server::_instance = nullptr;
 
 Server::Server()
     : _serverFD(-1)
+    , _password("42")
     , _paused(false)
     , _clients(std::make_unique<ClientIndex>())
     , _socketManager(std::make_unique<SocketManager>(SERVER_PORT))
