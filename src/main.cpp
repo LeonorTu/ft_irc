@@ -9,7 +9,7 @@ int main()
 {
     // std::cout << "Hello" << std::endl;
 
-    Server myserver = Server();
+    Server myserver;
 
     myserver.start();
 }

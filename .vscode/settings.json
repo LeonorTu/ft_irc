@@ -70,6 +70,10 @@
 		"thread": "cpp",
 		"cinttypes": "cpp",
 		"typeinfo": "cpp",
-		"variant": "cpp"
+		"variant": "cpp",
+		"strstream": "cpp",
+		"complex": "cpp",
+		"ranges": "cpp",
+		"typeindex": "cpp"
 	}
 }
