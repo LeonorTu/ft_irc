@@ -22,5 +22,5 @@ const int SERVER_PORT = 6667;
 const std::string SERVER_NAME = "localhost";
 const std::string NETWORK_NAME = "J-A-S";
 const std::string SERVER_VERSION = "0210";
-const std::string USER_MODES = "\"\"";
+const std::string USER_MODES = "";
 const std::string CHANNEL_MODES = "itklo";

@@ -133,6 +133,7 @@ void Server::sendWelcome(int clientFd)
     sendToClient(clientFd, RPL_YOURHOST(nickname));
     sendToClient(clientFd, RPL_CREATED(nickname, _createdTime));
     sendToClient(clientFd, RPL_MYINFO(nickname));
+    sendToClient(clientFd, RPL_ISUPPORT(nickname));
     /*
     still need to include the RPL_ISUPPORT(005) messages based on server
     I guess we could have all these in the common.hpp files ince its like a settings file.

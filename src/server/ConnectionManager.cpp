@@ -78,11 +78,14 @@ void ConnectionManager::recieveData(int clientFd)
 void ConnectionManager::extractFullMessages(Client &client, std::string &messageBuffer)
 {
     size_t pos;
-    while ((pos = messageBuffer.find("\r\n")) != std::string::npos) {
-        // completed message is already without \r\n
-        std::string completedMessage = messageBuffer.substr(0, pos);
-        messageBuffer.erase(0, pos + 2);
-        // call commandhandler, executer or whatever
+    while ((pos = messageBuffer.find("\n")) != std::string::npos) {
+        size_t end = pos;
+        if (end > 0 && messageBuffer[end - 1] == '\r') {
+            end--;
+        }
+        std::string completedMessage = messageBuffer.substr(0, end);
+        messageBuffer.erase(0, pos + 1);
+        // Call the command handler, currently just printing out the log message.
         logMessage(client.getFd(), completedMessage, false);
     }
     handleOversized(client, messageBuffer);
