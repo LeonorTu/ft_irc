@@ -29,8 +29,6 @@ public:
     ConnectionManager &getConnectionManager();
 
     // ChannelManager* getChannelManager();
-    // setters
-    static void setInstance(Server *server);
 
     void pause();
     void resume();
