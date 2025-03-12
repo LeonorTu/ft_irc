@@ -21,6 +21,7 @@ public:
     void shutdown();
 
     // getters
+    static Server &getInstance();
     const int getServerFD() const;
     const bool getIsPaused() const;
     SocketManager &getSocketManager();

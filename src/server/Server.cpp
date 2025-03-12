@@ -62,6 +62,11 @@ void Server::loop()
     }
 }
 
+Server &Server::getInstance()
+{
+    return *_instance;
+}
+
 const int Server::getServerFD() const
 {
     return this->_serverFD;
