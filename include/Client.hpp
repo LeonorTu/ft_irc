@@ -22,6 +22,7 @@ public:
     const bool getIsRegistered() const;
     std::string &getMessageBuf();
     void setIsRegistered(bool registered);
+    void setPasswordVerified(bool verified);
     void untrackChannel(Channel *channel);
     void trackChannel(Channel *channel);
     bool isOnChannel(Channel *channel);
@@ -30,7 +31,7 @@ private:
     int _fd;
     std::string _messageBuf;
     std::string _user;
-    bool _userEnteredCorrectPassword;
+    bool _passwordVerified;
     bool _isRegistered;
     std::string _nickname;
     std::string _ip;

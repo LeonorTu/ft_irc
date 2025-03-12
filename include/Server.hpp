@@ -27,6 +27,7 @@ public:
     EventLoop &getEventLoop();
     ClientIndex &getClients();
     ConnectionManager &getConnectionManager();
+    const std::string &getPassword();
 
     // ChannelManager* getChannelManager();
     // setters

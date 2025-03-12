@@ -55,20 +55,25 @@ std::string &Client::getMessageBuf()
 
 void Client::setIsRegistered(bool registered)
 {
-    this->_isRegistered = registered;
+    _isRegistered = registered;
+}
+
+void Client::setPasswordVerified(bool verified)
+{
+    _passwordVerified = verified;
 }
 
 void Client::untrackChannel(Channel *channel)
 {
-    this->_myChannels.erase(channel->getName());
+    _myChannels.erase(channel->getName());
 }
 
 void Client::trackChannel(Channel *channel)
 {
-    this->_myChannels[channel->getName()] = channel;
+    _myChannels[channel->getName()] = channel;
 }
 
 bool Client::isOnChannel(Channel *channel)
 {
-    return this->_myChannels.find(channel->getName()) != this->_myChannels.end();
+    return _myChannels.find(channel->getName()) != this->_myChannels.end();
 }
