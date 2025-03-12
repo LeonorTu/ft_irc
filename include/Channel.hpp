@@ -28,6 +28,7 @@ public:
     bool hasMode(ChannelMode mode) const;
     bool hasMode(const char mode) const;
     void setMode(Client &client, bool enable, ChannelMode mode, std::string param = "");
+    void setMode(Client &client, bool enable, const char mode, std::string param = "");
     bool isEmpty() const;
 
 private:

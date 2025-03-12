@@ -3,6 +3,7 @@
 #include <SocketManager.hpp>
 #include <EventLoop.hpp>
 #include <ClientIndex.hpp>
+#include <ChannelManager.hpp>
 #include <ConnectionManager.hpp>
 #include <responses.hpp>
 
@@ -13,9 +14,11 @@ Server::Server()
     , _password("42")
     , _paused(false)
     , _clients(std::make_unique<ClientIndex>())
+    , _channels(std::make_unique<ChannelManager>())
     , _socketManager(std::make_unique<SocketManager>(SERVER_PORT))
     , _eventLoop(std::make_unique<EventLoop>())
-    , _connectionManager(std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop, *_clients))
+    , _connectionManager(
+          std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop, *_clients))
     , _createdTime(getCurrentTime())
 {
     // setup signalshandlers
@@ -80,6 +83,11 @@ const bool Server::getIsPaused() const
 ClientIndex &Server::getClients()
 {
     return *_clients;
+}
+
+ChannelManager &Server::getChannels()
+{
+    return *_channels;
 }
 
 SocketManager &Server::getSocketManager()
