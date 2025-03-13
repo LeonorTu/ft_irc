@@ -18,26 +18,26 @@ void ClientIndex::add(int clientFd)
             Client *client = inserted.first->second.get();
             // Client *client = _byFd[clientFd].get();
             if (client->getIsRegistered())
-                _byNick[client->getNickname()] = client;
+                _byNick[caseMapped(client->getNickname())] = client;
         }
     }
 }
 
 void ClientIndex::remove(Client &client)
 {
-    _byNick.erase(client.getNickname());
+    _byNick.erase(caseMapped(client.getNickname()));
     _byFd.erase(client.getFd());
 }
 
 void ClientIndex::updateNick(const std::string &oldNick, const std::string &newNick)
 {
-    auto it = _byNick.find(oldNick);
+    auto it = _byNick.find(caseMapped(oldNick));
     if (it == _byNick.end())
         return;
 
     Client *client = it->second;
-    _byNick.erase(oldNick);
-    _byNick.insert_or_assign(newNick, client);
+    _byNick.erase(caseMapped(oldNick));
+    _byNick.insert_or_assign(caseMapped(newNick), client);
 }
 
 Client &ClientIndex::getByFd(int fd) const
@@ -51,7 +51,7 @@ Client &ClientIndex::getByFd(int fd) const
 
 Client &ClientIndex::getByNick(const std::string &nick) const
 {
-    auto it = _byNick.find(nick);
+    auto it = _byNick.find(caseMapped(nick));
     if (it == _byNick.end()) {
         throw std::out_of_range("Client with nick " + nick + " not found");
     }
@@ -78,10 +78,19 @@ void ClientIndex::forEachClient(std::function<void(Client &)> callback)
 
 bool ClientIndex::nickExists(const std::string &nick) const
 {
-    return _byNick.find(nick) != _byNick.end();
+    return _byNick.find(caseMapped(nick)) != _byNick.end();
 }
 
 size_t ClientIndex::size() const
 {
     return _byFd.size();
+}
+
+std::string ClientIndex::caseMapped(const std::string &name) const
+{
+    std::string casemapped = name;
+    for (char &c : casemapped) {
+        c = tolower(c);
+    }
+    return casemapped;
 }
