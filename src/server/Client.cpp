@@ -28,10 +28,21 @@ const std::string &Client::getIP() const
     return _ip;
 }
 
+std::string &Client::getUsername()
+{
+    return _username;
+}
+
+void Client::setUsername(const std::string username)
+{
+    _username = username;
+}
+
 void Client::setNickname(const std::string &newNickname)
 {
     _nickname = newNickname;
 }
+
 
 void Client::setIp(const std::string &ip)
 {

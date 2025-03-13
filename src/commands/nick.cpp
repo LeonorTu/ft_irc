@@ -5,19 +5,12 @@
 #include <unordered_map>
 #include <regex>
 #include <ClientIndex.hpp>
+#include <CommandProcessor.hpp>
 
-// can now search for clients getClients() function, that returns a brand new 2am ClientIndex that has special functions
-// to get clients by name and fd
-bool isUsed(Server &server, int clientFd, std::string &nickname)
+// can now search for clients getClients() function, that returns a brand new 2am ClientIndex that
+// has special functions to get clients by name and fd
+bool isUsed(Server &server, const std::string &nickname)
 {
-    // std::unordered_map<int, Client*> &client_list = server.getClients();
-    // std::unordered_map<int, Client*>::iterator client = client_list.begin();
-    // while (client != client_list.end()) {
-    //     if (client->second->getFd() != clientFd && client->second->getNickname() == nickname)
-    //         return (true);
-    //     client++;
-    // }
-    // return (false);
     ClientIndex &clients = server.getClients();
     return clients.nickExists(nickname);
 }
@@ -31,27 +24,30 @@ bool isValidNickname(const std::string &nickname)
     return std::regex_match(nickname, nicknamePattern);
 }
 
-void nick(Server &server, Client &client, message cmd)
+void nick(const CommandProcessor::CommandContext &ctx)
 {
-    std::string nickname = cmd.parameters[0];
-    std::string oldNickname = client.getNickname();
+    Server &server = Server::getInstance();
+    Client &client = server.getClients().getByFd(ctx.clientFd);
+    std::string oldNickname = ctx.oldNickname.empty() ? "*" : ctx.oldNickname;
 
-    if (!client.getIsRegistered()) {
-        client.setNickname(nickname);
-        // server.getClients()->add(client);
+    if (ctx.newNickname.empty()) {
+        sendToClient(ctx.clientFd, ERR_NONICKNAMEGIVEN(oldNickname));
+        return;
     }
-    if (nickname.empty()) {
-        sendToClient(client.getFd(), ERR_NONICKNAMEGIVEN(oldNickname));
+
+    if (!isValidNickname(ctx.newNickname)) {
+        sendToClient(ctx.clientFd, ERR_ERRONEUSNICKNAME(oldNickname, ctx.newNickname));
+        return;
     }
-    else if (!isValidNickname(nickname)) {
-        sendToClient(client.getFd(), ERR_ERRONEUSNICKNAME(oldNickname, nickname));
+
+    if (isUsed(server, ctx.newNickname)) {
+        sendToClient(ctx.clientFd, ERR_NICKNAMEINUSE(oldNickname, ctx.newNickname));
+        return;
     }
-    else if (isUsed(server, client.getFd(), nickname)) {
-        sendToClient(client.getFd(), ERR_NICKNAMEINUSE(oldNickname, nickname));
-    }
-    else {
-        sendToClient(client.getFd(), NICKNAMECHANGE(oldNickname, nickname));
-        client.setNickname(nickname);
-        // server.getClients()->updateNick(nickname);
+
+    client.setNickname(ctx.newNickname);
+    server.getClients().updateNick(oldNickname, ctx.newNickname);
+    if (ctx.oldNickname.empty()) {
+        sendToClient(ctx.clientFd, NICKNAMECHANGE(oldNickname, ctx.newNickname));
     }
 }

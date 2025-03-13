@@ -16,6 +16,8 @@ public:
     const int getFd() const;
     const std::string &getNickname() const;
     const std::string &getIP() const;
+    std::string &getUsername();
+    void setUsername(const std::string username);
     void setNickname(const std::string &newNickname);
     void setIp(const std::string &ip);
     void registerUser();
@@ -30,7 +32,7 @@ public:
 private:
     int _fd;
     std::string _messageBuf;
-    std::string _user;
+    std::string _username;
     bool _passwordVerified;
     bool _isRegistered;
     std::string _nickname;
