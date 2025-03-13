@@ -19,6 +19,8 @@ public:
         std::string sender; // Not sure if we need that separately? might be needed for some commands
 
         // User identifiers
+        int clientFd;
+        std::string password;  // For PASS command
         std::string clientNickname; // For join, part, quit, mode commands
         std::string oldNickname;    // For NICK command
         std::string newNickname;    // For NICK command

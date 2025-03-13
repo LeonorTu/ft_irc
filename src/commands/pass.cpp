@@ -1,22 +1,28 @@
-#include <CommandProcessor>
-#include <Client>
-#include <responses>
+#include <CommandProcessor.hpp>
+#include <Server.hpp>
+#include <Client.hpp>
+#include <responses.hpp>
+#include <ClientIndex.hpp>
 
 void pass(const CommandProcessor::CommandContext &ctx)
 {
-    Client *client;
-    if (client->getIsRegistered()) {
-        sendToClient(client->getFd(), ERR_ALREADYREGISTERED(ctx.sender));
+    Server &server = Server::getInstance();
+    Client &client = server.getClients().getByFd(ctx.clientFd);
+
+    if (client.getIsRegistered()) {
+        sendToClient(ctx.clientFd, ERR_ALREADYREGISTERED(ctx.sender));
         return;
     }
-    if (ctx.pass.empty()) {
-        sendToClient(client->getFd(), ERR_NEEDMOREPARAMS(ctx.sender, "pass"));
+
+    if (ctx.password.empty()) {
+        sendToClient(ctx.clientFd, ERR_NEEDMOREPARAMS(ctx.sender, "PASS"));
     }
 
     std::string serverPassword = server.getPassword();
-    if(ctx.pass != serverPassword)
-    {
-        sentToClient(client->getFd(), ERR_PASSWDMISMATCH(ctx.sender));
+    if (ctx.password != serverPassword) {
+        sendToClient(ctx.clientFd, ERR_PASSWDMISMATCH(ctx.sender));
+        return;
     }
-    client->setPasswordVerified(true);
+
+    client.setPasswordVerified(true);
 }
