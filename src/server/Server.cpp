@@ -105,6 +105,15 @@ ConnectionManager &Server::getConnectionManager()
     return *_connectionManager;
 }
 
+const std::string &Server::getPassword()
+{
+    return _password;
+}
+void Server::setInstance(Server *server)
+{
+    _instance = server;
+}
+
 void Server::pause()
 {
     _paused = true;

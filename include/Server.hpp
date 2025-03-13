@@ -30,6 +30,7 @@ public:
     ClientIndex &getClients();
     ChannelManager &getChannels();
     ConnectionManager &getConnectionManager();
+    const std::string &getPassword();
 
     void pause();
     void resume();

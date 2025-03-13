@@ -168,6 +168,16 @@ inline std::string ERR_NEEDMOREPARAMS(const std::string &client, const std::stri
     return "461 " + client + " " + command + " :Not enough parameters";
 }
 
+inline std::string ERR_ALREADYREGISTERED(const std::string &client)
+{
+    return "462 " + client + " :You may not reregister";
+}
+
+inline std::string ERR_PASSWDMISMATCH(const std::string &client)
+{
+    return "464" + client + " :Password incorrect";
+}
+
 inline std::string ERR_NOSUCHCHANNEL(const std::string &client, const std::string &channel)
 {
     return "403 " + client + " " + channel + " :No such channel";
