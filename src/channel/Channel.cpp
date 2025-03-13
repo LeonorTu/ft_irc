@@ -160,6 +160,12 @@ void Channel::setMode(Client &client, bool enable, ChannelMode mode, std::string
     broadcastMessage(modeMsg);
 }
 
+void Channel::setMode(Client &client, bool enable, const char mode, std::string param)
+{
+    ChannelMode channelMode = static_cast<ChannelMode>(mode);
+    setMode(client, enable, channelMode, param);
+}
+
 bool Channel::isEmpty() const
 {
     return _connectedClients.empty();

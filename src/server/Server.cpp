@@ -3,6 +3,7 @@
 #include <SocketManager.hpp>
 #include <EventLoop.hpp>
 #include <ClientIndex.hpp>
+#include <ChannelManager.hpp>
 #include <ConnectionManager.hpp>
 #include <responses.hpp>
 
@@ -13,13 +14,15 @@ Server::Server()
     , _password("42")
     , _paused(false)
     , _clients(std::make_unique<ClientIndex>())
+    , _channels(std::make_unique<ChannelManager>())
     , _socketManager(std::make_unique<SocketManager>(SERVER_PORT))
     , _eventLoop(std::make_unique<EventLoop>())
-    , _connectionManager(std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop, *_clients))
+    , _connectionManager(
+          std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop, *_clients))
     , _createdTime(getCurrentTime())
 {
     // setup signalshandlers
-    setInstance(this);
+    _instance = this;
     signal(SIGINT, signalHandler);  // Handle Ctrl+C
     signal(SIGTERM, signalHandler); // Handle termination request
     signal(SIGTSTP, signalHandler); // handle server pause
@@ -62,6 +65,11 @@ void Server::loop()
     }
 }
 
+Server &Server::getInstance()
+{
+    return *_instance;
+}
+
 const int Server::getServerFD() const
 {
     return this->_serverFD;
@@ -75,6 +83,11 @@ const bool Server::getIsPaused() const
 ClientIndex &Server::getClients()
 {
     return *_clients;
+}
+
+ChannelManager &Server::getChannels()
+{
+    return *_channels;
 }
 
 SocketManager &Server::getSocketManager()
@@ -142,7 +155,32 @@ void Server::sendWelcome(int clientFd)
     sendToClient(clientFd, RPL_YOURHOST(nickname));
     sendToClient(clientFd, RPL_CREATED(nickname, _createdTime));
     sendToClient(clientFd, RPL_MYINFO(nickname));
-    // still need to include the RPL_ISUPPORT(005) messages based on server
+    sendToClient(clientFd, RPL_ISUPPORT(nickname));
+    /*
+    still need to include the RPL_ISUPPORT(005) messages based on server
+    I guess we could have all these in the common.hpp files ince its like a settings file.
+    CASEMAPPING=ascii //could also add to common.hpp
+    CHANNELLEN=(read from CHANNEL_NAME_MAX in common.hpp)
+    CHANLIMIT=#&50 /example add to common.hpp
+    CHANTYPES=#&
+    //
+
+    Type A: Modes that add or remove a user address to a list (always takes a parameter)
+    Type B: Modes that change a channel setting and always have a parameter
+    Type C: Modes that change a channel setting and only have a parameter when set
+    Type D: Modes that change a channel setting and never have a parameter
+    maybe need to format the modes more corretly in the common.hpp also
+    Format: CHANMODES=Atypes,Btypes,Ctypes,Dtypes
+    so for us I think its k and l type C, i and t type D
+    CHANMODES=,,kl,it CHANNEL_MODES const on common.hpp
+
+    PREFIX=o(@) // just one we have op means @ sightn in front of name I guess
+    MODES=3 //standard value for max modes per command
+    NICKLEN=30 read from common.hpp, 30 or 31 is typical
+    TOPICLEN=307 add to common.hpp, 307 is a typical length
+    USERLEN=12 add to common.hpp, I see 12 or 18 as typical values.
+
+    */
 }
 
 void Server::shutdown()

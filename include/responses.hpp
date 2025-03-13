@@ -42,7 +42,7 @@ inline void sendToClient(int fd, std::string msg)
     logMessage(fd, msg);
 }
 
-/* WELCOME MESSAGES (001-004) */
+/* WELCOME MESSAGES (001-005) */
 inline std::string RPL_WELCOME(const std::string &nickname)
 {
     return ":" + SERVER_NAME + " 001 " + nickname + " :Welcome to " + NETWORK_NAME + " Network, " + nickname;
@@ -63,6 +63,24 @@ inline std::string RPL_MYINFO(const std::string &nickname)
 {
     return ":" + SERVER_NAME + " 004 " + nickname + " " + SERVER_NAME + " " + SERVER_VERSION + " " + USER_MODES + " " +
            CHANNEL_MODES;
+}
+
+inline std::string RPL_ISUPPORT(const std::string &nickname)
+{
+    std::ostringstream oss;
+    oss << ":" << SERVER_NAME << " 005 " << nickname << " ";
+    oss << "CASEMAPPING=" << CASEMAPPING << " ";
+    oss << "CHANNELLEN=" << CHANNELLEN << " ";
+    oss << "CHANLIMIT=" << CHANLIMIT << " ";
+    oss << "CHANTYPES=" << CHANTYPES << " ";
+    oss << "CHANMODES=" << CHANMODES << " ";
+    oss << "PREFIX=" << PREFIX << " ";
+    oss << "MODES=" << MODES << " ";
+    oss << "NICKLEN=" << NICKLEN << " ";
+    oss << "TOPICLEN=" << TOPICLEN << " ";
+    oss << "USERLEN=" << USERLEN << " ";
+    oss << ":are supported by this server";
+    return oss.str();
 }
 
 /* COMMAND RESPONSES */

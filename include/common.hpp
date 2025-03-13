@@ -2,11 +2,20 @@
 #include <string>
 
 // Common constants for the IRC server
-const int MAX_CLIENTS = 100;     // Maximum number of clients
 const int MSG_BUFFER_SIZE = 512; // Buffer size for message handling
-const int CHANNEL_NAME_MAX = 50;
-const int NICKNAME_MAX = 512;
-const int EPOLL_MAX_EVENTS = 10;
+
+// ISUPPORT
+const std::string CASEMAPPING = "ascii";
+const int CHANNELLEN = 50;
+const std::string CHANLIMIT = "#&50";
+const std::string CHANTYPES = "#&";
+const std::string CHANMODES = ",,kl,it";
+const std::string PREFIX = "o(@)";
+const int MODES = 3;
+const int NICKLEN = 30;
+const int TOPICLEN = 307;
+const int USERLEN = 12;
+const int EPOLL_MAX_EVENTS = 128;
 
 // server info
 const int SERVER_PORT = 6667;
