@@ -28,26 +28,30 @@ void nick(const CommandProcessor::CommandContext &ctx)
 {
     Server &server = Server::getInstance();
     Client &client = server.getClients().getByFd(ctx.clientFd);
-    std::string oldNickname = ctx.oldNickname.empty() ? "*" : ctx.oldNickname;
+    std::string currentNick = client.getNickname();
+    std::string requestedNick = ctx.params[0];
+    // Determine what to use in error messages (use * if no current nickname)
+    std::string sourceNick = currentNick.empty() ? "*" : currentNick;
 
-    if (ctx.newNickname.empty()) {
-        sendToClient(ctx.clientFd, ERR_NONICKNAMEGIVEN(oldNickname));
+    if (requestedNick.empty()) {
+        sendToClient(ctx.clientFd, ERR_NONICKNAMEGIVEN(sourceNick));
         return;
     }
 
-    if (!isValidNickname(ctx.newNickname)) {
-        sendToClient(ctx.clientFd, ERR_ERRONEUSNICKNAME(oldNickname, ctx.newNickname));
+    if (!isValidNickname(requestedNick)) {
+        sendToClient(ctx.clientFd, ERR_ERRONEUSNICKNAME(sourceNick, requestedNick));
         return;
     }
 
-    if (isUsed(server, ctx.newNickname)) {
-        sendToClient(ctx.clientFd, ERR_NICKNAMEINUSE(oldNickname, ctx.newNickname));
+    if (isUsed(server, requestedNick)) {
+        sendToClient(ctx.clientFd, ERR_NICKNAMEINUSE(sourceNick, requestedNick));
         return;
     }
 
-    client.setNickname(ctx.newNickname);
-    server.getClients().updateNick(oldNickname, ctx.newNickname);
-    if (ctx.oldNickname.empty()) {
-        sendToClient(ctx.clientFd, NICKNAMECHANGE(oldNickname, ctx.newNickname));
+    client.setNickname(requestedNick);
+    if (!currentNick.empty()) {
+        // maybe somewhere else has nick need to be updated?
+        server.getClients().updateNick(currentNick requestedNick);
+        sendToClient(ctx.clientFd, NICKNAMECHANGE(sourceNick, requestedNick));
     }
 }
