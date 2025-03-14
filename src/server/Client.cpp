@@ -32,6 +32,15 @@ std::string &Client::getUsername()
 {
     return _username;
 }
+void Client::setRealname(const std::string realname)
+{
+    _realname = realname;
+}
+
+std::string &Client::getRealname()
+{
+    return _realname;
+}
 
 void Client::setUsername(const std::string username)
 {

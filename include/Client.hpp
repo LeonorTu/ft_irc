@@ -17,7 +17,9 @@ public:
     const std::string &getNickname() const;
     const std::string &getIP() const;
     std::string &getUsername();
+    std::string &getRealname();
     void setUsername(const std::string username);
+    void setRealname(const std::string realname);
     void setNickname(const std::string &newNickname);
     void setIp(const std::string &ip);
     void registerUser();
@@ -33,6 +35,7 @@ private:
     int _fd;
     std::string _messageBuf;
     std::string _username;
+    std::string _realname;
     bool _passwordVerified;
     bool _isRegistered;
     std::string _nickname;
