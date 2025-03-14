@@ -1,7 +1,7 @@
-#include <EventLoop.hpp>
+#include <EventLoopEpoll.hpp>
 #include <common.hpp>
 
-EventLoop::EventLoop()
+EventLoopEpoll::EventLoopEpoll()
     : _epollFd(epoll_create1(0))
     , _eventsToTrack(EPOLLIN | EPOLLET)
 {
@@ -10,12 +10,12 @@ EventLoop::EventLoop()
     }
 }
 
-EventLoop::~EventLoop()
+EventLoopEpoll::~EventLoopEpoll()
 {
     shutdown();
 }
 
-void EventLoop::addToWatch(int fd)
+void EventLoopEpoll::addToWatch(int fd)
 {
     epoll_event ev;
     ev.data.fd = fd;
@@ -25,14 +25,14 @@ void EventLoop::addToWatch(int fd)
     }
 }
 
-void EventLoop::removeFromWatch(int fd)
+void EventLoopEpoll::removeFromWatch(int fd)
 {
     if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, NULL) == -1) {
         std::cerr << "Failed to remove fd from epoll: " << strerror(errno) << std::endl;
     }
 }
 
-std::vector<Event> EventLoop::waitForEvents(int timeoutMs)
+std::vector<Event> EventLoopEpoll::waitForEvents(int timeoutMs)
 {
     epoll_event epollEvents[EPOLL_MAX_EVENTS] = {0};
     std::vector<Event> results;
@@ -52,7 +52,7 @@ std::vector<Event> EventLoop::waitForEvents(int timeoutMs)
     return results;
 }
 
-void EventLoop::shutdown()
+void EventLoopEpoll::shutdown()
 {
     if (_epollFd >= 0) {
         close(_epollFd);
