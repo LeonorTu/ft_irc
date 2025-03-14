@@ -37,7 +37,7 @@ Server::~Server()
 void Server::start()
 {
     _serverFD = getSocketManager().initialize();
-    getEventLoop().addToWatch(_serverFD, EPOLLIN | EPOLLET);
+    getEventLoop().addToWatch(_serverFD);
     _running = true;
     loop();
 }

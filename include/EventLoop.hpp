@@ -18,11 +18,12 @@ public:
     EventLoop();
     ~EventLoop();
 
-    void addToWatch(int fd, uint32_t events);
+    void addToWatch(int fd);
     void removeFromWatch(int fd);
     std::vector<Event> waitForEvents(int timeoutMs);
     void shutdown();
 
 private:
     int _epollFd;
+    uint32_t _eventsToTrack;
 };

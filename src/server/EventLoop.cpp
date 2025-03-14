@@ -3,6 +3,7 @@
 
 EventLoop::EventLoop()
     : _epollFd(epoll_create1(0))
+    , _eventsToTrack(EPOLLIN | EPOLLET)
 {
     if (_epollFd < 0) {
         std::cerr << "epoll create error" << std::endl;
@@ -14,11 +15,11 @@ EventLoop::~EventLoop()
     shutdown();
 }
 
-void EventLoop::addToWatch(int fd, uint32_t events)
+void EventLoop::addToWatch(int fd)
 {
     epoll_event ev;
     ev.data.fd = fd;
-    ev.events = events;
+    ev.events = _eventsToTrack;
     if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, fd, &ev) == -1) {
         std::cerr << "Failed to add fd to epoll: " << strerror(errno) << std::endl;
     }
