@@ -25,5 +25,4 @@ public:
 
 private:
     int _epollFd;
-    bool _running;
 };

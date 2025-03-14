@@ -3,7 +3,6 @@
 
 EventLoop::EventLoop()
     : _epollFd(epoll_create1(0))
-    , _running(true)
 {
     if (_epollFd < 0) {
         std::cerr << "epoll create error" << std::endl;
@@ -54,7 +53,6 @@ std::vector<Event> EventLoop::waitForEvents(int timeoutMs)
 
 void EventLoop::shutdown()
 {
-    _running = false;
     if (_epollFd >= 0) {
         close(_epollFd);
         _epollFd = -1;
