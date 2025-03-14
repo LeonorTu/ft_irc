@@ -114,22 +114,25 @@ void CommandProcessor::executeCommand()
 //     // _commandHandlers["WHOIS"] = whois;
 // }
 
-int main()
-{
-    std::cout << "Testing parsing" << std::endl;
-    std::string test[6]= {
-        ":dan!d@localhost PRIVMSG #chan :Hey!",
-        ":dan!d@localhost PRIVMSG #chan ::-) hello",
-        "CAP REQ :sasl message-tags foo",
-        "@id=234AB :dan!d@localhost PRIVMSG #chan :Hey what's up!",
-        ":irc.example.com CAP LS * :multi-prefix extended-join sasl",
-        "@tag1=value1;tag2=value2 :nick!user@host PRIVMSG #channel :Hello world!"
-    };
 
-    for(int clientFd = 0; clientFd < 6; clientFd++)
-    {
-        std::cout << "TEST " << clientFd << " : " << test[clientFd] << std::endl;
-        CommandProcessor testing(clientFd, test[clientFd]);
-    }
-    return 0;
-}
+
+//////////////////////////TESTING//////////////////////////
+// int main()
+// {
+//     std::cout << "Testing parsing" << std::endl;
+//     std::string test[6]= {
+//         ":dan!d@localhost PRIVMSG #chan :Hey!",
+//         ":dan!d@localhost PRIVMSG #chan ::-) hello",
+//         "CAP REQ :sasl message-tags foo",
+//         "@id=234AB :dan!d@localhost PRIVMSG #chan :Hey what's up!",
+//         ":irc.example.com CAP LS * :multi-prefix extended-join sasl",
+//         "@tag1=value1;tag2=value2 :nick!user@host PRIVMSG #channel :Hello world!"
+//     };
+
+//     for(int clientFd = 0; clientFd < 6; clientFd++)
+//     {
+//         std::cout << "TEST " << clientFd << " : " << test[clientFd] << std::endl;
+//         CommandProcessor testing(clientFd, test[clientFd]);
+//     }
+//     return 0;
+// }
