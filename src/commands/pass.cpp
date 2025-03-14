@@ -11,18 +11,18 @@ void pass(const CommandProcessor::CommandContext &ctx)
     std::string clientPassword = ctx.params[0];
 
     if (client.getIsRegistered()) {
-        sendToClient(ctx.clientFd, ERR_ALREADYREGISTERED(ctx.sender));
+        sendToClient(ctx.clientFd, ERR_ALREADYREGISTERED(ctx.source));
         return;
     }
 
     if (clientPassword.empty()) {
-        sendToClient(ctx.clientFd, ERR_NEEDMOREPARAMS(ctx.sender, "PASS"));
+        sendToClient(ctx.clientFd, ERR_NEEDMOREPARAMS(ctx.source, "PASS"));
         return;
     }
 
     std::string serverPassword = server.getPassword();
     if (clientPassword != serverPassword) {
-        sendToClient(ctx.clientFd, ERR_PASSWDMISMATCH(ctx.sender));
+        sendToClient(ctx.clientFd, ERR_PASSWDMISMATCH(ctx.source));
         return;
     }
 
