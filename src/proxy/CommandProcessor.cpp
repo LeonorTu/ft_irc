@@ -1,7 +1,7 @@
-// #include <CommandProcessor.hpp>
-// #include <commandHandlers.hpp>
+#include <CommandProcessor.hpp>
+#include <commandHandlers.hpp>
 
-#include "../../include/CommandProcessor.hpp"
+// #include "../../include/CommandProcessor.hpp"
 
 CommandProcessor::CommandProcessor(int clientFd, const std::string &rawString)
     : _context({clientFd, "", {}}), _command(""), _commandHandlers({})
