@@ -32,4 +32,6 @@ private:
     // std::unordered_map<int, Client *> byFd;
     std::unordered_map<int, std::unique_ptr<Client>> _byFd;
     std::unordered_map<std::string, Client *> _byNick;
+
+    std::string caseMapped(const std::string &name) const;
 };
