@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <unordered_map>
 #include <functional>
 
@@ -20,6 +21,7 @@ public:
         std::string source;
         std::vector<std::string> params;
     };
+
     void executeCommand();
 
 private:
