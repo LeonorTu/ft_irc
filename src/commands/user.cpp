@@ -3,6 +3,7 @@
 #include <Client.hpp>
 #include <responses.hpp>
 #include <ClientIndex.hpp>
+#include <IRCValidator.hpp>
 
 void user(const CommandProcessor::CommandContext &ctx)
 {
@@ -21,6 +22,12 @@ void user(const CommandProcessor::CommandContext &ctx)
 
     std::string username = ctx.params[0];
     std::string realname = ctx.params[3];
-    client.setUsername(username);
-    client.setRealname(realname);
+
+    if (username.length() > USERLEN) {
+        username = username.substr(0, USERLEN);
+    }
+    if (IRCValidator::isValidUsername(username)) {
+        client.setUsername(username);
+        client.setRealname(realname);
+    }
 }

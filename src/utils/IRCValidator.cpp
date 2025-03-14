@@ -1,8 +1,14 @@
 #include <IRCValidator.hpp>
+#include <common.hpp>
+#include <regex>
 
-bool IRCValidator::isValidNickname(int clientFd, const std::string &nickname)
+bool IRCValidator::isValidNickname(const std::string &nickname)
 {
-    return true;
+    if (nickname.empty() || nickname.length() > NICKLEN)
+        return false;
+    std::regex nicknamePattern("^[a-zA-Z\\[\\]\\\\`_^{|}][a-zA-Z0-9\\[\\]\\\\`_^{|}-]*$");
+
+    return std::regex_match(nickname, nicknamePattern);
 }
 
 bool IRCValidator::isValidChannelName(int clientFd, const std::string &channelName)
@@ -10,9 +16,13 @@ bool IRCValidator::isValidChannelName(int clientFd, const std::string &channelNa
     return true;
 }
 
-bool IRCValidator::isValidUsername(int clientFd, const std::string &username)
+bool IRCValidator::isValidUsername(const std::string &username)
 {
-    return true;
+    if (username.empty())
+        return false;
+    std::regex usernamePattern(R"(^[a-zA-Z0-9_-]+$)");
+
+    return std::regex_match(username, usernamePattern);
 }
 
 bool IRCValidator::isValidChannelMode(int clientFd, const std::string &mode)

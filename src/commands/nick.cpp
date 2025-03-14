@@ -3,7 +3,7 @@
 #include <message.hpp>
 #include <responses.hpp>
 #include <unordered_map>
-#include <regex>
+#include <IRCValidator.hpp>
 #include <ClientIndex.hpp>
 #include <CommandProcessor.hpp>
 
@@ -15,14 +15,14 @@ bool isUsed(Server &server, const std::string &nickname)
     return clients.nickExists(nickname);
 }
 
-bool isValidNickname(const std::string &nickname)
-{
-    if (nickname.empty() || nickname.length() > 30)
-        return false;
-    std::regex nicknamePattern("^[a-zA-Z\\[\\]\\\\`_^{|}][a-zA-Z0-9\\[\\]\\\\`_^{|}-]*$");
+// bool isValidNickname(const std::string &nickname)
+// {
+//     if (nickname.empty() || nickname.length() > NICKLEN)
+//         return false;
+//     std::regex nicknamePattern("^[a-zA-Z\\[\\]\\\\`_^{|}][a-zA-Z0-9\\[\\]\\\\`_^{|}-]*$");
 
-    return std::regex_match(nickname, nicknamePattern);
-}
+//     return std::regex_match(nickname, nicknamePattern);
+// }
 
 void nick(const CommandProcessor::CommandContext &ctx)
 {
@@ -38,7 +38,7 @@ void nick(const CommandProcessor::CommandContext &ctx)
         return;
     }
 
-    if (!isValidNickname(requestedNick)) {
+    if (!IRCValidator::isValidNickname(requestedNick)) {
         sendToClient(ctx.clientFd, ERR_ERRONEUSNICKNAME(sourceNick, requestedNick));
         return;
     }
