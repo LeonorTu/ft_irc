@@ -16,7 +16,7 @@ Server::Server()
     , _clients(std::make_unique<ClientIndex>())
     , _channels(std::make_unique<ChannelManager>())
     , _socketManager(std::make_unique<SocketManager>(SERVER_PORT))
-    , _eventLoop(std::make_unique<EventLoop>())
+    , _eventLoop(createEventLoop())
     , _connectionManager(
           std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop, *_clients))
     , _createdTime(getCurrentTime())
@@ -37,7 +37,7 @@ Server::~Server()
 void Server::start()
 {
     _serverFD = getSocketManager().initialize();
-    getEventLoop().addToWatch(_serverFD, EPOLLIN | EPOLLET);
+    getEventLoop().addToWatch(_serverFD);
     _running = true;
     loop();
 }

@@ -1,10 +1,8 @@
 #pragma once
 
+#include <stdint.h>
 #include <vector>
-#include <sys/epoll.h>
-#include <cstring>
-#include <iostream>
-#include <unistd.h>
+#include <memory>
 
 struct Event
 {
@@ -15,15 +13,13 @@ struct Event
 class EventLoop
 {
 public:
-    EventLoop();
-    ~EventLoop();
-
-    void addToWatch(int fd, uint32_t events);
-    void removeFromWatch(int fd);
-    std::vector<Event> waitForEvents(int timeoutMs);
-    void shutdown();
+    virtual ~EventLoop() = default;
+    virtual void addToWatch(int fd) = 0;
+    virtual void removeFromWatch(int fd) = 0;
+    virtual std::vector<Event> waitForEvents(int timeoutMs) = 0;
+    virtual void shutdown() = 0;
 
 private:
-    int _epollFd;
-    bool _running;
 };
+
+std::unique_ptr<EventLoop> createEventLoop();
