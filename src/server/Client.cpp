@@ -81,6 +81,11 @@ std::string &Client::getMessageBuf()
     return _messageBuf;
 }
 
+std::unordered_map<std::string, Channel *> Client::getMyChannels()
+{
+    return _myChannels;
+}
+
 void Client::setIsRegistered(bool registered)
 {
     _isRegistered = registered;
