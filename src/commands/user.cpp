@@ -4,6 +4,7 @@
 #include <responses.hpp>
 #include <ClientIndex.hpp>
 #include <IRCValidator.hpp>
+#include <commandHandlers.hpp>
 
 void user(const CommandProcessor::CommandContext &ctx)
 {
@@ -27,5 +28,11 @@ void user(const CommandProcessor::CommandContext &ctx)
     if (validator.isValidUsername(ctx.clientFd, nickname, username) && validator.isValidRealname(ctx.clientFd, nickname, realname)) {
         client.setUsername(username);
         client.setRealname(realname);
+    }
+
+    if (!client.getIsRegistered() && client.getPasswordVerified() &&
+        !client.getNickname().empty() && !client.getUsername().empty()) {
+        client.setIsRegistered(true);
+        sendWelcome(ctx.clientFd);
     }
 }

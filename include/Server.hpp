@@ -31,6 +31,7 @@ public:
     ChannelManager &getChannels();
     ConnectionManager &getConnectionManager();
     const std::string &getPassword();
+    const std::string &getCreatedTime();
 
     void pause();
     void resume();
@@ -51,6 +52,4 @@ private:
     volatile sig_atomic_t _running;
     volatile sig_atomic_t _paused;
     int _serverFD;
-
-    void sendWelcome(int clientFd);
 };

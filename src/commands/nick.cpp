@@ -5,23 +5,7 @@
 #include <IRCValidator.hpp>
 #include <ClientIndex.hpp>
 #include <CommandProcessor.hpp>
-
-// can now search for clients getClients() function, that returns a brand new 2am ClientIndex that
-// has special functions to get clients by name and fd
-// bool isUsed(Server &server, const std::string &nickname)
-// {
-//     ClientIndex &clients = server.getClients();
-//     return clients.nickExists(nickname);
-// }
-
-// bool isValidNickname(const std::string &nickname)
-// {
-//     if (nickname.empty() || nickname.length() > NICKLEN)
-//         return false;
-//     std::regex nicknamePattern("^[a-zA-Z\\[\\]\\\\`_^{|}][a-zA-Z0-9\\[\\]\\\\`_^{|}-]*$");
-
-//     return std::regex_match(nickname, nicknamePattern);
-// }
+#include <commandHandlers.hpp>
 
 void nick(const CommandProcessor::CommandContext &ctx)
 {
@@ -32,6 +16,11 @@ void nick(const CommandProcessor::CommandContext &ctx)
     std::string requestedNick = ctx.params[0];
     // Determine what to use in error messages (use * if no current nickname)
     std::string sourceNick = currentNick.empty() ? "*" : currentNick;
+
+    if (!client.getPasswordVerified()) {
+
+        return;
+    }
 
     if (requestedNick.empty()) {
         sendToClient(ctx.clientFd, ERR_NONICKNAMEGIVEN(sourceNick));
@@ -53,5 +42,11 @@ void nick(const CommandProcessor::CommandContext &ctx)
         // maybe somewhere else has nick need to be updated?
         server.getClients().updateNick(currentNick, requestedNick);
         sendToClient(ctx.clientFd, NICKNAMECHANGE(sourceNick, requestedNick));
+    }
+
+    if (!client.getIsRegistered() && client.getPasswordVerified() &&
+        !client.getNickname().empty() && !client.getUsername().empty()) {
+        client.setIsRegistered(true);
+        sendWelcome(ctx.clientFd);
     }
 }

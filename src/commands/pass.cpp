@@ -3,6 +3,8 @@
 #include <Client.hpp>
 #include <responses.hpp>
 #include <ClientIndex.hpp>
+#include <ConnectionManager.hpp>
+#include <commandHandlers.hpp>
 
 void pass(const CommandProcessor::CommandContext &ctx)
 {
@@ -23,6 +25,7 @@ void pass(const CommandProcessor::CommandContext &ctx)
     std::string serverPassword = server.getPassword();
     if (clientPassword != serverPassword) {
         sendToClient(ctx.clientFd, ERR_PASSWDMISMATCH(ctx.source));
+        server.getConnectionManager().disconnectClient(client);
         return;
     }
 

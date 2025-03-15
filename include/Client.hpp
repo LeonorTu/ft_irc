@@ -24,6 +24,7 @@ public:
     void setIp(const std::string &ip);
     void registerUser();
     const bool getIsRegistered() const;
+    const bool getPasswordVerified() const;
     std::string &getMessageBuf();
     void setIsRegistered(bool registered);
     void setPasswordVerified(bool verified);
