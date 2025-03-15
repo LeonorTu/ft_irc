@@ -36,4 +36,5 @@ private:
 
     // Private methods
     void setupCommandHandlers();
+    void clearCommand();
 };

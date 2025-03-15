@@ -114,7 +114,7 @@ inline std::string MODE(const std::string &sourceNick, const std::string &tar,
 
 inline std::string NICKNAMECHANGE(const std::string &old_nickname, const std::string &new_nickname)
 {
-    return old_nickname + " changed their nickname to " + new_nickname;
+    return ":" + old_nickname + " NICK " + " changed their nickname to " + new_nickname;
 }
 
 /* INFORMATIONAL RESPONSES (RPL_*) */
@@ -149,7 +149,7 @@ inline std::string RPL_ENDOFNAMES(const std::string &client, const std::string &
 /* ERROR RESPONSES */
 inline std::string ERR_UNKNOWNCOMMAND(const std::string &client, const std::string &command)
 {
-    return "421 " + client + command + " :No nickname given";
+    return "421 " + client + " " + command + " :Unknown command";
 }
 
 inline std::string ERR_NONICKNAMEGIVEN(const std::string &client)

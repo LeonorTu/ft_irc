@@ -68,15 +68,18 @@ void param(std::istringstream &iss, CommandProcessor::CommandContext &ctx)
 
 void CommandProcessor::parseCommand(Client &client, const std::string &rawString)
 {
+    clearCommand();
     if (rawString.empty())
         return;
     std::istringstream iss(rawString);
     iss >> std::ws; // skip whitespace
 
+    _context.clientFd = client.getFd();
     ignoreTag(iss);
     checkSource(iss, _context);
     storeCommand(iss, _command);
     param(iss, _context);
+    executeCommand(client);
 }
 
 void CommandProcessor::executeCommand(Client &client)
@@ -99,6 +102,7 @@ void CommandProcessor::setupCommandHandlers()
     _commandHandlers["NICK"] = nick;
     _commandHandlers["PASS"] = pass;
     _commandHandlers["USER"] = user;
+    _commandHandlers["CAP"] = silentIgnore;
     // _commandHandlers["LUSERS"] = lusers;
     // _commandHandlers["MOTD"] = motd;
     // _commandHandlers["QUIT"] = quit;
@@ -114,6 +118,12 @@ void CommandProcessor::setupCommandHandlers()
     // _commandHandlers["NOTICE"] = notice;
     // _commandHandlers["WHO"] = who;
     // _commandHandlers["WHOIS"] = whois;
+}
+
+void CommandProcessor::clearCommand()
+{
+    _context = {0};
+    _command = "";
 }
 
 //////////////////////////TESTING//////////////////////////
