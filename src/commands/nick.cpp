@@ -38,7 +38,7 @@ void nick(const CommandProcessor::CommandContext &ctx)
     }
 
     client.setNickname(requestedNick);
-    if (!currentNick.empty()) {
+    if (!currentNick.empty() && client.getIsRegistered()) {
         // maybe somewhere else has nick need to be updated?
         server.getClients().updateNick(currentNick, requestedNick);
         sendToClient(ctx.clientFd, NICKNAMECHANGE(sourceNick, requestedNick));

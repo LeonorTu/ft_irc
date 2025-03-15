@@ -79,6 +79,10 @@ void ConnectionManager::recieveData(int clientFd)
 // command handler will get the message WIHTOUT /r/n
 void ConnectionManager::extractFullMessages(Client &client, std::string &messageBuffer)
 {
+    if (messageBuffer.size() > MSG_BUFFER_SIZE) {
+        handleOversized(client, messageBuffer);
+        return;
+    }
     size_t pos;
     while ((pos = messageBuffer.find("\n")) != std::string::npos) {
         size_t end = pos;
@@ -90,7 +94,6 @@ void ConnectionManager::extractFullMessages(Client &client, std::string &message
         // Call the command handler, currently just printing out the log message.
         _commandProcessor.parseCommand(client, completedMessage);
     }
-    handleOversized(client, messageBuffer);
 }
 
 void ConnectionManager::disconnectAllClients()
@@ -107,6 +110,6 @@ void ConnectionManager::handleOversized(Client &client, std::string &messageBuff
         std::string truncatedMessage = messageBuffer.substr(0, MSG_BUFFER_SIZE - 2);
         messageBuffer.clear();
         // call commandhandler, executer or whatever
-        logMessage(client.getFd(), truncatedMessage, false);
+        _commandProcessor.parseCommand(client, truncatedMessage);
     }
 }

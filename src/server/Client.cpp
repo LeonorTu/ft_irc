@@ -3,9 +3,13 @@
 
 Client::Client(int fd)
     : _fd(fd)
+    , _messageBuf("")
+    , _username("")
+    , _realname("")
+    , _passwordVerified(false)
+    , _isRegistered(false)
     , _nickname("*")
     , _ip("")
-    , _isRegistered(false)
 {}
 
 Client::~Client()
