@@ -32,7 +32,7 @@ TEST_F(ServerTest, InitializationTest)
 
 TEST_F(ServerTest, StartStopTest)
 {
-    std::thread server_thread([this]() { this->server->start(); });
+    std::thread server_thread([this]() { this->server->start(""); });
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     this->server->shutdown();
     server_thread.join();
@@ -41,11 +41,13 @@ TEST_F(ServerTest, StartStopTest)
 
 TEST_F(ServerTest, WelcomeMessageTest)
 {
-    std::thread server_thread([this]() { this->server->start(); });
+    std::thread server_thread([this]() { this->server->start("42"); });
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     // Use a short timeout to close automatically
-    FILE *nc = popen("echo '' | nc -w 1 localhost 6667", "r");
+    FILE *nc = popen(
+        "printf 'PASS 42\\r\\nNICK Bob\\r\\nUSER Bob 0 * :Realname\\r\\n' | nc -w 1 localhost 6667",
+        "r");
     ASSERT_NE(nc, nullptr);
 
     char buffer[1024] = {0};
@@ -60,6 +62,7 @@ TEST_F(ServerTest, WelcomeMessageTest)
     EXPECT_NE(output.find("002"), std::string::npos);
     EXPECT_NE(output.find("003"), std::string::npos);
     EXPECT_NE(output.find("004"), std::string::npos);
+    EXPECT_NE(output.find("005"), std::string::npos);
 
     pclose(nc);
 
@@ -78,7 +81,7 @@ TEST_F(ServerTest, PauseResumeTest)
 
 TEST_F(ServerTest, MessageSizeLimitTest)
 {
-    std::thread server_thread([this]() { this->server->start(); });
+    std::thread server_thread([this]() { this->server->start(""); });
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     // Create an oversized message

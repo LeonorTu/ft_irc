@@ -35,7 +35,7 @@ protected:
         serverRunning = true;
         serverThread = std::thread([this]() {
             try {
-                this->server->start();
+                this->server->start("42");
             }
             catch (const std::exception &e) {
                 std::cerr << "Server exception: " << e.what() << std::endl;
@@ -218,13 +218,9 @@ TEST_F(StressTest, MassClientConnections)
     std::string serverOutput = capturedOutput.str();
     std::cerr << serverOutput;
 
-    // 1. Count NICK registrations
-    int nickCount = countInServerLog("NICK user");
-    EXPECT_GE(nickCount, NUM_CLIENTS);
-
-    // 2. Count USER registrations
-    int userCount = countInServerLog("USER user");
-    EXPECT_GE(userCount, NUM_CLIENTS);
+    // 1. Count WELCOME messages
+    int welcomeCount = countInServerLog("Welcome to J-A-S Network");
+    EXPECT_GE(welcomeCount, NUM_CLIENTS);
 
     // 3. Count QUIT messages
     int quitCount = countInServerLog("QUIT");
