@@ -1,3 +1,4 @@
+#if !defined(__linux__)
 #include <EventLoopPoll.hpp>
 
 EventLoopPoll::EventLoopPoll()
@@ -59,3 +60,4 @@ void EventLoopPoll::shutdown()
 {
     _pollFds.clear();
 }
+#endif

@@ -1,3 +1,4 @@
+#if defined(__linux__)
 #include <EventLoopEpoll.hpp>
 #include <common.hpp>
 
@@ -59,3 +60,4 @@ void EventLoopEpoll::shutdown()
         _epollFd = -1;
     }
 }
+#endif
