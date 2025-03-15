@@ -45,13 +45,14 @@ inline void sendToClient(int fd, std::string msg)
 /* WELCOME MESSAGES (001-005) */
 inline std::string RPL_WELCOME(const std::string &nickname)
 {
-    return ":" + SERVER_NAME + " 001 " + nickname + " :Welcome to " + NETWORK_NAME + " Network, " + nickname;
+    return ":" + SERVER_NAME + " 001 " + nickname + " :Welcome to " + NETWORK_NAME + " Network, " +
+           nickname;
 }
 
 inline std::string RPL_YOURHOST(const std::string &nickname)
 {
-    return ":" + SERVER_NAME + " 002 " + nickname + " :Your host is " + SERVER_NAME + ", running version " +
-           SERVER_VERSION;
+    return ":" + SERVER_NAME + " 002 " + nickname + " :Your host is " + SERVER_NAME +
+           ", running version " + SERVER_VERSION;
 }
 
 inline std::string RPL_CREATED(const std::string &nickname, const std::string &createdTime)
@@ -61,8 +62,8 @@ inline std::string RPL_CREATED(const std::string &nickname, const std::string &c
 
 inline std::string RPL_MYINFO(const std::string &nickname)
 {
-    return ":" + SERVER_NAME + " 004 " + nickname + " " + SERVER_NAME + " " + SERVER_VERSION + " " + USER_MODES + " " +
-           CHANNEL_MODES;
+    return ":" + SERVER_NAME + " 004 " + nickname + " " + SERVER_NAME + " " + SERVER_VERSION + " " +
+           USER_MODES + " " + CHANNEL_MODES;
 }
 
 inline std::string RPL_ISUPPORT(const std::string &nickname)
@@ -94,7 +95,8 @@ inline std::string QUIT(const std::string &sourceNick, const std::string &reason
     return ":" + sourceNick + " QUIT " + "Quit: :" + reason;
 }
 
-inline std::string PART(const std::string &sourceNick, const std::string &channel, const std::string &reason)
+inline std::string PART(const std::string &sourceNick, const std::string &channel,
+                        const std::string &reason)
 {
     return ":" + sourceNick + " PART " + channel + " :" + reason;
 }
@@ -104,8 +106,8 @@ inline std::string TOPIC(const std::string &channel, const std::string &topic)
     return "TOPIC " + channel + " :" + topic;
 }
 
-inline std::string MODE(const std::string &sourceNick, const std::string &tar, const std::string &modeChange,
-                        const std::string &args = "")
+inline std::string MODE(const std::string &sourceNick, const std::string &tar,
+                        const std::string &modeChange, const std::string &args = "")
 {
     return ":" + sourceNick + " MODE " + tar + " " + modeChange + " " + args;
 }
@@ -121,18 +123,20 @@ inline std::string RPL_NOTOPIC(const std::string &client, const std::string &cha
     return "331 " + client + " " + channel + " :No topic is set";
 }
 
-inline std::string RPL_TOPIC(const std::string &client, const std::string &channel, const std::string &topic)
+inline std::string RPL_TOPIC(const std::string &client, const std::string &channel,
+                             const std::string &topic)
 {
     return "332 " + client + " " + channel + " :" + topic;
 }
 
-inline std::string RPL_TOPICWHOTIME(const std::string &client, const std::string &channel, const std::string &who,
-                                    const std::string &time)
+inline std::string RPL_TOPICWHOTIME(const std::string &client, const std::string &channel,
+                                    const std::string &who, const std::string &time)
 {
     return "333 " + client + " " + channel + " " + who + " " + time;
 }
 
-inline std::string RPL_NAMREPLY(const std::string &client, const std::string &channel, const std::string &names)
+inline std::string RPL_NAMREPLY(const std::string &client, const std::string &channel,
+                                const std::string &names)
 {
     return "353 " + client + " = " + channel + " :" + names;
 }
@@ -143,6 +147,11 @@ inline std::string RPL_ENDOFNAMES(const std::string &client, const std::string &
 }
 
 /* ERROR RESPONSES */
+inline std::string ERR_UNKNOWNCOMMAND(const std::string &client, const std::string &command)
+{
+    return "421 " + client + command + " :No nickname given";
+}
+
 inline std::string ERR_NONICKNAMEGIVEN(const std::string &client)
 {
     return "431 " + client + " :No nickname given";

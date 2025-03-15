@@ -4,14 +4,15 @@
 #include <sstream>
 #include <unordered_map>
 #include <functional>
+#include <Client.hpp>
 
 class CommandProcessor
 {
 public:
     // Constructor takes client (maybe change to just nickname of the sender?) and raw command
     // string
-    CommandProcessor(int clientFd, const std::string &rawString);
-    ~CommandProcessor();
+    CommandProcessor();
+    ~CommandProcessor() = default;
 
     // Command parameters struct - contains all data needed by handlers
     struct CommandContext
@@ -21,8 +22,10 @@ public:
         std::string source;
         std::vector<std::string> params;
     };
-
-    void executeCommand();
+    const CommandContext &getContext() const;
+    const std::string &getCommand() const;
+    void executeCommand(Client &client);
+    void parseCommand(Client &client, const std::string &rawString);
 
 private:
     // Parsed command context
@@ -32,6 +35,5 @@ private:
     std::unordered_map<std::string, std::function<void(const CommandContext &)>> _commandHandlers;
 
     // Private methods
-    void parseCommand(const std::string &rawString);
     void setupCommandHandlers();
 };
