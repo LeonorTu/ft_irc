@@ -10,8 +10,9 @@
 Server *Server::_instance = nullptr;
 
 Server::Server()
-    : _serverFD(-1)
+    : _serverFd(-1)
     , _password("42")
+    , _running(false)
     , _paused(false)
     , _clients(std::make_unique<ClientIndex>())
     , _channels(std::make_unique<ChannelManager>())
@@ -34,10 +35,15 @@ Server::~Server()
     shutdown();
 }
 
-void Server::start()
+void Server::start(std::string password)
 {
-    _serverFD = getSocketManager().initialize();
-    getEventLoop().addToWatch(_serverFD);
+    _serverFd = getSocketManager().initialize();
+    if (_serverFd < 0) {
+        std::cerr << "server failed to start" << std::endl;
+        return;
+    }
+    getEventLoop().addToWatch(_serverFd);
+    _password = password;
     _running = true;
     loop();
 }
@@ -47,9 +53,8 @@ void Server::loop()
     while (_running) {
         std::vector<Event> events = getEventLoop().waitForEvents(100);
         for (const Event &event : events) {
-            if (event.fd == _serverFD) {
-                int clientFd = getConnectionManager().handleNewClient();
-                // sendWelcome(clientFd);
+            if (event.fd == _serverFd) {
+                getConnectionManager().handleNewClient();
             }
             else {
                 getConnectionManager().recieveData(event.fd);
@@ -70,12 +75,12 @@ Server &Server::getInstance()
     return *_instance;
 }
 
-const int Server::getServerFD() const
+int Server::getServerFD() const
 {
-    return this->_serverFD;
+    return this->_serverFd;
 }
 
-const bool Server::getIsPaused() const
+bool Server::getIsPaused() const
 {
     return this->_paused;
 }
@@ -146,7 +151,6 @@ void Server::signalHandler(int signum)
         }
     }
 }
-
 
 void Server::shutdown()
 {

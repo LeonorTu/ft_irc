@@ -42,7 +42,7 @@ private:
     // itkl
     std::string _modes;
     std::string _key;
-    int _userLimit;
+    size_t _userLimit;
 
     void broadcastMessage(const std::string &message);
     void enableMode(ChannelMode mode);

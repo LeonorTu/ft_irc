@@ -29,8 +29,8 @@ public:
 
 private:
     // Parsed command context
-    CommandContext _context;
     std::string _command;
+    CommandContext _context;
 
     std::unordered_map<std::string, std::function<void(const CommandContext &)>> _commandHandlers;
 

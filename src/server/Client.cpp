@@ -17,7 +17,7 @@ Client::~Client()
     std::cout << "Client destructor called" << std::endl;
 }
 
-const int Client::getFd() const
+int Client::getFd() const
 {
     return this->_fd;
 }
@@ -66,12 +66,12 @@ void Client::registerUser()
     _isRegistered = true;
 }
 
-const bool Client::getIsRegistered() const
+bool Client::getIsRegistered() const
 {
     return _isRegistered;
 }
 
-const bool Client::getPasswordVerified() const
+bool Client::getPasswordVerified() const
 {
     return _passwordVerified;
 }

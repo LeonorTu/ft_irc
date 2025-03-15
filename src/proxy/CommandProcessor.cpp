@@ -6,7 +6,7 @@
 // #include "../../include/CommandProcessor.hpp"
 CommandProcessor::CommandProcessor()
     : _command("")
-    , _context({0, "", {}})
+    , _context({})
 {
     setupCommandHandlers();
 }
@@ -122,7 +122,7 @@ void CommandProcessor::setupCommandHandlers()
 
 void CommandProcessor::clearCommand()
 {
-    _context = {0};
+    _context = {};
     _command = "";
 }
 

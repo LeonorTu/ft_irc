@@ -16,7 +16,7 @@ bool IRCValidator::isValidNickname(int clientFd, const std::string &sourceNick,
     return true;
 }
 
-bool IRCValidator::isValidChannelName(int clientFd, const std::string &channelName)
+bool IRCValidator::isValidChannelName()
 {
     return true;
 }
@@ -29,8 +29,7 @@ bool IRCValidator::isValidUsername(int clientFd, std::string &nickname, std::str
         username = username.substr(0, USERLEN);
     }
     std::regex usernamePattern(R"(^[a-zA-Z0-9_-]+$)");
-    if (!std::regex_match(username, usernamePattern))
-    {
+    if (!std::regex_match(username, usernamePattern)) {
         sendToClient(clientFd, ERR_INVALIDUSERNAME(nickname, username));
         return false;
     }
@@ -43,20 +42,19 @@ bool IRCValidator::isValidRealname(int clientFd, std::string &nickname, std::str
         return false;
 
     std::regex realnamePattern(R"(^[^\r\n\0]+$)");
-    if (!std::regex_match(realname, realnamePattern))
-    {
+    if (!std::regex_match(realname, realnamePattern)) {
         sendToClient(clientFd, ERR_INVALIDREALNAME(nickname, realname));
         return false;
     }
     return true;
 }
 
-bool IRCValidator::isValidChannelMode(int clientFd, const std::string &mode)
+bool IRCValidator::isValidChannelMode()
 {
     return true;
 }
 
-bool IRCValidator::isValidServerPassword(int clientFd, const std::string &password)
+bool IRCValidator::isValidServerPassword()
 {
     return true;
 }

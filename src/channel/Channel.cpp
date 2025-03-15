@@ -4,10 +4,12 @@
 
 Channel::Channel(const std::string &name, Client &creator)
     : _channelName(name)
+    , _topic("")
+    , _topicAuthor("")
+    , _topicTime("")
     , _modes("")
     , _key("")
     , _userLimit(0)
-    , _topic("")
 {
     _ops.insert_or_assign(creator.getNickname(), &creator);
     setMode(creator, true, ChannelMode::OP, creator.getNickname());
@@ -122,7 +124,8 @@ void Channel::setMode(Client &client, bool enable, ChannelMode mode, std::string
     // For parametrized modes with same values, skip
     if (mode == ChannelMode::KEY && enable && hasMode(mode) && this->_key == param)
         return;
-    if (mode == ChannelMode::LIMIT && enable && hasMode(mode) && this->_userLimit == std::stoi(param))
+    if (mode == ChannelMode::LIMIT && enable && hasMode(mode) &&
+        this->_userLimit == std::stoul(param))
         return;
 
     std::string operation = enable ? "+" : "-";
@@ -235,7 +238,8 @@ void Channel::sendTopic(Client &client)
     }
     else {
         sendToClient(fd, RPL_TOPIC(client.getNickname(), _channelName, _topic));
-        sendToClient(fd, RPL_TOPICWHOTIME(client.getNickname(), _channelName, _topicAuthor, _topicTime));
+        sendToClient(
+            fd, RPL_TOPICWHOTIME(client.getNickname(), _channelName, _topicAuthor, _topicTime));
     }
 }
 

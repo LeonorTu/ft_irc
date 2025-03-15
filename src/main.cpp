@@ -10,6 +10,5 @@ int main()
     // std::cout << "Hello" << std::endl;
 
     Server myserver;
-
-    myserver.start();
+    myserver.start("42");
 }

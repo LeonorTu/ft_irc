@@ -13,7 +13,7 @@ public:
     ~Client();
 
     // getters
-    const int getFd() const;
+    int getFd() const;
     const std::string &getNickname() const;
     const std::string &getIP() const;
     std::string &getUsername();
@@ -23,8 +23,8 @@ public:
     void setNickname(const std::string &newNickname);
     void setIp(const std::string &ip);
     void registerUser();
-    const bool getIsRegistered() const;
-    const bool getPasswordVerified() const;
+    bool getIsRegistered() const;
+    bool getPasswordVerified() const;
     std::string &getMessageBuf();
     void setIsRegistered(bool registered);
     void setPasswordVerified(bool verified);

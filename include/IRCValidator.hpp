@@ -9,9 +9,9 @@ public:
                                 const std::string &requestedNick);
     static bool isValidUsername(int clientFd, std::string &nickname, std::string &username);
     bool isValidRealname(int clientFd, std::string &nickname, std::string &realname);
-    static bool isValidChannelName(int clientFd, const std::string &channelName);
-    static bool isValidChannelMode(int clientFd, const std::string &mode);
-    static bool isValidServerPassword(int clientFd, const std::string &password);
+    static bool isValidChannelName();
+    static bool isValidChannelMode();
+    static bool isValidServerPassword();
 
 private:
 };

@@ -1,8 +1,8 @@
 #include <SocketManager.hpp>
 
 SocketManager::SocketManager(int port)
-    : _port(port)
-    , _serverFd(-1)
+    : _serverFd(-1)
+    , _port(port)
 {
     _serverAddress.sin_port = htons(_port);
     _serverAddress.sin_family = AF_INET;

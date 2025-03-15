@@ -4,9 +4,9 @@
 
 ConnectionManager::ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop,
                                      ClientIndex &clients)
-    : _socketManager(socketManager)
+    : _clients(clients)
+    , _socketManager(socketManager)
     , _EventLoop(EventLoop)
-    , _clients(clients)
     , _commandProcessor(CommandProcessor())
 {}
 
@@ -15,7 +15,7 @@ ConnectionManager::~ConnectionManager()
     disconnectAllClients();
 }
 
-int ConnectionManager::handleNewClient()
+void ConnectionManager::handleNewClient()
 {
     sockaddr_in clientAddr;
 
@@ -30,7 +30,6 @@ int ConnectionManager::handleNewClient()
     std::cout << "New client" << std::endl;
     std::cout << "  Socket: " << clientFd << std::endl;
     std::cout << "  IP:     " << ip << std::endl;
-    return clientFd;
 }
 
 void ConnectionManager::disconnectClient(Client &client)

@@ -16,7 +16,7 @@ public:
     ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop, ClientIndex &clients);
     ~ConnectionManager();
 
-    int handleNewClient();
+    void handleNewClient();
     void disconnectClient(Client &client);
     void recieveData(int clientFd);
     void disconnectAllClients();

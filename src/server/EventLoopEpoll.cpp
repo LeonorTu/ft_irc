@@ -35,7 +35,7 @@ void EventLoopEpoll::removeFromWatch(int fd)
 
 std::vector<Event> EventLoopEpoll::waitForEvents(int timeoutMs)
 {
-    epoll_event epollEvents[EPOLL_MAX_EVENTS] = {0};
+    epoll_event epollEvents[EPOLL_MAX_EVENTS] = {};
     std::vector<Event> results;
     int nfds = epoll_wait(_epollFd, epollEvents, EPOLL_MAX_EVENTS, timeoutMs);
     if (nfds < 0) {
