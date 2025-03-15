@@ -4,35 +4,38 @@
 // #include "../../include/CommandProcessor.hpp"
 
 CommandProcessor::CommandProcessor(int clientFd, const std::string &rawString)
-    : _context({clientFd, "", {}}), _command(""), _commandHandlers({})
+    : _context({clientFd, "", {}})
+    , _command("")
+    , _commandHandlers({})
 {
     parseCommand(rawString);
     // setupCommandHandlers();
 }
 
-CommandProcessor::~CommandProcessor(){}
+CommandProcessor::~CommandProcessor()
+{}
 
 void ignoreTag(std::istringstream &iss)
 {
     if (iss.peek() == '@') {
         std::string tagIgnore;
-        iss.get(); //skip the @
+        iss.get(); // skip the @
         std::getline(iss, tagIgnore, ' ');
-        iss >> std::ws; 
+        iss >> std::ws;
     }
 }
 
 void checkSource(std::istringstream &iss, CommandProcessor::CommandContext &ctx)
 {
     if (iss.peek() == ':') {
-        iss.get(); //skip the :
+        iss.get(); // skip the :
         std::getline(iss, ctx.source, ' ');
     }
 }
 
 void storeCommand(std::istringstream &iss, std::string &_command)
 {
-    //automatically store the first word as the command (ignoring leading whitespace)
+    // automatically store the first word as the command (ignoring leading whitespace)
     if (!(iss >> _command)) {
         std::cerr << "Error storing command" << std::endl;
         return;
@@ -43,8 +46,7 @@ void param(std::istringstream &iss, CommandProcessor::CommandContext &ctx)
 {
     std::string param;
     while (iss >> param) {
-        if (param[0] == ':') 
-        {
+        if (param[0] == ':') {
             std::string tail;
             std::getline(iss, tail);
             ctx.params.push_back(tail);
@@ -54,12 +56,12 @@ void param(std::istringstream &iss, CommandProcessor::CommandContext &ctx)
     }
 }
 
-void  CommandProcessor::parseCommand(const std::string &rawString)
+void CommandProcessor::parseCommand(const std::string &rawString)
 {
     if (rawString.empty())
         return;
     std::istringstream iss(rawString);
-    iss >> std::ws; //skip whitespace
+    iss >> std::ws; // skip whitespace
     // std::cout << "here is " << iss.str() << std::endl;
     ignoreTag(iss);
     checkSource(iss, _context);
@@ -69,14 +71,11 @@ void  CommandProcessor::parseCommand(const std::string &rawString)
     std::cout << "Source : " << _context.source << std::endl;
     std::cout << "Command : " << _command << std::endl;
     int count = 0;
-    for (const auto &param : _context.params){
-        std::cout << "Param[" << count << "] :" 
-        << param << std::endl; 
+    for (const auto &param : _context.params) {
+        std::cout << "Param[" << count << "] :" << param << std::endl;
         count++;
     }
 }
-
-
 
 void CommandProcessor::executeCommand()
 {
@@ -113,8 +112,6 @@ void CommandProcessor::executeCommand()
 //     // _commandHandlers["WHO"] = who;
 //     // _commandHandlers["WHOIS"] = whois;
 // }
-
-
 
 //////////////////////////TESTING//////////////////////////
 // int main()
