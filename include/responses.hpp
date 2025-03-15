@@ -172,7 +172,13 @@ inline std::string ERR_NOTONCHANNEL(const std::string &client, const std::string
     return "442 " + client + " " + channel + " :You're not on that channel";
 }
 
-inline std::string ERR_NEEDMOREPARAMS(const std::string &client, const std::string &command)
+inline std::string ERR_NOTREGISTERED(const std::string &client)
+{
+    return "451" + client + " :You have not registered";
+}
+
+    inline std::string
+    ERR_NEEDMOREPARAMS(const std::string &client, const std::string &command)
 {
     return "461 " + client + " " + command + " :Not enough parameters";
 }
