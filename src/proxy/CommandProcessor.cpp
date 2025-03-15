@@ -61,20 +61,23 @@ void CommandProcessor::parseCommand(const std::string &rawString)
     if (rawString.empty())
         return;
     std::istringstream iss(rawString);
-    iss >> std::ws; // skip whitespace
-    // std::cout << "here is " << iss.str() << std::endl;
+    iss >> std::ws; //skip whitespace
+
     ignoreTag(iss);
     checkSource(iss, _context);
     storeCommand(iss, _command);
     param(iss, _context);
 
-    std::cout << "Source : " << _context.source << std::endl;
-    std::cout << "Command : " << _command << std::endl;
-    int count = 0;
-    for (const auto &param : _context.params) {
-        std::cout << "Param[" << count << "] :" << param << std::endl;
-        count++;
-    }
+    ///////Testing///////
+
+    // std::cout << "Source : " << _context.source << std::endl;
+    // std::cout << "Command : " << _command << std::endl;
+    // int count = 0;
+    // for (const auto &param : _context.params){
+    //     std::cout << "Param[" << count << "] :" 
+    //     << param << std::endl; 
+    //     count++;
+    // }
 }
 
 void CommandProcessor::executeCommand()
@@ -87,6 +90,7 @@ void CommandProcessor::executeCommand()
         it->second(_context);
     }
     else {
+        //should i need to return a message here that this cmd does not exist with 421?
         std::cerr << "There is no such command: " << _command << std::endl;
     }
 }
