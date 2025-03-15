@@ -1,8 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
-set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(ft_irc)
 enable_testing()
+
+# Set C++ standard for all targets
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+add_compile_options(-Wall -Wextra -Werror)
 
 include_directories(include)
 
@@ -15,7 +22,6 @@ add_library(ft_irc_lib ${SOURCES})
 add_executable(ft_irc src/main.cpp)
 
 target_link_libraries(ft_irc PRIVATE ft_irc_lib)
-target_compile_features(ft_irc PRIVATE cxx_std_20)
 
 # Download and build Google Test
 include(FetchContent)
