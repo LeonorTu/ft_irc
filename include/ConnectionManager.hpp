@@ -8,6 +8,7 @@
 #include <ClientIndex.hpp>
 #include <SocketManager.hpp>
 #include <EventLoop.hpp>
+#include <CommandProcessor.hpp>
 
 class ConnectionManager
 {
@@ -24,6 +25,7 @@ private:
     ClientIndex &_clients;
     SocketManager &_socketManager;
     EventLoop &_EventLoop;
+    CommandProcessor _commandProcessor;
 
     void extractFullMessages(Client &client, std::string &messageBuffer);
     void handleOversized(Client &client, std::string &messageBuffer);

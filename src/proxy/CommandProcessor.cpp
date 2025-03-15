@@ -1,19 +1,25 @@
 #include <CommandProcessor.hpp>
 #include <commandHandlers.hpp>
+#include <responses.hpp>
+#include <Client.hpp>
 
 // #include "../../include/CommandProcessor.hpp"
-
-CommandProcessor::CommandProcessor(int clientFd, const std::string &rawString)
-    : _context({clientFd, "", {}})
-    , _command("")
-    , _commandHandlers({})
+CommandProcessor::CommandProcessor()
+    : _command("")
+    , _context({0, "", {}})
 {
-    parseCommand(rawString);
-    // setupCommandHandlers();
+    setupCommandHandlers();
 }
 
-CommandProcessor::~CommandProcessor()
-{}
+const CommandProcessor::CommandContext &CommandProcessor::getContext() const
+{
+    return _context;
+}
+
+const std::string &CommandProcessor::getCommand() const
+{
+    return _command;
+}
 
 void ignoreTag(std::istringstream &iss)
 {
@@ -45,42 +51,35 @@ void storeCommand(std::istringstream &iss, std::string &_command)
 void param(std::istringstream &iss, CommandProcessor::CommandContext &ctx)
 {
     std::string param;
-    while (iss >> param) {
-        if (param[0] == ':') {
+    while (true) {
+        iss >> std::ws;
+        if (iss.peek() == ':') {
             std::string tail;
+            iss.get(); // skip the :
             std::getline(iss, tail);
             ctx.params.push_back(tail);
             break;
         }
+        if (!(iss >> param))
+            break;
         ctx.params.push_back(param);
     }
 }
 
-void CommandProcessor::parseCommand(const std::string &rawString)
+void CommandProcessor::parseCommand(Client &client, const std::string &rawString)
 {
     if (rawString.empty())
         return;
     std::istringstream iss(rawString);
-    iss >> std::ws; //skip whitespace
+    iss >> std::ws; // skip whitespace
 
     ignoreTag(iss);
     checkSource(iss, _context);
     storeCommand(iss, _command);
     param(iss, _context);
-
-    ///////Testing///////
-
-    // std::cout << "Source : " << _context.source << std::endl;
-    // std::cout << "Command : " << _command << std::endl;
-    // int count = 0;
-    // for (const auto &param : _context.params){
-    //     std::cout << "Param[" << count << "] :" 
-    //     << param << std::endl; 
-    //     count++;
-    // }
 }
 
-void CommandProcessor::executeCommand()
+void CommandProcessor::executeCommand(Client &client)
 {
     // Check if the command exists in our handlers map
     auto it = _commandHandlers.find(_command);
@@ -90,32 +89,32 @@ void CommandProcessor::executeCommand()
         it->second(_context);
     }
     else {
-        //should i need to return a message here that this cmd does not exist with 421?
-        std::cerr << "There is no such command: " << _command << std::endl;
+        // should i need to return a message here that this cmd does not exist with 421?
+        sendToClient(_context.clientFd, ERR_UNKNOWNCOMMAND(client.getNickname(), _command));
     }
 }
 
-// void CommandProcessor::setupCommandHandlers()
-// {
-//     _commandHandlers["NICK"] = nick;
-//     _commandHandlers["PASS"] = pass;
-//     _commandHandlers["USER"] = user;
-//     // _commandHandlers["LUSERS"] = lusers;
-//     // _commandHandlers["MOTD"] = motd;
-//     // _commandHandlers["QUIT"] = quit;
-//     // _commandHandlers["JOIN"] = join;
-//     // _commandHandlers["PART"] = part;
-//     // _commandHandlers["MODE"] = mode;
-//     // _commandHandlers["TOPIC"] = topic;
-//     // _commandHandlers["INVITE"] = invite;
-//     // _commandHandlers["KICK"] = kick;
-//     // _commandHandlers["PING"] = ping;
-//     // _commandHandlers["PONG"] = pong;
-//     // _commandHandlers["PRIVMSG"] = privmsg;
-//     // _commandHandlers["NOTICE"] = notice;
-//     // _commandHandlers["WHO"] = who;
-//     // _commandHandlers["WHOIS"] = whois;
-// }
+void CommandProcessor::setupCommandHandlers()
+{
+    _commandHandlers["NICK"] = nick;
+    _commandHandlers["PASS"] = pass;
+    _commandHandlers["USER"] = user;
+    // _commandHandlers["LUSERS"] = lusers;
+    // _commandHandlers["MOTD"] = motd;
+    // _commandHandlers["QUIT"] = quit;
+    // _commandHandlers["JOIN"] = join;
+    // _commandHandlers["PART"] = part;
+    // _commandHandlers["MODE"] = mode;
+    // _commandHandlers["TOPIC"] = topic;
+    // _commandHandlers["INVITE"] = invite;
+    // _commandHandlers["KICK"] = kick;
+    // _commandHandlers["PING"] = ping;
+    // _commandHandlers["PONG"] = pong;
+    // _commandHandlers["PRIVMSG"] = privmsg;
+    // _commandHandlers["NOTICE"] = notice;
+    // _commandHandlers["WHO"] = who;
+    // _commandHandlers["WHOIS"] = whois;
+}
 
 //////////////////////////TESTING//////////////////////////
 // int main()

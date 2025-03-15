@@ -7,6 +7,7 @@ ConnectionManager::ConnectionManager(SocketManager &socketManager, EventLoop &Ev
     : _socketManager(socketManager)
     , _EventLoop(EventLoop)
     , _clients(clients)
+    , _commandProcessor(CommandProcessor())
 {}
 
 ConnectionManager::~ConnectionManager()
@@ -87,7 +88,7 @@ void ConnectionManager::extractFullMessages(Client &client, std::string &message
         std::string completedMessage = messageBuffer.substr(0, end);
         messageBuffer.erase(0, pos + 1);
         // Call the command handler, currently just printing out the log message.
-        logMessage(client.getFd(), completedMessage, false);
+        _commandProcessor.parseCommand(client, completedMessage);
     }
     handleOversized(client, messageBuffer);
 }
