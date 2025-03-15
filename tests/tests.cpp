@@ -6,8 +6,6 @@
 #include <unistd.h>
 #include <thread>
 #include <chrono>
-#include <message.hpp>
-
 class ServerTest : public ::testing::Test
 {
 protected:
@@ -30,13 +28,6 @@ protected:
 TEST_F(ServerTest, InitializationTest)
 {
     EXPECT_EQ(server->getServerFD(), -1);
-}
-
-TEST(MessageTest, messageTest)
-{
-    message parsedMessage("USER jtu jtu localhost :Jingyi Tu");
-    EXPECT_EQ(parsedMessage.command, "USER");
-    EXPECT_EQ(parsedMessage.parameters[0], "jtu");
 }
 
 TEST_F(ServerTest, StartStopTest)

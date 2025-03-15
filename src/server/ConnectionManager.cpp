@@ -2,7 +2,8 @@
 #include <common.hpp>
 #include <responses.hpp>
 
-ConnectionManager::ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop, ClientIndex &clients)
+ConnectionManager::ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop,
+                                     ClientIndex &clients)
     : _socketManager(socketManager)
     , _EventLoop(EventLoop)
     , _clients(clients)
@@ -24,7 +25,7 @@ int ConnectionManager::handleNewClient()
     Client &client = _clients.getByFd(clientFd);
     client.setIp(ip);
     // add new client to epoll list
-    _EventLoop.addToWatch(clientFd, EPOLLIN | EPOLLET);
+    _EventLoop.addToWatch(clientFd);
     std::cout << "New client" << std::endl;
     std::cout << "  Socket: " << clientFd << std::endl;
     std::cout << "  IP:     " << ip << std::endl;
