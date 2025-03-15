@@ -15,6 +15,7 @@ const int MODES = 3;
 const int NICKLEN = 30;
 const int TOPICLEN = 307;
 const int USERLEN = 32;
+const int REALLEN = 128;
 const int EPOLL_MAX_EVENTS = 128;
 
 // server info

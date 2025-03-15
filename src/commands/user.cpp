@@ -23,7 +23,8 @@ void user(const CommandProcessor::CommandContext &ctx)
     std::string username = ctx.params[0];
     std::string realname = ctx.params[3];
 
-    if (IRCValidator::isValidUsername(ctx.clientFd, nickname, username)) {
+    IRCValidator validator;
+    if (validator.isValidUsername(ctx.clientFd, nickname, username) && validator.isValidRealname(ctx.clientFd, nickname, realname)) {
         client.setUsername(username);
         client.setRealname(realname);
     }

@@ -37,6 +37,20 @@ bool IRCValidator::isValidUsername(int clientFd, std::string &nickname, std::str
     return true;
 }
 
+bool IRCValidator::isValidRealname(int clientFd, std::string &nickname, std::string &realname)
+{
+    if (realname.empty() || realname.length() > REALLEN)
+        return false;
+
+    std::regex realnamePattern(R"(^[^\r\n\0]+$)");
+    if (!std::regex_match(realname, realnamePattern))
+    {
+        sendToClient(clientFd, ERR_INVALIDREALNAME(nickname, realname));
+        return false;
+    }
+    return true;
+}
+
 bool IRCValidator::isValidChannelMode(int clientFd, const std::string &mode)
 {
     return true;

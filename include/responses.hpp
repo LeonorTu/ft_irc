@@ -207,3 +207,8 @@ inline std::string ERR_CHANOPRIVSNEEDED(const std::string &client, const std::st
 {
     return "482 " + client + " " + channel + " :You're not channel operator";
 }
+
+inline std::string ERR_INVALIDREALNAME(const std::string &client, const std::string &realname)
+{
+    return "513 " + client + " " + realname + " :Invalid characters in realname";
+}
