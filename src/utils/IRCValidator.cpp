@@ -1,14 +1,19 @@
 #include <IRCValidator.hpp>
 #include <common.hpp>
 #include <regex>
+#include <responses.hpp>
 
-bool IRCValidator::isValidNickname(const std::string &nickname)
+bool IRCValidator::isValidNickname(int clientFd, const std::string &sourceNick,
+                                   const std::string &requestedNick)
 {
-    if (nickname.empty() || nickname.length() > NICKLEN)
+    if (requestedNick.empty() || requestedNick.length() > NICKLEN)
         return false;
-    std::regex nicknamePattern("^[a-zA-Z\\[\\]\\\\`_^{|}][a-zA-Z0-9\\[\\]\\\\`_^{|}-]*$");
-
-    return std::regex_match(nickname, nicknamePattern);
+    std::regex nicknamePattern(R"(^[a-zA-Z\[\]\\`_^{|}][a-zA-Z0-9\[\]\\`_^{|}-]*$)");
+    if (!std::regex_match(requestedNick, nicknamePattern)) {
+        sendToClient(clientFd, ERR_ERRONEUSNICKNAME(sourceNick, requestedNick));
+        return false;
+    }
+    return true;
 }
 
 bool IRCValidator::isValidChannelName(int clientFd, const std::string &channelName)
@@ -16,13 +21,20 @@ bool IRCValidator::isValidChannelName(int clientFd, const std::string &channelNa
     return true;
 }
 
-bool IRCValidator::isValidUsername(const std::string &username)
+bool IRCValidator::isValidUsername(int clientFd, std::string &nickname, std::string &username)
 {
     if (username.empty())
         return false;
+    if (username.length() > USERLEN) {
+        username = username.substr(0, USERLEN);
+    }
     std::regex usernamePattern(R"(^[a-zA-Z0-9_-]+$)");
-
-    return std::regex_match(username, usernamePattern);
+    if (!std::regex_match(username, usernamePattern))
+    {
+        sendToClient(clientFd, ERR_INVALIDUSERNAME(nickname, username));
+        return false;
+    }
+    return true;
 }
 
 bool IRCValidator::isValidChannelMode(int clientFd, const std::string &mode)

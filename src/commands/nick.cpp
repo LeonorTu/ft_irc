@@ -9,11 +9,11 @@
 
 // can now search for clients getClients() function, that returns a brand new 2am ClientIndex that
 // has special functions to get clients by name and fd
-bool isUsed(Server &server, const std::string &nickname)
-{
-    ClientIndex &clients = server.getClients();
-    return clients.nickExists(nickname);
-}
+// bool isUsed(Server &server, const std::string &nickname)
+// {
+//     ClientIndex &clients = server.getClients();
+//     return clients.nickExists(nickname);
+// }
 
 // bool isValidNickname(const std::string &nickname)
 // {
@@ -27,7 +27,8 @@ bool isUsed(Server &server, const std::string &nickname)
 void nick(const CommandProcessor::CommandContext &ctx)
 {
     Server &server = Server::getInstance();
-    Client &client = server.getClients().getByFd(ctx.clientFd);
+    ClientIndex &clients = server.getClients();
+    Client &client = clients.getByFd(ctx.clientFd);
     std::string currentNick = client.getNickname();
     std::string requestedNick = ctx.params[0];
     // Determine what to use in error messages (use * if no current nickname)
@@ -38,12 +39,12 @@ void nick(const CommandProcessor::CommandContext &ctx)
         return;
     }
 
-    if (!IRCValidator::isValidNickname(requestedNick)) {
+    if (!IRCValidator::isValidNickname(ctx.clientFd, sourceNick, requestedNick)) {
         sendToClient(ctx.clientFd, ERR_ERRONEUSNICKNAME(sourceNick, requestedNick));
         return;
     }
 
-    if (isUsed(server, requestedNick)) {
+    if (clients.nickExists(requestedNick)) {
         sendToClient(ctx.clientFd, ERR_NICKNAMEINUSE(sourceNick, requestedNick));
         return;
     }
