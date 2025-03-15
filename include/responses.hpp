@@ -183,6 +183,11 @@ inline std::string ERR_NOSUCHCHANNEL(const std::string &client, const std::strin
     return "403 " + client + " " + channel + " :No such channel";
 }
 
+inline std::string ERR_INVALIDUSERNAME(const std::string &client, const std::string &username)
+{
+    return "468 " + client + " " + username + " :Invalid username format";
+}
+
 inline std::string ERR_CHANNELISFULL(const std::string &client, const std::string &channel)
 {
     return "471 " + client + " " + channel + " :Cannot join channel (+l) - channel full";
@@ -201,4 +206,9 @@ inline std::string ERR_INVITEONLYCHAN(const std::string &client, const std::stri
 inline std::string ERR_CHANOPRIVSNEEDED(const std::string &client, const std::string &channel)
 {
     return "482 " + client + " " + channel + " :You're not channel operator";
+}
+
+inline std::string ERR_INVALIDREALNAME(const std::string &client, const std::string &realname)
+{
+    return "513 " + client + " " + realname + " :Invalid characters in realname";
 }

@@ -52,7 +52,6 @@ void Client::setNickname(const std::string &newNickname)
     _nickname = newNickname;
 }
 
-
 void Client::setIp(const std::string &ip)
 {
     _ip = ip;
@@ -66,6 +65,11 @@ void Client::registerUser()
 const bool Client::getIsRegistered() const
 {
     return _isRegistered;
+}
+
+const bool Client::getPasswordVerified() const
+{
+    return _passwordVerified;
 }
 
 std::string &Client::getMessageBuf()
