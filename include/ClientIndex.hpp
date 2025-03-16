@@ -16,7 +16,7 @@ public:
 
     // Core operations
     void add(int clientFd);
-    void addNick(int clientFd, std::string &clientNick);
+    void addNick(int clientFd);
     void remove(Client &client);
     void updateNick(const std::string &oldNick, const std::string &newNick);
 

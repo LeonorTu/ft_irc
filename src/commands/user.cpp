@@ -39,7 +39,7 @@ void user(const CommandProcessor::CommandContext &ctx)
     if (!client.getIsRegistered() && client.getPasswordVerified() &&
         !client.getNickname().empty() && !client.getUsername().empty()) {
         client.setIsRegistered(true);
-        server.getClients().add(client.getFd());
+        server.getClients().addNick(ctx.clientFd);
         sendWelcome(ctx.clientFd);
     }
 }
