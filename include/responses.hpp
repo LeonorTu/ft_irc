@@ -112,7 +112,7 @@ inline std::string MODE(const std::string &sourceNick, const std::string &tar,
     return ":" + sourceNick + " MODE " + tar + " " + modeChange + " " + args;
 }
 
-inline std::string NICKNAMECHANGE(const std::string &old_nickname, const std::string &new_nickname)
+inline std::string NICK(const std::string &old_nickname, const std::string &new_nickname)
 {
     return ":" + old_nickname + " NICK " + new_nickname;
 }
@@ -177,8 +177,7 @@ inline std::string ERR_NOTREGISTERED(const std::string &client)
     return "451" + client + " :You have not registered";
 }
 
-    inline std::string
-    ERR_NEEDMOREPARAMS(const std::string &client, const std::string &command)
+inline std::string ERR_NEEDMOREPARAMS(const std::string &client, const std::string &command)
 {
     return "461 " + client + " " + command + " :Not enough parameters";
 }
