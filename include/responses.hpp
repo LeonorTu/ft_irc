@@ -114,7 +114,7 @@ inline std::string MODE(const std::string &sourceNick, const std::string &tar,
 
 inline std::string NICKNAMECHANGE(const std::string &old_nickname, const std::string &new_nickname)
 {
-    return ":" + old_nickname + " NICK " + " changed their nickname to " + new_nickname;
+    return ":" + old_nickname + " NICK " + new_nickname;
 }
 
 /* INFORMATIONAL RESPONSES (RPL_*) */
