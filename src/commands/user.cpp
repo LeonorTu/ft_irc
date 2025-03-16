@@ -5,12 +5,19 @@
 #include <ClientIndex.hpp>
 #include <IRCValidator.hpp>
 #include <commandHandlers.hpp>
+#include <ConnectionManager.hpp>
 
 void user(const CommandProcessor::CommandContext &ctx)
 {
     Server &server = Server::getInstance();
     Client &client = server.getClients().getByFd(ctx.clientFd);
     std::string nickname = client.getNickname().empty() ? "*" : client.getNickname();
+
+    if (!client.getPasswordVerified()) {
+        sendToClient(ctx.clientFd, ERR_PASSWDMISMATCH(ctx.source));
+        server.getConnectionManager().disconnectClient(client);
+        return;
+    }
 
     if (client.getIsRegistered()) {
         sendToClient(ctx.clientFd, ERR_ALREADYREGISTERED(nickname));

@@ -6,6 +6,7 @@
 #include <ClientIndex.hpp>
 #include <CommandProcessor.hpp>
 #include <commandHandlers.hpp>
+#include <ConnectionManager.hpp>
 
 void nick(const CommandProcessor::CommandContext &ctx)
 {
@@ -18,7 +19,8 @@ void nick(const CommandProcessor::CommandContext &ctx)
     std::string sourceNick = currentNick.empty() ? "*" : currentNick;
 
     if (!client.getPasswordVerified()) {
-
+        sendToClient(ctx.clientFd, ERR_PASSWDMISMATCH(ctx.source));
+        server.getConnectionManager().disconnectClient(client);
         return;
     }
 
