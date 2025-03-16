@@ -31,6 +31,7 @@ public:
     void untrackChannel(Channel *channel);
     void trackChannel(Channel *channel);
     bool isOnChannel(Channel *channel);
+    size_t countChannelTypes(char type);
 
 private:
     int _fd;
