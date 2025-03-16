@@ -146,6 +146,11 @@ inline std::string RPL_ENDOFNAMES(const std::string &client, const std::string &
     return "366 " + client + " " + channel + " :End of /NAMES list";
 }
 
+inline std::string ERR_TOOMANYCHANNELS(const std::string &client, const std::string &channel)
+{
+    return "405 " + client + " " + channel + " :You have joined too many channels";
+}
+
 /* ERROR RESPONSES */
 inline std::string ERR_UNKNOWNCOMMAND(const std::string &client, const std::string &command)
 {
