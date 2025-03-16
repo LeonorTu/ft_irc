@@ -15,9 +15,10 @@ void ClientIndex::add(int clientFd)
     }
 }
 
-void ClientIndex::addNick(int clientFd, std::string &clientNick)
+void ClientIndex::addNick(int clientFd)
 {
     Client &client = getByFd(clientFd);
+    std::string clientNick = client.getNickname();
     if (client.getIsRegistered())
         _byNick[caseMapped(clientNick)] = &client;
 }
