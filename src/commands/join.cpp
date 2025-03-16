@@ -38,24 +38,28 @@ void join(const CommandProcessor::CommandContext &ctx)
     std::string channelName;
     std::string key;
     IRCValidator validator;
-    int local = 0;
-    int regular = 0;
-    while (std::getline(channelList, channelName, ',') && std::getline(keyList, key, ',')) {
+    while (std::getline(channelList, channelName, ',') || std::getline(keyList, key, ',')) {
         key = key.empty() ? "" : key;
         if (!channelName.empty()) {
-            if (!validator.isValidChannelName(ctx.clientFd, client.getNickname(), channelName) &&
-                !channels.channelExists(channelName)) {
+            if (!validator.isValidChannelName(ctx.clientFd, client.getNickname(), channelName)) {
                 sendToClient(ctx.clientFd, ERR_NOSUCHCHANNEL(client.getNickname(), channelName));
                 continue;
             }
-            Channel &channel = channels.getChannel(channelName);
-            if (channelName[0] == '#' && regular <= REGCHANLMAX) {
-                channel.join(client, key);
-                regular++;
+            if (channelName[0] == '#' && client.countChannelTypes('#') <= REGCHANLMAX) {
+                if (channels.channelExists(channelName)) {
+                    Channel &channel = channels.getChannel(channelName);
+                    channel.join(client, key);
+                }
+                else
+                    channels.createChannel(channelName, client);
             }
-            else if (channelName[0] == '&' && local <= LOCCHANLMAX) {
-                channel.join(client, key);
-                local++;
+            else if (channelName[0] == '&' && client.countChannelTypes('&') <= LOCCHANLMAX) {
+                if (channels.channelExists(channelName)) {
+                    Channel &channel = channels.getChannel(channelName);
+                    channel.join(client, key);
+                }
+                else
+                    channels.createChannel(channelName, client);
             }
             else {
                 sendToClient(ctx.clientFd, ERR_TOOMANYCHANNELS(client.getNickname(), channelName));

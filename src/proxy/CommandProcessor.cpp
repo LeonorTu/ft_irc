@@ -107,7 +107,7 @@ void CommandProcessor::setupCommandHandlers()
     // _commandHandlers["LUSERS"] = lusers;
     // _commandHandlers["MOTD"] = motd;
     _commandHandlers["QUIT"] = quit;
-    // _commandHandlers["JOIN"] = join;
+    _commandHandlers["JOIN"] = join;
     _commandHandlers["PART"] = part;
     // _commandHandlers["MODE"] = mode;
     _commandHandlers["TOPIC"] = topic;
