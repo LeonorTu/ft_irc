@@ -9,5 +9,6 @@ void silentIgnore(const CommandProcessor::CommandContext &ctx);
 void join(const CommandProcessor::CommandContext &ctx);
 void part(const CommandProcessor::CommandContext &ctx);
 void quit(const CommandProcessor::CommandContext &ctx);
+void topic(const CommandProcessor::CommandContext &ctx);
 void sendWelcome(int clientFd);
 void silentIgnore(const CommandProcessor::CommandContext &ctx);

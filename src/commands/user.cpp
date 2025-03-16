@@ -30,8 +30,18 @@ void user(const CommandProcessor::CommandContext &ctx)
     std::string username = ctx.params[0];
     std::string realname = ctx.params[3];
 
+    if (username.empty()) {
+        sendToClient(ctx.clientFd, ERR_NEEDMOREPARAMS(nickname, "USER"));
+        return;
+    }
+    if (realname.empty()) {
+        sendToClient(ctx.clientFd, ERR_NEEDMOREPARAMS(nickname, "USER"));
+        return;
+    }
+    
     IRCValidator validator;
-    if (validator.isValidUsername(ctx.clientFd, nickname, username) && validator.isValidRealname(ctx.clientFd, nickname, realname)) {
+    if (validator.isValidUsername(ctx.clientFd, nickname, username) &&
+        validator.isValidRealname(ctx.clientFd, nickname, realname)) {
         client.setUsername(username);
         client.setRealname(realname);
     }

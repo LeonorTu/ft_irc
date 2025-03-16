@@ -3,28 +3,30 @@
 #include <regex>
 #include <responses.hpp>
 
-bool IRCValidator::isValidNickname(int clientFd, const std::string &sourceNick,
-                                   const std::string &requestedNick)
+bool IRCValidator::isValidNickname(int clientFd, const std::string &oldNickname,
+                                   const std::string &newNickname)
 {
-    if (requestedNick.empty() || requestedNick.length() > NICKLEN)
-        return false;
     std::regex nicknamePattern(R"(^[a-zA-Z\[\]\\`_^{|}][a-zA-Z0-9\[\]\\`_^{|}-]*$)");
-    if (!std::regex_match(requestedNick, nicknamePattern)) {
-        sendToClient(clientFd, ERR_ERRONEUSNICKNAME(sourceNick, requestedNick));
+    if (newNickname.length() > NICKLEN || !std::regex_match(newNickname, nicknamePattern)) {
+        sendToClient(clientFd, ERR_ERRONEUSNICKNAME(oldNickname, newNickname));
         return false;
     }
     return true;
 }
 
-bool IRCValidator::isValidChannelName()
+bool IRCValidator::isValidChannelName(int clientFd, const std::string &nickname,
+                                      const std::string &channelName)
 {
+    std::regex channelNamePattern(R"(^[#&][^\x00\x07\x0A\x0D ,:]{1,49}$)");
+    if (!std::regex_match(channelName, channelNamePattern)) {
+        sendToClient(clientFd, ERR_NOSUCHCHANNEL(nickname, channelName));
+        return false;
+    }
     return true;
 }
 
-bool IRCValidator::isValidUsername(int clientFd, std::string &nickname, std::string &username)
+bool IRCValidator::isValidUsername(int clientFd, const std::string &nickname, std::string &username)
 {
-    if (username.empty())
-        return false;
     if (username.length() > USERLEN) {
         username = username.substr(0, USERLEN);
     }
@@ -36,13 +38,11 @@ bool IRCValidator::isValidUsername(int clientFd, std::string &nickname, std::str
     return true;
 }
 
-bool IRCValidator::isValidRealname(int clientFd, std::string &nickname, std::string &realname)
+bool IRCValidator::isValidRealname(int clientFd, const std::string &nickname,
+                                   const std::string &realname)
 {
-    if (realname.empty() || realname.length() > REALLEN)
-        return false;
-
     std::regex realnamePattern(R"(^[^\r\n\0]+$)");
-    if (!std::regex_match(realname, realnamePattern)) {
+    if (realname.length() > REALLEN || !std::regex_match(realname, realnamePattern)) {
         sendToClient(clientFd, ERR_INVALIDREALNAME(nickname, realname));
         return false;
     }
