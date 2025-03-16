@@ -15,7 +15,6 @@ void user(const CommandProcessor::CommandContext &ctx)
 
     if (!client.getPasswordVerified()) {
         sendToClient(ctx.clientFd, ERR_PASSWDMISMATCH(ctx.source));
-        server.getConnectionManager().disconnectClient(client);
         return;
     }
 
