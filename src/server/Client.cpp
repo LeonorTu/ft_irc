@@ -81,6 +81,11 @@ std::string &Client::getMessageBuf()
     return _messageBuf;
 }
 
+std::unordered_map<std::string, Channel *> Client::getMyChannels()
+{
+    return _myChannels;
+}
+
 void Client::setIsRegistered(bool registered)
 {
     _isRegistered = registered;
@@ -104,4 +109,15 @@ void Client::trackChannel(Channel *channel)
 bool Client::isOnChannel(Channel *channel)
 {
     return _myChannels.find(channel->getName()) != this->_myChannels.end();
+}
+
+size_t Client::countChannelTypes(char type)
+{
+    size_t counter = 0;
+
+    for (auto &[_, channel] : _myChannels) {
+        if (channel->getName()[0] == type)
+            counter++;
+    }
+    return counter;
 }

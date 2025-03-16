@@ -6,47 +6,47 @@
 #include <ClientIndex.hpp>
 #include <CommandProcessor.hpp>
 #include <commandHandlers.hpp>
+#include <ConnectionManager.hpp>
 
 void nick(const CommandProcessor::CommandContext &ctx)
 {
     Server &server = Server::getInstance();
     ClientIndex &clients = server.getClients();
     Client &client = clients.getByFd(ctx.clientFd);
-    std::string currentNick = client.getNickname();
-    std::string requestedNick = ctx.params[0];
-    // Determine what to use in error messages (use * if no current nickname)
-    std::string sourceNick = currentNick.empty() ? "*" : currentNick;
+    std::string oldNickname = client.getNickname();
+    std::string newNickname = ctx.params[0];
 
     if (!client.getPasswordVerified()) {
-
+        sendToClient(ctx.clientFd, ERR_PASSWDMISMATCH(ctx.source));
         return;
     }
 
-    if (requestedNick.empty()) {
-        sendToClient(ctx.clientFd, ERR_NONICKNAMEGIVEN(sourceNick));
+    if (newNickname.empty()) {
+        sendToClient(ctx.clientFd, ERR_NONICKNAMEGIVEN(oldNickname));
         return;
     }
 
-    if (!IRCValidator::isValidNickname(ctx.clientFd, sourceNick, requestedNick)) {
-        sendToClient(ctx.clientFd, ERR_ERRONEUSNICKNAME(sourceNick, requestedNick));
+    if (!IRCValidator::isValidNickname(ctx.clientFd, oldNickname, newNickname)) {
+        sendToClient(ctx.clientFd, ERR_ERRONEUSNICKNAME(oldNickname, newNickname));
         return;
     }
 
-    if (clients.nickExists(requestedNick)) {
-        sendToClient(ctx.clientFd, ERR_NICKNAMEINUSE(sourceNick, requestedNick));
+    if (clients.nickExists(newNickname)) {
+        sendToClient(ctx.clientFd, ERR_NICKNAMEINUSE(oldNickname, newNickname));
         return;
     }
 
-    client.setNickname(requestedNick);
-    if (!currentNick.empty() && client.getIsRegistered()) {
+    client.setNickname(newNickname);
+    if (client.getIsRegistered()) {
         // maybe somewhere else has nick need to be updated?
-        server.getClients().updateNick(currentNick, requestedNick);
-        sendToClient(ctx.clientFd, NICKNAMECHANGE(sourceNick, requestedNick));
+        server.getClients().updateNick(oldNickname, newNickname);
+        sendToClient(ctx.clientFd, NICK(oldNickname, newNickname));
     }
 
     if (!client.getIsRegistered() && client.getPasswordVerified() &&
         !client.getNickname().empty() && !client.getUsername().empty()) {
         client.setIsRegistered(true);
+        server.getClients().addNick(ctx.clientFd);
         sendWelcome(ctx.clientFd);
     }
 }

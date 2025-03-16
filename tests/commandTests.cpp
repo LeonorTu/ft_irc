@@ -13,6 +13,7 @@
 #include <common.hpp>
 #include <sstream>
 #include <fcntl.h>
+#include <ChannelManager.hpp>
 
 class CommandTest : public ::testing::Test
 {
@@ -57,7 +58,7 @@ protected:
         }
 
         // Give the server time to initialize
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(400));
 
         // Connect two client sockets
         clientFd1 = connectClient();
@@ -251,4 +252,15 @@ TEST_F(CommandTest, NickCommandTooLong)
     bool success = outputContains("NICK " + longNick.substr(0, NICKLEN)) ||
                    outputContains("432 user1 " + longNick);
     EXPECT_TRUE(success);
+}
+
+TEST_F(CommandTest, JOINCommand)
+{
+    // Register both clients with different nicknames
+    registerClient(clientFd1, "user1");
+    registerClient(clientFd2, "user2");
+
+    sendCommand(clientFd1, "JOIN #test");
+    sendCommand(clientFd2, "JOIN #test");
+    EXPECT_TRUE(server->getChannels().channelExists("#test"));
 }

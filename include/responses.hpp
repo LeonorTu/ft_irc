@@ -112,7 +112,7 @@ inline std::string MODE(const std::string &sourceNick, const std::string &tar,
     return ":" + sourceNick + " MODE " + tar + " " + modeChange + " " + args;
 }
 
-inline std::string NICKNAMECHANGE(const std::string &old_nickname, const std::string &new_nickname)
+inline std::string NICK(const std::string &old_nickname, const std::string &new_nickname)
 {
     return ":" + old_nickname + " NICK " + new_nickname;
 }
@@ -146,6 +146,11 @@ inline std::string RPL_ENDOFNAMES(const std::string &client, const std::string &
     return "366 " + client + " " + channel + " :End of /NAMES list";
 }
 
+inline std::string ERR_TOOMANYCHANNELS(const std::string &client, const std::string &channel)
+{
+    return "405 " + client + " " + channel + " :You have joined too many channels";
+}
+
 /* ERROR RESPONSES */
 inline std::string ERR_UNKNOWNCOMMAND(const std::string &client, const std::string &command)
 {
@@ -170,6 +175,11 @@ inline std::string ERR_NICKNAMEINUSE(const std::string &client, const std::strin
 inline std::string ERR_NOTONCHANNEL(const std::string &client, const std::string &channel)
 {
     return "442 " + client + " " + channel + " :You're not on that channel";
+}
+
+inline std::string ERR_NOTREGISTERED(const std::string &client)
+{
+    return "451" + client + " :You have not registered";
 }
 
 inline std::string ERR_NEEDMOREPARAMS(const std::string &client, const std::string &command)

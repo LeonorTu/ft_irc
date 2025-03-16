@@ -106,11 +106,11 @@ void CommandProcessor::setupCommandHandlers()
     _commandHandlers["CAP"] = silentIgnore;
     // _commandHandlers["LUSERS"] = lusers;
     // _commandHandlers["MOTD"] = motd;
-    // _commandHandlers["QUIT"] = quit;
-    // _commandHandlers["JOIN"] = join;
-    // _commandHandlers["PART"] = part;
+    _commandHandlers["QUIT"] = quit;
+    _commandHandlers["JOIN"] = join;
+    _commandHandlers["PART"] = part;
     // _commandHandlers["MODE"] = mode;
-    // _commandHandlers["TOPIC"] = topic;
+    _commandHandlers["TOPIC"] = topic;
     // _commandHandlers["INVITE"] = invite;
     // _commandHandlers["KICK"] = kick;
     // _commandHandlers["PING"] = ping;

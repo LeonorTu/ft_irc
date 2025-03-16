@@ -11,16 +11,16 @@ ClientIndex::~ClientIndex()
 void ClientIndex::add(int clientFd)
 {
     if (_byFd.find(clientFd) == _byFd.end()) {
-        auto inserted = _byFd.emplace(clientFd, std::make_unique<Client>(clientFd));
-        bool successful = inserted.second;
-        if (successful) {
-            // what a fun way to get the inserted unique_ptr's pointer
-            Client *client = inserted.first->second.get();
-            // Client *client = _byFd[clientFd].get();
-            if (client->getIsRegistered())
-                _byNick[caseMapped(client->getNickname())] = client;
-        }
+        _byFd.emplace(clientFd, std::make_unique<Client>(clientFd));
     }
+}
+
+void ClientIndex::addNick(int clientFd)
+{
+    Client &client = getByFd(clientFd);
+    std::string clientNick = client.getNickname();
+    if (client.getIsRegistered())
+        _byNick[caseMapped(clientNick)] = &client;
 }
 
 void ClientIndex::remove(Client &client)

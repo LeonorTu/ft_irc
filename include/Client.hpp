@@ -31,6 +31,8 @@ public:
     void untrackChannel(Channel *channel);
     void trackChannel(Channel *channel);
     bool isOnChannel(Channel *channel);
+    size_t countChannelTypes(char type);
+    std::unordered_map<std::string, Channel *> getMyChannels();
 
 private:
     int _fd;
