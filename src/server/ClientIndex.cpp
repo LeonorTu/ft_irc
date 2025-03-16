@@ -44,7 +44,8 @@ Client &ClientIndex::getByFd(int fd) const
 {
     auto it = _byFd.find(fd);
     if (it == _byFd.end()) {
-        throw std::out_of_range("Client with fd " + std::to_string(fd) + " not found");
+        std::cout << "Client with fd " << std::to_string(fd) << " not found" << std::endl;
+        // throw std::out_of_range("Client with fd " + std::to_string(fd) + " not found");
     }
     return *it->second;
 }
@@ -53,7 +54,8 @@ Client &ClientIndex::getByNick(const std::string &nick) const
 {
     auto it = _byNick.find(caseMapped(nick));
     if (it == _byNick.end()) {
-        throw std::out_of_range("Client with nick " + nick + " not found");
+        std::cout << "Client with nick " << nick << " not found" << std::endl;
+        // throw std::out_of_range("Client with nick " + nick + " not found");
     }
     return *it->second;
 }

@@ -45,7 +45,8 @@ Channel &ChannelManager::getChannel(const std::string &name) const
 {
     auto it = _channels.find(caseMapped(name));
     if (it == _channels.end()) {
-        throw std::out_of_range("Channel '" + name + "' not found");
+        std::cout << "Channel '" << name << "' not found" << std::endl;
+        // throw std::out_of_range("Channel '" + name + "' not found");
     }
     return *it->second;
 }

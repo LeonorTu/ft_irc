@@ -69,6 +69,7 @@ void param(std::istringstream &iss, CommandProcessor::CommandContext &ctx)
 void CommandProcessor::parseCommand(Client &client, const std::string &rawString)
 {
     clearCommand();
+    logMessage(client.getFd(), rawString, false);
     if (rawString.empty())
         return;
     std::istringstream iss(rawString);
