@@ -13,6 +13,7 @@
 #include <common.hpp>
 #include <sstream>
 #include <fcntl.h>
+#include <ChannelManager.hpp>
 
 class CommandTest : public ::testing::Test
 {
@@ -57,7 +58,7 @@ protected:
         }
 
         // Give the server time to initialize
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(400));
 
         // Connect two client sockets
         clientFd1 = connectClient();
@@ -261,4 +262,5 @@ TEST_F(CommandTest, JOINCommand)
 
     sendCommand(clientFd1, "JOIN #test");
     sendCommand(clientFd2, "JOIN #test");
+    EXPECT_TRUE(server->getChannels().channelExists("#test"));
 }
