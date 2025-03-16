@@ -252,3 +252,13 @@ TEST_F(CommandTest, NickCommandTooLong)
                    outputContains("432 user1 " + longNick);
     EXPECT_TRUE(success);
 }
+
+TEST_F(CommandTest, JOINCommand)
+{
+    // Register both clients with different nicknames
+    registerClient(clientFd1, "user1");
+    registerClient(clientFd2, "user2");
+
+    sendCommand(clientFd1, "JOIN #test");
+    sendCommand(clientFd2, "JOIN #test");
+}
