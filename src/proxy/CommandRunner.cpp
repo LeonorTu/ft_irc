@@ -12,7 +12,7 @@ CommandRunner::CommandRunner(const MessageParser::CommandContext &ctx)
     , _client(_clients.getByFd(ctx.clientFd))
     , _clientFd(ctx.clientFd)
     , _nickname(_client.getNickname())
-    , _source(ctx.source)
+    , _messageSource(ctx.source)
     , _params(ctx.params)
 {
     if (!_mapInitialized)
@@ -44,12 +44,12 @@ bool CommandRunner::validateRights()
 
 void CommandRunner::execute()
 {
-    auto commandIterator = _commandRunners.find(_command);
+    if (!validateRights()) {
+        return;
+    }
 
+    auto commandIterator = _commandRunners.find(_command);
     if (commandIterator != _commandRunners.end()) {
-        if (!validateRights()) {
-            return;
-        }
         // Extract the command function pointer from the map
         auto commandFunction = commandIterator->second;
         (this->*commandFunction)();
@@ -170,7 +170,7 @@ void CommandRunner::completeRegistration()
 bool CommandRunner::tryRegisterClient()
 {
     if (_client.getIsRegistered())
-        return true;
+        return false;
 
     if (canCompleteRegistration()) {
         completeRegistration();

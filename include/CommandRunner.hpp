@@ -48,7 +48,7 @@ private:
     Client &_client;
     int _clientFd;
     std::string _nickname;
-    std::string _source;
+    std::string _messageSource;
     std::vector<std::string> _params;
 
     bool validateParams(size_t min, size_t max, std::array<ParamType, MAX_PARAMS> pattern);
