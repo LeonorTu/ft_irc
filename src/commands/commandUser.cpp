@@ -6,11 +6,6 @@ void CommandRunner::user()
     if (!validateParams(4, 4, pattern))
         return;
 
-    if (_client.getIsRegistered()) {
-        sendToClient(_clientFd, ERR_ALREADYREGISTERED(_nickname));
-        return;
-    }
-
     std::string username = _params[0];
     std::string realname = _params[3];
     _client.setUsername(username);
