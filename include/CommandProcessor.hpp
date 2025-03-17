@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <functional>
 #include <Client.hpp>
+#include <chrono>
 
 class CommandProcessor
 {
@@ -19,18 +20,22 @@ public:
     {
         // Command identification
         int clientFd;
+        bool isRegistered;
+        std::string nickname;
+
         std::string source;
+        std::string command;
         std::vector<std::string> params;
     };
     const CommandContext &getContext() const;
-    const std::string &getCommand() const;
+    // const std::string &getCommand() const;
     void executeCommand(Client &client);
     void parseCommand(Client &client, const std::string &rawString);
 
 private:
     // Parsed command context
-    std::string _command;
     CommandContext _context;
+    // std::string _command;
 
     std::unordered_map<std::string, std::function<void(const CommandContext &)>> _commandHandlers;
 

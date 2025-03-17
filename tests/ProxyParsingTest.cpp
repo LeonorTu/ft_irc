@@ -9,7 +9,7 @@ void printing(CommandProcessor &test)
     if (!VERBOSE_OUTPUT)
         return;
     std::cout << "Source : " << test.getContext().source << std::endl;
-    std::cout << "Command : " << test.getCommand() << std::endl;
+    std::cout << "Command : " << test.getContext().command << std::endl;
     int count = 0;
     for (const auto &param : test.getContext().params) {
         std::cout << "Param[" << count << "] : " << param << std::endl;
@@ -28,7 +28,7 @@ TEST(ProxyParsingTest, StandardPrivmsg)
     testing.parseCommand(client, testString);
 
     EXPECT_EQ(testing.getContext().source, "dan!d@localhost");
-    EXPECT_EQ(testing.getCommand(), "PRIVMSG");
+    EXPECT_EQ(testing.getContext().command, "PRIVMSG");
     ASSERT_EQ(testing.getContext().params.size(), 2);
     EXPECT_EQ(testing.getContext().params[0], "#chan");
     EXPECT_EQ(testing.getContext().params[1], "Hey!");
@@ -46,7 +46,7 @@ TEST(ProxyParsingTest, PrivmsgWithEmoticon)
     testing.parseCommand(client, testString);
 
     EXPECT_EQ(testing.getContext().source, "dan!d@localhost");
-    EXPECT_EQ(testing.getCommand(), "PRIVMSG");
+    EXPECT_EQ(testing.getContext().command, "PRIVMSG");
     ASSERT_EQ(testing.getContext().params.size(), 2);
     EXPECT_EQ(testing.getContext().params[0], "#chan");
     EXPECT_EQ(testing.getContext().params[1], ":-) hello");
@@ -64,7 +64,7 @@ TEST(ProxyParsingTest, CapCommand)
     testing.parseCommand(client, testString);
 
     EXPECT_EQ(testing.getContext().source, "");
-    EXPECT_EQ(testing.getCommand(), "CAP");
+    EXPECT_EQ(testing.getContext().command, "CAP");
     ASSERT_EQ(testing.getContext().params.size(), 2);
     EXPECT_EQ(testing.getContext().params[0], "REQ");
     EXPECT_EQ(testing.getContext().params[1], "sasl message-tags foo");
@@ -82,7 +82,7 @@ TEST(ProxyParsingTest, TaggedPrivmsg)
     testing.parseCommand(client, testString);
 
     EXPECT_EQ(testing.getContext().source, "dan!d@localhost");
-    EXPECT_EQ(testing.getCommand(), "PRIVMSG");
+    EXPECT_EQ(testing.getContext().command, "PRIVMSG");
     ASSERT_EQ(testing.getContext().params.size(), 2);
     EXPECT_EQ(testing.getContext().params[0], "#chan");
     EXPECT_EQ(testing.getContext().params[1], "Hey what's up!");
@@ -100,7 +100,7 @@ TEST(ProxyParsingTest, ServerCapabilityListing)
     testing.parseCommand(client, testString);
 
     EXPECT_EQ(testing.getContext().source, "irc.example.com");
-    EXPECT_EQ(testing.getCommand(), "CAP");
+    EXPECT_EQ(testing.getContext().command, "CAP");
     ASSERT_EQ(testing.getContext().params.size(), 3);
     EXPECT_EQ(testing.getContext().params[0], "LS");
     EXPECT_EQ(testing.getContext().params[1], "*");
@@ -120,7 +120,7 @@ TEST(ProxyParsingTest, MultipleTagsPrivmsg)
     testing.parseCommand(client, testString);
 
     EXPECT_EQ(testing.getContext().source, "nick!user@host");
-    EXPECT_EQ(testing.getCommand(), "PRIVMSG");
+    EXPECT_EQ(testing.getContext().command, "PRIVMSG");
     ASSERT_EQ(testing.getContext().params.size(), 2);
     EXPECT_EQ(testing.getContext().params[0], "#channel");
     EXPECT_EQ(testing.getContext().params[1], "Hello world!");
@@ -138,7 +138,7 @@ TEST(ProxyParsingEdgeCases, EmptyMessage)
     testing.parseCommand(client, testString);
 
     EXPECT_EQ(testing.getContext().source, "");
-    EXPECT_EQ(testing.getCommand(), "");
+    EXPECT_EQ(testing.getContext().command, "");
     EXPECT_EQ(testing.getContext().params.size(), 0);
     printing(testing);
 }
@@ -154,7 +154,7 @@ TEST(ProxyParsingEdgeCases, OnlyWhitespace)
     testing.parseCommand(client, testString);
 
     EXPECT_EQ(testing.getContext().source, "");
-    EXPECT_EQ(testing.getCommand(), "");
+    EXPECT_EQ(testing.getContext().command, "");
     EXPECT_EQ(testing.getContext().params.size(), 0);
     printing(testing);
 }
@@ -170,7 +170,7 @@ TEST(ProxyParsingEdgeCases, NoSourceJustCommand)
     testing.parseCommand(client, testString);
 
     EXPECT_EQ(testing.getContext().source, "");
-    EXPECT_EQ(testing.getCommand(), "PING");
+    EXPECT_EQ(testing.getContext().command, "PING");
     EXPECT_EQ(testing.getContext().params.size(), 0);
     printing(testing);
 }
@@ -186,7 +186,7 @@ TEST(ProxyParsingEdgeCases, NoSourceCommandWithParams)
     testing.parseCommand(client, testString);
 
     EXPECT_EQ(testing.getContext().source, "");
-    EXPECT_EQ(testing.getCommand(), "JOIN");
+    EXPECT_EQ(testing.getContext().command, "JOIN");
     ASSERT_EQ(testing.getContext().params.size(), 1);
     EXPECT_EQ(testing.getContext().params[0], "#channel");
     printing(testing);
@@ -204,7 +204,7 @@ TEST(ProxyParsingEdgeCases, MultipleParamsWithoutTrailing)
     testing.parseCommand(client, testString);
 
     EXPECT_EQ(testing.getContext().source, "");
-    EXPECT_EQ(testing.getCommand(), "MODE");
+    EXPECT_EQ(testing.getContext().command, "MODE");
     ASSERT_EQ(testing.getContext().params.size(), 3);
     EXPECT_EQ(testing.getContext().params[0], "#channel");
     EXPECT_EQ(testing.getContext().params[1], "+o");
