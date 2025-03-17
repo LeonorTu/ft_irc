@@ -13,6 +13,7 @@ public:
                                    const std::string &channelName);
     static bool isValidChannelMode();
     static bool isValidServerPassword();
+    static bool isValidChannelKey();
 
 private:
 };

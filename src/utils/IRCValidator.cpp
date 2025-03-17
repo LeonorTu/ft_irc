@@ -58,3 +58,8 @@ bool IRCValidator::isValidServerPassword()
 {
     return true;
 }
+
+bool IRCValidator::isValidChannelKey()
+{
+    return true;
+}
