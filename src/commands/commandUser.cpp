@@ -2,7 +2,7 @@
 
 void CommandRunner::user()
 {
-    std::array<ParamType, MAX_PARAMS> pattern = {USER, NOVAL, NOVAL, REAL};
+    std::array<ParamType, MAX_PARAMS> pattern = {VAL_USER, VAL_NONE, VAL_NONE, VAL_REAL};
     if (!validateParams(4, 4, pattern))
         return;
 

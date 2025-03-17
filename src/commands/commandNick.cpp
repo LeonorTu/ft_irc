@@ -2,7 +2,7 @@
 
 void CommandRunner::nick()
 {
-    std::array<ParamType, MAX_PARAMS> pattern = {NICK};
+    std::array<ParamType, MAX_PARAMS> pattern = {VAL_NICK};
     if (!validateParams(1, 1, pattern))
         return;
 

@@ -86,47 +86,47 @@ bool CommandRunner::validateParams(size_t min, size_t max,
         std::string &param = _params[i];
 
         switch (pattern[i]) {
-        case NICK:
+        case VAL_NICK:
             if (!IRCValidator::isValidNickname(_client.getFd(), _nickname, param)) {
                 return false;
             }
             break;
 
-        case CHAN:
+        case VAL_CHAN:
             if (!IRCValidator::isValidChannelName(_client.getFd(), _nickname, param)) {
                 return false;
             }
             break;
 
-        case MODE:
+        case VAL_MODE:
             if (!IRCValidator::isValidChannelMode()) {
                 return false;
             }
             break;
 
-        case USER:
+        case VAL_USER:
             if (!IRCValidator::isValidUsername(_client.getFd(), _nickname, param)) {
                 return false;
             }
             break;
 
-        case KEY:
+        case VAL_KEY:
             if (!IRCValidator::isValidChannelKey()) {
                 return false;
             }
             break;
 
-        case PASS:
+        case VAL_PASS:
             if (!IRCValidator::isValidServerPassword()) {
                 return false;
             }
             break;
 
-        case REAL:
+        case VAL_REAL:
             // Usually no validation for realname
             break;
 
-        case NOVAL:
+        case VAL_NONE:
             // No validation needed
             break;
         default:
@@ -145,11 +145,11 @@ void CommandRunner::initCommandMap()
     _commandRunners["CAP"] = &CommandRunner::silentIgnore;
     // _commandRunners["LUSERS"] = &CommandRunner::lusers;
     // _commandRunners["MOTD"] = &CommandRunner::motd;
-    _commandRunners["QUIT"] = &CommandRunner::quit;
-    _commandRunners["JOIN"] = &CommandRunner::join;
-    _commandRunners["PART"] = &CommandRunner::part;
+    // _commandRunners["QUIT"] = &CommandRunner::quit;
+    // _commandRunners["JOIN"] = &CommandRunner::join;
+    // _commandRunners["PART"] = &CommandRunner::part;
     // _commandRunners["MODE"] = &CommandRunner::mode;
-    _commandRunners["TOPIC"] = &CommandRunner::topic;
+    // _commandRunners["TOPIC"] = &CommandRunner::topic;
     // _commandRunners["INVITE"] = &CommandRunner::invite;
     // _commandRunners["KICK"] = &CommandRunner::kick;
     // _commandRunners["PING"] = &CommandRunner::ping;

@@ -3,7 +3,7 @@
 
 void CommandRunner::pass()
 {
-    std::array<ParamType, MAX_PARAMS> pattern = {PASS};
+    std::array<ParamType, MAX_PARAMS> pattern = {VAL_PASS};
     if (!validateParams(1, 1, pattern))
         return;
 

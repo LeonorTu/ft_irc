@@ -1,6 +1,5 @@
 #pragma once
 
-#include <CommandProcessor.hpp>
 #include <Server.hpp>
 #include <ClientIndex.hpp>
 #include <Client.hpp>
@@ -13,14 +12,14 @@
 
 enum ParamType
 {
-    NICK,
-    USER,
-    REAL,
-    CHAN,
-    MODE,
-    KEY,
-    PASS,
-    NOVAL
+    VAL_NICK,
+    VAL_USER,
+    VAL_REAL,
+    VAL_CHAN,
+    VAL_MODE,
+    VAL_KEY,
+    VAL_PASS,
+    VAL_NONE
 };
 
 class CommandRunner
