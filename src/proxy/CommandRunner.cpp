@@ -10,6 +10,7 @@ CommandRunner::CommandRunner(const MessageParser::CommandContext &ctx)
     , _clients(_server.getClients())
     , _command(ctx.command)
     , _client(_clients.getByFd(ctx.clientFd))
+    , _clientFd(ctx.clientFd)
     , _nickname(_client.getNickname())
     , _source(ctx.source)
     , _params(ctx.params)
@@ -46,6 +47,9 @@ void CommandRunner::execute()
     auto commandIterator = _commandRunners.find(_command);
 
     if (commandIterator != _commandRunners.end()) {
+        if (!validateRights()) {
+            return;
+        }
         // Extract the command function pointer from the map
         auto commandFunction = commandIterator->second;
         (this->*commandFunction)();
@@ -59,11 +63,14 @@ bool CommandRunner::validateParams(size_t min, size_t max,
                                    std::array<ParamType, MAX_PARAMS> pattern)
 {
     if (_params.size() < min) {
-        sendToClient(_client.getFd(), ERR_NEEDMOREPARAMS(_nickname, _command));
+        if (_command == "NICK")
+            sendToClient(_client.getFd(), ERR_NONICKNAMEGIVEN(_nickname));
+        else
+            sendToClient(_client.getFd(), ERR_NEEDMOREPARAMS(_nickname, _command));
         return false;
     }
 
-    if (max >= 0 && (int)_params.size() > max) {
+    if (_params.size() > max) {
         // truncate silently
         _params.resize(max);
     }
@@ -146,4 +153,39 @@ void CommandRunner::initCommandMap()
     // _commandRunners["WHO"] = &CommandRunner::who;
     // _commandRunners["WHOIS"] = &CommandRunner::whois;}
     _mapInitialized = true;
+}
+
+bool CommandRunner::canCompleteRegistration()
+{
+    return !_client.getIsRegistered() && _client.getNickname() != "*" &&
+           !_client.getUsername().empty();
+}
+
+void CommandRunner::completeRegistration()
+{
+    _client.setIsRegistered(true);
+    sendWelcome();
+}
+
+bool CommandRunner::tryRegisterClient()
+{
+    if (_client.getIsRegistered())
+        return true;
+
+    if (canCompleteRegistration()) {
+        completeRegistration();
+        return true;
+    }
+
+    return false;
+}
+
+void CommandRunner::sendWelcome()
+{
+    // Send the welcome messages
+    sendToClient(_clientFd, RPL_WELCOME(_nickname));
+    sendToClient(_clientFd, RPL_YOURHOST(_nickname));
+    sendToClient(_clientFd, RPL_CREATED(_nickname, Server::getInstance().getCreatedTime()));
+    sendToClient(_clientFd, RPL_MYINFO(_nickname));
+    sendToClient(_clientFd, RPL_ISUPPORT(_nickname));
 }

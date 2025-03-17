@@ -29,7 +29,6 @@ public:
     CommandRunner(const MessageParser::CommandContext &ctx);
     bool validateRights();
     void execute();
-    void validateNickCommand();
     void nick();
     void user();
     void pass();
@@ -47,6 +46,7 @@ private:
 
     std::string _command;
     Client &_client;
+    int _clientFd;
     std::string _nickname;
     std::string _source;
     std::vector<std::string> _params;
@@ -56,4 +56,9 @@ private:
     static bool _mapInitialized;
     static void initCommandMap();
     static std::unordered_map<std::string, void (CommandRunner::*)()> _commandRunners;
+
+    bool canCompleteRegistration();
+    void completeRegistration();
+    bool tryRegisterClient();
+    void sendWelcome();
 };
