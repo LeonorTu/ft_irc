@@ -112,3 +112,60 @@ void ConnectionManager::handleOversized(Client &client, std::string &messageBuff
         _commandProcessor.parseCommand(client, truncatedMessage);
     }
 }
+
+void ConnectionManager::sendPingToClient(Client &client)
+{
+    std::string token = "PING_" + std::to_string(time(NULL));
+    client.addPingToken(token);
+
+    sendToClient(client.getFd(), "PING " + token);
+    std::cout << "Sending PING to " << client.getNickname() << ": " << token << std::endl;
+}
+
+void ConnectionManager::sendPingToAllClients()
+{
+    _clients.forEachClient([this](Client &client) 
+    {
+        std::cout << "Sending PING to " << client.getNickname() << std::endl;
+        sendPingToClient(client);
+    });
+}
+
+void ConnectionManager::listClients()
+{
+    int count = 0;
+    _clients.forEachClient([&count](Client &client) 
+    {
+        std::cout << "New client" << std::endl;
+        std::cout << "  Nick name: " << client.getNickname() << std::endl;
+        std::cout << "  User name: " << client.getUsername() << std::endl;
+        std::cout << "  Real name: " << client.getRealname() << std::endl;
+        std::cout << "  IsRegistered: " << (client.getIsRegistered()? "Yes":"No") << std::endl;
+        count++;
+    });
+}
+
+// check pong responses within 60s
+void ConnectionManager::checkAllPingTimeouts(int timeoutMs)
+{
+    // cannot reference in vector before initializing and also because it is modified while
+    // iterating pointer is better for memory usage
+    std::vector<Client *> clientsToDisconnect;
+
+    _clients.forEachClient([this, &clientsToDisconnect, timeoutMs](Client &client) {
+        if (client.checkPingTimeouts(timeoutMs)) {
+            std::cout << "Client " << client.getNickname() << " has no PONG response after "
+                      << timeoutMs / 1000 << " seconds" << std::endl;
+            clientsToDisconnect.push_back(&client);
+        }
+    });
+    std::cout << "\nBefore disconnecting clients: " << _clients.size() << std::endl << std::endl;
+    listClients();
+    //will delete the client that timed out from the list
+    for (Client *client : clientsToDisconnect) {
+        disconnectClient(*client);
+    }
+    std::cout << "\nRemained clients: " << _clients.size() << std::endl << std::endl;
+    listClients();
+    std::cout << "End of listing" << std::endl;
+}

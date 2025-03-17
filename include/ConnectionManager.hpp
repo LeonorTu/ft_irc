@@ -21,8 +21,13 @@ public:
     void recieveData(int clientFd);
     void disconnectAllClients();
 
-private:
-    ClientIndex &_clients;
+    //Ping related functions
+    void sendPingToClient(Client &client);
+    void checkAllPingTimeouts(int timeoutMs);
+    void sendPingToAllClients();
+    void listClients();
+
+    private : ClientIndex &_clients;
     SocketManager &_socketManager;
     EventLoop &_EventLoop;
     CommandProcessor _commandProcessor;

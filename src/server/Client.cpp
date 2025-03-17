@@ -121,3 +121,37 @@ size_t Client::countChannelTypes(char type)
     }
     return counter;
 }
+
+void Client::addPingToken(const std::string &token)
+{
+    _pingTokens[token] = std::chrono::steady_clock::now();
+}
+
+void Client::handlePongFromClient(const std::string &token)
+{
+    auto it = _pingTokens.find(token);
+    if (it != _pingTokens.end()) {
+        auto now = std::chrono::steady_clock::now();
+        auto pingTime = it->second;
+        auto duration =
+            std::chrono::duration_cast<std::chrono::milliseconds>(now - pingTime).count();
+
+        std::cout << "PONG received from " << _nickname << " in " << duration << "ms" << std::endl;
+        _pingTokens.erase(it);
+    }
+}
+
+bool Client::checkPingTimeouts(int timeoutMs)
+{
+    auto now = std::chrono::steady_clock::now();
+
+    for (auto it = _pingTokens.begin(); it != _pingTokens.end();) {
+        auto duration =
+            std::chrono::duration_cast<std::chrono::milliseconds>(now - it->second).count();
+        if (duration > timeoutMs) {
+            return true;
+        }
+        ++it;
+    }
+    return false;
+}
