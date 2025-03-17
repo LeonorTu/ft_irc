@@ -26,8 +26,23 @@ class CommandRunner
 {
 public:
     CommandRunner(const MessageParser::CommandContext &ctx);
-    bool validateCommandAccess();
     void execute();
+
+private:
+    // server data
+    Server &_server;
+    ClientIndex &_clients;
+    ChannelManager &_channels;
+    Client &_client;
+
+    // shared pre-loads
+    const std::string &_command;
+    int _clientFd;
+    const std::string &_nickname;
+    const std::string &_messageSource;
+    std::vector<std::string> _params;
+
+    // commands
     void nick();
     void user();
     void pass();
@@ -38,24 +53,16 @@ public:
     void cap();
     void silentIgnore();
 
-private:
-    Server &_server;
-    ClientIndex &_clients;
-    ChannelManager &_channels;
-
-    std::string _command;
-    Client &_client;
-    int _clientFd;
-    std::string _nickname;
-    std::string _messageSource;
-    std::vector<std::string> _params;
-
+    // validation
+    bool validateCommandAccess();
     bool validateParams(size_t min, size_t max, std::array<ParamType, MAX_PARAMS> pattern);
 
+    // static command map
     static bool _mapInitialized;
     static void initCommandMap();
     static std::unordered_map<std::string, void (CommandRunner::*)()> _commandRunners;
 
+    // registration
     bool canCompleteRegistration();
     void completeRegistration();
     bool tryRegisterClient();
