@@ -66,7 +66,7 @@ void Server::loop()
         auto now = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_ping).count();
         if (pingCheckInterval < duration) {
-            std::cout << "Sending PINGs to all clients..." << std::endl;
+            std::cout << "Sending PINGs to all clients...\n" << std::endl;
             last_ping = now;
             getConnectionManager().sendPingToAllClients();
             getConnectionManager().checkAllPingTimeouts(pingTimeout);

@@ -124,9 +124,7 @@ void ConnectionManager::sendPingToClient(Client &client)
 
 void ConnectionManager::sendPingToAllClients()
 {
-    _clients.forEachClient([this](Client &client) 
-    {
-        std::cout << "Sending PING to " << client.getNickname() << std::endl;
+    _clients.forEachClient([this](Client &client) {
         sendPingToClient(client);
     });
 }
@@ -134,13 +132,12 @@ void ConnectionManager::sendPingToAllClients()
 void ConnectionManager::listClients()
 {
     int count = 0;
-    _clients.forEachClient([&count](Client &client) 
-    {
+    _clients.forEachClient([&count](Client &client) {
         std::cout << "New client" << std::endl;
         std::cout << "  Nick name: " << client.getNickname() << std::endl;
         std::cout << "  User name: " << client.getUsername() << std::endl;
         std::cout << "  Real name: " << client.getRealname() << std::endl;
-        std::cout << "  IsRegistered: " << (client.getIsRegistered()? "Yes":"No") << std::endl;
+        std::cout << "  IsRegistered: " << (client.getIsRegistered() ? "Yes" : "No") << std::endl;
         count++;
     });
 }
@@ -159,13 +156,15 @@ void ConnectionManager::checkAllPingTimeouts(int timeoutMs)
             clientsToDisconnect.push_back(&client);
         }
     });
-    std::cout << "\nBefore disconnecting clients: " << _clients.size() << std::endl << std::endl;
-    listClients();
-    //will delete the client that timed out from the list
+    // std::cout << "\nBefore disconnecting clients: " << _clients.size() << std::endl << std::endl;
+    // listClients();
+
+    // will delete the client that timed out from the list
     for (Client *client : clientsToDisconnect) {
+        std::cout << "Client " << client->getNickname() << " deleted" << std::endl;
         disconnectClient(*client);
     }
-    std::cout << "\nRemained clients: " << _clients.size() << std::endl << std::endl;
-    listClients();
-    std::cout << "End of listing" << std::endl;
+    // std::cout << "\nRemained clients: " << _clients.size() << std::endl << std::endl;
+    // listClients();
+    // std::cout << "End of listing" << std::endl;
 }
