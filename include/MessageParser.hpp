@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 class MessageParser
 {
@@ -22,11 +23,13 @@ public:
     };
     const CommandContext &getContext() const;
     const std::string &getCommand() const;
-    void parseCommand(int clientFd, const std::string &rawString);
+    void parseCommand();
 
 private:
     // Parsed command context
     CommandContext _context;
+    int _clientFd;
+    const std::string &_rawString;
 
     // Private methods
     void executeCommand();
@@ -34,5 +37,4 @@ private:
     void checkSource(std::istringstream &iss);
     void storeCommand(std::istringstream &iss);
     void param(std::istringstream &iss);
-    void clearCommand();
 };

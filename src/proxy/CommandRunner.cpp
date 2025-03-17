@@ -6,8 +6,8 @@ std::unordered_map<std::string, void (CommandRunner::*)()> CommandRunner::_comma
 
 CommandRunner::CommandRunner(const MessageParser::CommandContext &ctx)
     : _server(Server::getInstance())
-    , _channels(_server.getChannels())
     , _clients(_server.getClients())
+    , _channels(_server.getChannels())
     , _command(ctx.command)
     , _client(_clients.getByFd(ctx.clientFd))
     , _clientFd(ctx.clientFd)
@@ -26,9 +26,10 @@ bool CommandRunner::validateCommandAccess()
     static const std::unordered_set<std::string> preRegistrationCommands = {"NICK", "USER", "PONG"};
 
     if (duplicateRegistration.find(_command) != duplicateRegistration.end()) {
-        if (_client.getIsRegistered())
+        if (_client.getIsRegistered()) {
             sendToClient(_clientFd, ERR_ALREADYREGISTERED(_nickname));
-        return false;
+            return false;
+        }
     }
     if (alwaysAllowedCommands.find(_command) != alwaysAllowedCommands.end()) {
         return true;

@@ -5,10 +5,9 @@
 
 MessageParser::MessageParser(int clientFd, const std::string &rawString)
     : _context({})
-{
-    parseCommand(clientFd, rawString);
-    executeCommand();
-}
+    , _clientFd(clientFd)
+    , _rawString(rawString)
+{}
 
 const MessageParser::CommandContext &MessageParser::getContext() const
 {
@@ -26,19 +25,21 @@ void MessageParser::executeCommand()
     runner.execute();
 }
 
-void MessageParser::parseCommand(int clientFd, const std::string &rawString)
+void MessageParser::parseCommand()
 {
-    clearCommand();
-    logMessage(_context.clientFd, rawString, false);
-    if (rawString.empty())
+    logMessage(_clientFd, _rawString, false);
+    _context.clientFd = _clientFd;
+    if (_rawString.empty())
         return;
-    std::istringstream iss(rawString);
+    std::istringstream iss(_rawString);
     iss >> std::ws; // skip whitespace
 
     ignoreTag(iss);
     checkSource(iss);
     storeCommand(iss);
     param(iss);
+
+    executeCommand();
 }
 
 void MessageParser::ignoreTag(std::istringstream &iss)
@@ -84,9 +85,4 @@ void MessageParser::param(std::istringstream &iss)
             break;
         _context.params.push_back(param);
     }
-}
-
-void MessageParser::clearCommand()
-{
-    _context = {};
 }

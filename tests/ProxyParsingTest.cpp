@@ -1,10 +1,9 @@
 #include <gtest/gtest.h>
-#include <CommandProcessor.hpp>
-#include <Client.hpp>
+#include <MessageParser.hpp>
 
 bool VERBOSE_OUTPUT = true;
 
-void printing(CommandProcessor &test)
+void printing(MessageParser &test)
 {
     if (!VERBOSE_OUTPUT)
         return;
@@ -23,9 +22,8 @@ TEST(ProxyParsingTest, StandardPrivmsg)
     std::string testString = ":dan!d@localhost PRIVMSG #chan :Hey!";
     std::cout << "TEST: " << testString << std::endl;
 
-    Client client(1);
-    CommandProcessor testing;
-    testing.parseCommand(client, testString);
+    MessageParser testing(1, testString);
+    testing.parseCommand();
 
     EXPECT_EQ(testing.getContext().source, "dan!d@localhost");
     EXPECT_EQ(testing.getCommand(), "PRIVMSG");
@@ -41,9 +39,8 @@ TEST(ProxyParsingTest, PrivmsgWithEmoticon)
     std::string testString = ":dan!d@localhost PRIVMSG #chan ::-) hello";
     std::cout << "TEST: " << testString << std::endl;
 
-    Client client(1);
-    CommandProcessor testing;
-    testing.parseCommand(client, testString);
+    MessageParser testing(1, testString);
+    testing.parseCommand();
 
     EXPECT_EQ(testing.getContext().source, "dan!d@localhost");
     EXPECT_EQ(testing.getCommand(), "PRIVMSG");
@@ -59,9 +56,8 @@ TEST(ProxyParsingTest, CapCommand)
     std::string testString = "CAP REQ :sasl message-tags foo";
     std::cout << "TEST: " << testString << std::endl;
 
-    Client client(1);
-    CommandProcessor testing;
-    testing.parseCommand(client, testString);
+    MessageParser testing(1, testString);
+    testing.parseCommand();
 
     EXPECT_EQ(testing.getContext().source, "");
     EXPECT_EQ(testing.getCommand(), "CAP");
@@ -77,9 +73,8 @@ TEST(ProxyParsingTest, TaggedPrivmsg)
     std::string testString = "@id=234AB :dan!d@localhost PRIVMSG #chan :Hey what's up!";
     std::cout << "TEST: " << testString << std::endl;
 
-    Client client(1);
-    CommandProcessor testing;
-    testing.parseCommand(client, testString);
+    MessageParser testing(1, testString);
+    testing.parseCommand();
 
     EXPECT_EQ(testing.getContext().source, "dan!d@localhost");
     EXPECT_EQ(testing.getCommand(), "PRIVMSG");
@@ -95,9 +90,8 @@ TEST(ProxyParsingTest, ServerCapabilityListing)
     std::string testString = ":irc.example.com CAP LS * :multi-prefix extended-join sasl";
     std::cout << "TEST: " << testString << std::endl;
 
-    Client client(1);
-    CommandProcessor testing;
-    testing.parseCommand(client, testString);
+    MessageParser testing(1, testString);
+    testing.parseCommand();
 
     EXPECT_EQ(testing.getContext().source, "irc.example.com");
     EXPECT_EQ(testing.getCommand(), "CAP");
@@ -115,9 +109,8 @@ TEST(ProxyParsingTest, MultipleTagsPrivmsg)
         "@tag1=value1;tag2=value2 :nick!user@host PRIVMSG #channel :Hello world!";
     std::cout << "TEST: " << testString << std::endl;
 
-    Client client(1);
-    CommandProcessor testing;
-    testing.parseCommand(client, testString);
+    MessageParser testing(1, testString);
+    testing.parseCommand();
 
     EXPECT_EQ(testing.getContext().source, "nick!user@host");
     EXPECT_EQ(testing.getCommand(), "PRIVMSG");
@@ -133,9 +126,8 @@ TEST(ProxyParsingEdgeCases, EmptyMessage)
     std::string testString = "";
     std::cout << "TEST: Empty message" << std::endl;
 
-    Client client(1);
-    CommandProcessor testing;
-    testing.parseCommand(client, testString);
+    MessageParser testing(1, testString);
+    testing.parseCommand();
 
     EXPECT_EQ(testing.getContext().source, "");
     EXPECT_EQ(testing.getCommand(), "");
@@ -149,9 +141,8 @@ TEST(ProxyParsingEdgeCases, OnlyWhitespace)
     std::string testString = "   ";
     std::cout << "TEST: Only whitespace" << std::endl;
 
-    Client client(1);
-    CommandProcessor testing;
-    testing.parseCommand(client, testString);
+    MessageParser testing(1, testString);
+    testing.parseCommand();
 
     EXPECT_EQ(testing.getContext().source, "");
     EXPECT_EQ(testing.getCommand(), "");
@@ -165,9 +156,8 @@ TEST(ProxyParsingEdgeCases, NoSourceJustCommand)
     std::string testString = "PING";
     std::cout << "TEST: No source, just command" << std::endl;
 
-    Client client(1);
-    CommandProcessor testing;
-    testing.parseCommand(client, testString);
+    MessageParser testing(1, testString);
+    testing.parseCommand();
 
     EXPECT_EQ(testing.getContext().source, "");
     EXPECT_EQ(testing.getCommand(), "PING");
@@ -181,9 +171,8 @@ TEST(ProxyParsingEdgeCases, NoSourceCommandWithParams)
     std::string testString = "JOIN #channel";
     std::cout << "TEST: No source, command with params" << std::endl;
 
-    Client client(1);
-    CommandProcessor testing;
-    testing.parseCommand(client, testString);
+    MessageParser testing(1, testString);
+    testing.parseCommand();
 
     EXPECT_EQ(testing.getContext().source, "");
     EXPECT_EQ(testing.getCommand(), "JOIN");
@@ -199,9 +188,8 @@ TEST(ProxyParsingEdgeCases, MultipleParamsWithoutTrailing)
     std::cout << "Multiple params without trailing" << std::endl;
     std::cout << "TEST: " << testString << std::endl;
 
-    Client client(1);
-    CommandProcessor testing;
-    testing.parseCommand(client, testString);
+    MessageParser testing(1, testString);
+    testing.parseCommand();
 
     EXPECT_EQ(testing.getContext().source, "");
     EXPECT_EQ(testing.getCommand(), "MODE");
