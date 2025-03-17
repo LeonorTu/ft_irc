@@ -11,6 +11,10 @@ bool IRCValidator::isValidNickname(int clientFd, const std::string &oldNickname,
         sendToClient(clientFd, ERR_ERRONEUSNICKNAME(oldNickname, newNickname));
         return false;
     }
+    if (newNickname.empty()) {
+        sendToClient(clientFd, ERR_NONICKNAMEGIVEN(oldNickname));
+        return false;
+    }
     return true;
 }
 
