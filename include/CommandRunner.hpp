@@ -27,7 +27,7 @@ class CommandRunner
 {
 public:
     CommandRunner(const MessageParser::CommandContext &ctx);
-    bool validateRights();
+    bool validateCommandAccess();
     void execute();
     void nick();
     void user();

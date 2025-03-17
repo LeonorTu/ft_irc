@@ -19,11 +19,17 @@ CommandRunner::CommandRunner(const MessageParser::CommandContext &ctx)
         initCommandMap();
 }
 
-bool CommandRunner::validateRights()
+bool CommandRunner::validateCommandAccess()
 {
+    static const std::unordered_set<std::string> duplicateRegistration = {"PASS", "USER"};
     static const std::unordered_set<std::string> alwaysAllowedCommands = {"PASS", "QUIT", "CAP"};
     static const std::unordered_set<std::string> preRegistrationCommands = {"NICK", "USER", "PONG"};
 
+    if (duplicateRegistration.find(_command) != duplicateRegistration.end()) {
+        if (_client.getIsRegistered())
+            sendToClient(_clientFd, ERR_ALREADYREGISTERED(_nickname));
+        return false;
+    }
     if (alwaysAllowedCommands.find(_command) != alwaysAllowedCommands.end()) {
         return true;
     }
@@ -44,7 +50,7 @@ bool CommandRunner::validateRights()
 
 void CommandRunner::execute()
 {
-    if (!validateRights()) {
+    if (!validateCommandAccess()) {
         return;
     }
 
