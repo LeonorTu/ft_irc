@@ -21,9 +21,11 @@ public:
         std::string source;
         std::vector<std::string> params;
     };
+    void parseCommand();
+
+    // getters
     const CommandContext &getContext() const;
     const std::string &getCommand() const;
-    void parseCommand();
 
 private:
     // Parsed command context
