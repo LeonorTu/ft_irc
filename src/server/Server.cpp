@@ -50,6 +50,9 @@ void Server::start(std::string password)
 
 void Server::loop()
 {
+    std::chrono::steady_clock::time_point last_ping = std::chrono::steady_clock::now();
+    const int pingCheckInterval = 10 * 1000;
+    const int pingTimeout = 30 * 1000;
     while (_running) {
         std::vector<Event> events = getEventLoop().waitForEvents(100);
         for (const Event &event : events) {
@@ -59,6 +62,14 @@ void Server::loop()
             else {
                 getConnectionManager().recieveData(event.fd);
             }
+        }
+        auto now = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_ping).count();
+        if (pingCheckInterval < duration) {
+            std::cout << "Sending PINGs to all clients...\n" << std::endl;
+            last_ping = now;
+            getConnectionManager().sendPingToAllClients();
+            getConnectionManager().checkAllPingTimeouts(pingTimeout);
         }
         if (_paused) {
             std::cout << "Server paused. Waiting for SIGTSTP to resume..." << std::endl;

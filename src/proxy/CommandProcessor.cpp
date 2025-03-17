@@ -3,10 +3,9 @@
 #include <responses.hpp>
 #include <Client.hpp>
 
-// #include "../../include/CommandProcessor.hpp"
 CommandProcessor::CommandProcessor()
-    : _command("")
-    , _context({})
+    : _context({})
+
 {
     setupCommandHandlers();
 }
@@ -14,11 +13,6 @@ CommandProcessor::CommandProcessor()
 const CommandProcessor::CommandContext &CommandProcessor::getContext() const
 {
     return _context;
-}
-
-const std::string &CommandProcessor::getCommand() const
-{
-    return _command;
 }
 
 void ignoreTag(std::istringstream &iss)
@@ -76,9 +70,11 @@ void CommandProcessor::parseCommand(Client &client, const std::string &rawString
     iss >> std::ws; // skip whitespace
 
     _context.clientFd = client.getFd();
+    _context.isRegistered = client.getIsRegistered();
+    _context.nickname = client.getNickname();
     ignoreTag(iss);
     checkSource(iss, _context);
-    storeCommand(iss, _command);
+    storeCommand(iss, _context.command);
     param(iss, _context);
     executeCommand(client);
 }
@@ -86,7 +82,7 @@ void CommandProcessor::parseCommand(Client &client, const std::string &rawString
 void CommandProcessor::executeCommand(Client &client)
 {
     // Check if the command exists in our handlers map
-    auto it = _commandHandlers.find(_command);
+    auto it = _commandHandlers.find(_context.command);
 
     if (it != _commandHandlers.end()) {
         // Call the function with the command context
@@ -94,7 +90,7 @@ void CommandProcessor::executeCommand(Client &client)
     }
     else {
         // should i need to return a message here that this cmd does not exist with 421?
-        sendToClient(_context.clientFd, ERR_UNKNOWNCOMMAND(client.getNickname(), _command));
+        sendToClient(_context.clientFd, ERR_UNKNOWNCOMMAND(client.getNickname(), _context.command));
     }
 }
 
@@ -104,6 +100,7 @@ void CommandProcessor::setupCommandHandlers()
     _commandHandlers["PASS"] = pass;
     _commandHandlers["USER"] = user;
     _commandHandlers["CAP"] = silentIgnore;
+    // _commandHandlers["JOIN"] = silentIgnore;
     // _commandHandlers["LUSERS"] = lusers;
     // _commandHandlers["MOTD"] = motd;
     _commandHandlers["QUIT"] = quit;
@@ -113,8 +110,8 @@ void CommandProcessor::setupCommandHandlers()
     _commandHandlers["TOPIC"] = topic;
     // _commandHandlers["INVITE"] = invite;
     // _commandHandlers["KICK"] = kick;
-    // _commandHandlers["PING"] = ping;
-    // _commandHandlers["PONG"] = pong;
+    _commandHandlers["PING"] = ping;
+    _commandHandlers["PONG"] = pong;
     // _commandHandlers["PRIVMSG"] = privmsg;
     // _commandHandlers["NOTICE"] = notice;
     // _commandHandlers["WHO"] = who;
@@ -124,7 +121,6 @@ void CommandProcessor::setupCommandHandlers()
 void CommandProcessor::clearCommand()
 {
     _context = {};
-    _command = "";
 }
 
 //////////////////////////TESTING//////////////////////////

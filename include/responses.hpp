@@ -152,6 +152,11 @@ inline std::string ERR_TOOMANYCHANNELS(const std::string &client, const std::str
 }
 
 /* ERROR RESPONSES */
+inline std::string ERR_NOORIGIN(const std::string &client)
+{
+    return "409 " + client + " :No origin specified";
+}
+
 inline std::string ERR_UNKNOWNCOMMAND(const std::string &client, const std::string &command)
 {
     return "421 " + client + " " + command + " :Unknown command";
