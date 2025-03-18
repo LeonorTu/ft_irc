@@ -29,6 +29,16 @@ bool IRCValidator::isValidChannelName(int clientFd, const std::string &nickname,
     return true;
 }
 
+bool IRCValidator::isValidTopic(int clientFd, const std::string &nickname, const std::string &topic)
+{
+    std::regex topicPattern("[[:print:]]+");
+    if (topic.length() > TOPICLEN || !std::regex_match(topic, topicPattern)) {
+        sendToClient(clientFd, ERR_INVALIDTOPIC(nickname, topic));
+        return false;
+    }
+    return true;
+}
+
 bool IRCValidator::isValidUsername(int clientFd, const std::string &nickname, std::string &username)
 {
     if (username.length() > USERLEN) {

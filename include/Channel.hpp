@@ -22,6 +22,7 @@ public:
     void join(Client &client, std::string const &key = "");
     void part(Client &client, std::string const &reason);
     void quit(Client &client, std::string const &reason);
+    void invite(Client &inviter, Client &target);
     void changeTopic(Client &client, std::string &newTopic);
     void checkTopic(Client &client);
     const std::string &getName() const;

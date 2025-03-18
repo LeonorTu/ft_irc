@@ -1,5 +1,6 @@
 #include <CommandRunner.hpp>
 #include <unordered_set>
+#include <array>
 
 bool CommandRunner::_mapInitialized = false;
 std::unordered_map<std::string, void (CommandRunner::*)()> CommandRunner::_commandRunners;
@@ -99,6 +100,12 @@ bool CommandRunner::validateParams(size_t min, size_t max,
             }
             break;
 
+            case VAL_TOPIC:
+                if (!IRCValidator::isValidTopic(_client.getFd(), _nickname, param)) {
+                    return false;
+                }
+                break;
+
         case VAL_MODE:
             if (!IRCValidator::isValidChannelMode()) {
                 return false;
@@ -150,8 +157,8 @@ void CommandRunner::initCommandMap()
     // _commandRunners["JOIN"] = &CommandRunner::join;
     // _commandRunners["PART"] = &CommandRunner::part;
     // _commandRunners["MODE"] = &CommandRunner::mode;
-    // _commandRunners["TOPIC"] = &CommandRunner::topic;
-    // _commandRunners["INVITE"] = &CommandRunner::invite;
+    _commandRunners["TOPIC"] = &CommandRunner::topic;
+    _commandRunners["INVITE"] = &CommandRunner::invite;
     // _commandRunners["KICK"] = &CommandRunner::kick;
     // _commandRunners["PING"] = &CommandRunner::ping;
     // _commandRunners["PONG"] = &CommandRunner::pong;

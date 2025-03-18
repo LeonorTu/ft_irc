@@ -112,9 +112,15 @@ inline std::string MODE(const std::string &sourceNick, const std::string &tar,
     return ":" + sourceNick + " MODE " + tar + " " + modeChange + " " + args;
 }
 
-inline std::string NICK(const std::string &old_nickname, const std::string &new_nickname)
+inline std::string NICK(const std::string &oldNickname, const std::string &newNickname)
 {
-    return ":" + old_nickname + " NICK " + new_nickname;
+    return ":" + oldNickname + " NICK " + newNickname;
+}
+
+inline std::string INVITE(const std::string &issuer, const std::string &target,
+                          const std::string &channel)
+{
+    return ":" + issuer + " INVITE " + target + " " + channel;
 }
 
 /* INFORMATIONAL RESPONSES (RPL_*) */
@@ -133,6 +139,12 @@ inline std::string RPL_TOPICWHOTIME(const std::string &client, const std::string
                                     const std::string &who, const std::string &time)
 {
     return "333 " + client + " " + channel + " " + who + " " + time;
+}
+
+inline std::string RPL_INVITING(const std::string &client, const std::string &nickname,
+                                const std::string &channel)
+{
+    return "341" + client + nickname + channel;
 }
 
 inline std::string RPL_NAMREPLY(const std::string &client, const std::string &channel,
@@ -175,6 +187,11 @@ inline std::string ERR_NICKNAMEINUSE(const std::string &client, const std::strin
 inline std::string ERR_NOTONCHANNEL(const std::string &client, const std::string &channel)
 {
     return "442 " + client + " " + channel + " :You're not on that channel";
+}
+inline std::string ERR_USERONCHANNEL(const std::string &client, const std::string &target,
+                                     const std::string &channel)
+{
+    return "443 " + client + " " + target + " " + channel + " :is already on channel";
 }
 
 inline std::string ERR_NOTREGISTERED(const std::string &client)
@@ -220,6 +237,11 @@ inline std::string ERR_BADCHANNELKEY(const std::string &client, const std::strin
 inline std::string ERR_INVITEONLYCHAN(const std::string &client, const std::string &channel)
 {
     return "473 " + client + " " + channel + " :Cannot join channel (+i) - invite only";
+}
+
+inline std::string ERR_INVALIDTOPIC(const std::string &client, const std::string &topic)
+{
+    return "479 " + client + topic + " :Invalid topic "; // selfmade
 }
 
 inline std::string ERR_CHANOPRIVSNEEDED(const std::string &client, const std::string &channel)
