@@ -16,6 +16,7 @@ enum ParamType
     VAL_USER,
     VAL_REAL,
     VAL_CHAN,
+    VAL_TOPIC,
     VAL_MODE,
     VAL_KEY,
     VAL_PASS,
@@ -52,6 +53,7 @@ private:
     void quit();
     void cap();
     void silentIgnore();
+    void invite();
 
     // validation
     bool validateCommandAccess();
