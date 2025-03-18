@@ -9,8 +9,8 @@ void CommandRunner::nick()
     const std::string &oldNickname = _nickname;
     std::string &newNickname = _params[0];
 
-    if (_clients.nickExists(newNickname))
-        sendToClient(_clientFd, ERR_NICKNAMEINUSE(oldNickname, newNickname));
+    if (nickInUse(newNickname))
+        return;
 
     _client.setNickname(newNickname);
     if (tryRegisterClient())

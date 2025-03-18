@@ -158,6 +158,16 @@ inline std::string RPL_ENDOFNAMES(const std::string &client, const std::string &
     return "366 " + client + " " + channel + " :End of /NAMES list";
 }
 
+inline std::string ERR_NOSUCHNICK(const std::string &client, const std::string &nickname)
+{
+    return "401 " + client + " " + nickname + " :No such nick/channel";
+}
+
+inline std::string ERR_NOSUCHCHANNEL(const std::string &client, const std::string &channel)
+{
+    return "403 " + client + " " + channel + " :No such channel";
+}
+
 inline std::string ERR_TOOMANYCHANNELS(const std::string &client, const std::string &channel)
 {
     return "405 " + client + " " + channel + " :You have joined too many channels";
@@ -212,11 +222,6 @@ inline std::string ERR_ALREADYREGISTERED(const std::string &client)
 inline std::string ERR_PASSWDMISMATCH(const std::string &client)
 {
     return "464" + client + " :Password incorrect";
-}
-
-inline std::string ERR_NOSUCHCHANNEL(const std::string &client, const std::string &channel)
-{
-    return "403 " + client + " " + channel + " :No such channel";
 }
 
 inline std::string ERR_INVALIDUSERNAME(const std::string &client, const std::string &username)

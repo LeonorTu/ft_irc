@@ -59,6 +59,11 @@ private:
     bool validateCommandAccess();
     bool validateParams(size_t min, size_t max, std::array<ParamType, MAX_PARAMS> pattern);
 
+    // common error handlers
+    bool nickNotFound(std::string &nickname);
+    bool nickInUse(std::string &nickname);
+    bool channelNotFound(std::string &channel);
+    bool channelInUse(std::string &channel);
     // static command map
     static bool _mapInitialized;
     static void initCommandMap();

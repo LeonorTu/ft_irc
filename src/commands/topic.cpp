@@ -7,8 +7,8 @@ void CommandRunner::topic()
         return;
 
     std::string channelName = _params[0];
-    if (!_channels.channelExists(channelName))
-        sendToClient(_clientFd, ERR_NOSUCHCHANNEL(_client.getNickname(), channelName));
+    if (channelNotFound(channelName))
+        return;
 
     Channel &channel = _channels.getChannel(channelName);
     if (_params.size() == 1) {

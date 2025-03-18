@@ -100,11 +100,11 @@ bool CommandRunner::validateParams(size_t min, size_t max,
             }
             break;
 
-            case VAL_TOPIC:
-                if (!IRCValidator::isValidTopic(_client.getFd(), _nickname, param)) {
-                    return false;
-                }
-                break;
+        case VAL_TOPIC:
+            if (!IRCValidator::isValidTopic(_client.getFd(), _nickname, param)) {
+                return false;
+            }
+            break;
 
         case VAL_MODE:
             if (!IRCValidator::isValidChannelMode()) {
@@ -143,6 +143,42 @@ bool CommandRunner::validateParams(size_t min, size_t max,
     }
 
     return true;
+}
+
+bool CommandRunner::nickNotFound(std::string &target)
+{
+    if (!_clients.nickExists(target)) {
+        sendToClient(_clientFd, ERR_NOSUCHNICK(_nickname, target));
+        return true;
+    }
+    return false;
+}
+
+bool CommandRunner::nickInUse(std::string &target)
+{
+    if (_clients.nickExists(target))
+        ;
+    {
+        sendToClient(_clientFd, ERR_NICKNAMEINUSE(_nickname, target));
+        return true;
+    }
+    return false;
+}
+
+bool CommandRunner::channelNotFound(std::string &channel)
+{
+    if (!_channels.channelExists(channel)) {
+        sendToClient(_clientFd, ERR_NOSUCHCHANNEL(_nickname, channel));
+        return true;
+    }
+    return false;
+}
+
+bool CommandRunner::channelInUse(std::string &channel)
+{
+    if (_channels.channelExists(channel))
+        return true;
+    return false;
 }
 
 void CommandRunner::initCommandMap()
