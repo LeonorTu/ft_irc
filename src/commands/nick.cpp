@@ -6,7 +6,6 @@ void CommandRunner::nick()
     if (!validateParams(1, 1, pattern))
         return;
 
-    const std::string &oldNickname = _nickname;
     std::string &newNickname = _params[0];
 
     if (nickInUse(newNickname))

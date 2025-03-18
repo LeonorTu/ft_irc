@@ -239,6 +239,11 @@ inline std::string ERR_BADCHANNELKEY(const std::string &client, const std::strin
     return "475 " + client + " " + channel + " :Cannot join channel (+k) - bad key";
 }
 
+inline std::string ERR_BADCHANMASK(const std::string &channel)
+{
+    return "476 " + channel + " :Bad Channel Mask";
+}
+
 inline std::string ERR_INVITEONLYCHAN(const std::string &client, const std::string &channel)
 {
     return "473 " + client + " " + channel + " :Cannot join channel (+i) - invite only";

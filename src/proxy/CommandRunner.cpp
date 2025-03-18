@@ -95,7 +95,7 @@ bool CommandRunner::validateParams(size_t min, size_t max,
             break;
 
         case VAL_CHAN:
-            if (!IRCValidator::isValidChannelName(_client.getFd(), _nickname, param)) {
+            if (!IRCValidator::isValidChannelName(_client.getFd(), param)) {
                 return false;
             }
             break;
@@ -156,9 +156,7 @@ bool CommandRunner::nickNotFound(std::string &target)
 
 bool CommandRunner::nickInUse(std::string &target)
 {
-    if (_clients.nickExists(target))
-        ;
-    {
+    if (_clients.nickExists(target)) {
         sendToClient(_clientFd, ERR_NICKNAMEINUSE(_nickname, target));
         return true;
     }

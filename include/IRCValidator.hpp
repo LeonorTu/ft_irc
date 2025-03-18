@@ -10,8 +10,7 @@ public:
     static bool isValidUsername(int clientFd, const std::string &nickname, std::string &username);
     static bool isValidRealname(int clientFd, const std::string &nickname,
                                 const std::string &realname);
-    static bool isValidChannelName(int clientFd, const std::string &nickname,
-                                   const std::string &channelName);
+    static bool isValidChannelName(int clientFd, const std::string &channelName);
     static bool isValidTopic(int clientFd, const std::string &nickname,
                              const std::string &realname);
     static bool isValidChannelMode();

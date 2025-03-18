@@ -18,12 +18,11 @@ bool IRCValidator::isValidNickname(int clientFd, const std::string &oldNickname,
     return true;
 }
 
-bool IRCValidator::isValidChannelName(int clientFd, const std::string &nickname,
-                                      const std::string &channelName)
+bool IRCValidator::isValidChannelName(int clientFd, const std::string &channelName)
 {
     std::regex channelNamePattern(R"(^[#&][^\x00\x07\x0A\x0D ,:]{1,49}$)");
     if (!std::regex_match(channelName, channelNamePattern)) {
-        sendToClient(clientFd, ERR_NOSUCHCHANNEL(nickname, channelName));
+        sendToClient(clientFd, ERR_BADCHANMASK(channelName));
         return false;
     }
     return true;
