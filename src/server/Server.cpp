@@ -18,6 +18,7 @@ Server::Server()
     , _channels(std::make_unique<ChannelManager>())
     , _socketManager(std::make_unique<SocketManager>(SERVER_PORT))
     , _eventLoop(createEventLoop())
+    , _pingPongManager(std::make_unique<PingPongManager>())
     , _connectionManager(
           std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop, *_clients))
     , _createdTime(getCurrentTime())
@@ -60,6 +61,7 @@ void Server::loop()
                 getConnectionManager().recieveData(event.fd);
             }
         }
+        getConnectionManager().rmDisconnectedClients()
         if (_paused) {
             std::cout << "Server paused. Waiting for SIGTSTP to resume..." << std::endl;
             while (_paused && _running) {
@@ -103,6 +105,11 @@ SocketManager &Server::getSocketManager()
 EventLoop &Server::getEventLoop()
 {
     return *_eventLoop;
+}
+
+PingPongManager& Server::getPingPongManager()
+{
+    return *_pingPongManager;
 }
 
 ConnectionManager &Server::getConnectionManager()

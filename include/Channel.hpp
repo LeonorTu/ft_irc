@@ -32,6 +32,7 @@ public:
     void setMode(Client &client, bool enable, ChannelMode mode, std::string param = "");
     void setMode(Client &client, bool enable, const char mode, std::string param = "");
     bool isEmpty() const;
+    void broadcastMessage(const std::string &message);
 
 private:
     std::string _channelName;
@@ -46,7 +47,6 @@ private:
     std::string _key;
     size_t _userLimit;
 
-    void broadcastMessage(const std::string &message);
     void enableMode(ChannelMode mode);
     void disableMode(ChannelMode mode);
     std::string prefixNick(Client &client);

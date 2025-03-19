@@ -10,6 +10,7 @@
 #include <responses.hpp>
 #include <ConnectionManager.hpp>
 #include <vector>
+#include <PingPongManager.hpp>
 
 enum ParamType
 {
@@ -37,6 +38,7 @@ private:
     ClientIndex &_clients;
     ChannelManager &_channels;
     Client &_client;
+    PingPongManager &_pingPongManager;
 
     // shared pre-loads
     const std::string &_command;
@@ -56,6 +58,8 @@ private:
     void cap();
     void mode();
     void kick();
+    void ping();
+    void pong();
     void silentIgnore();
     void invite();
 
@@ -78,4 +82,6 @@ private:
     void completeRegistration();
     bool tryRegisterClient();
     void sendWelcome();
+    void sendPongResponse();
+    void handlePongFromClient(const std::string &token);
 };
