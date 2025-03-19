@@ -8,6 +8,7 @@
 #include <IRCValidator.hpp>
 #include <MessageParser.hpp>
 #include <responses.hpp>
+#include <ConnectionManager.hpp>
 #include <vector>
 
 enum ParamType
