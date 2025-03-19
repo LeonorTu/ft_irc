@@ -18,22 +18,24 @@ public:
     ~ConnectionManager();
 
     void handleNewClient();
-    void disconnectClient(Client &client);
+    void disconnectClient(Client &client, const std::string &reason);
     void recieveData(int clientFd);
-    void disconnectAllClients();
     std::vector<Client *> &getDisconnectedClients();
-    void markClientForDisconnection(Client *client);
+    void markClientForDisconnection(Client &client);
     void rmDisconnectedClients();
     void checkInactivityClients(int timeoutMs);
+
+    void cleanUp();
 
 private:
     ClientIndex &_clients;
     SocketManager &_socketManager;
     EventLoop &_EventLoop;
-    PingPongManager &_pingPongManager;
+    // PingPongManager &_pingPongManager;
     std::vector<Client *> _clientsToDisconnect;
 
-    
     void extractFullMessages(Client &client, std::string &messageBuffer);
     void handleOversized(Client &client, std::string &messageBuffer);
+
+    void deleteClient(Client &client);
 };

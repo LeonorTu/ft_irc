@@ -38,7 +38,7 @@ public:
     void updateActivityTime();
     std::chrono::steady_clock::time_point getLastActivityTime() const;
     int getTimeForNoActivity() const;
-    void quit(const std::string &reason);
+    void forceQuit(const std::string &reason);
 
 private:
     int _fd;
@@ -50,7 +50,6 @@ private:
     std::string _nickname;
     std::string _ip;
     std::unordered_map<std::string, Channel *> _myChannels;
-   
-    // void listClients(ClientIndex &_clients);
+
     std::chrono::steady_clock::time_point _lastactivityTime;
 };

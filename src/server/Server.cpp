@@ -61,7 +61,7 @@ void Server::loop()
                 getConnectionManager().recieveData(event.fd);
             }
         }
-        getConnectionManager().rmDisconnectedClients()
+        getConnectionManager().rmDisconnectedClients();
         if (_paused) {
             std::cout << "Server paused. Waiting for SIGTSTP to resume..." << std::endl;
             while (_paused && _running) {
@@ -107,7 +107,7 @@ EventLoop &Server::getEventLoop()
     return *_eventLoop;
 }
 
-PingPongManager& Server::getPingPongManager()
+PingPongManager &Server::getPingPongManager()
 {
     return *_pingPongManager;
 }
@@ -162,7 +162,8 @@ void Server::signalHandler(int signum)
 void Server::shutdown()
 {
     _running = false;
-    _connectionManager->disconnectAllClients();
+    _connectionManager->cleanUp();
     _socketManager->closeServerSocket();
+    _eventLoop->removeFromWatch(_serverFd);
     std::cout << "Server shutdown complete" << std::endl;
 }

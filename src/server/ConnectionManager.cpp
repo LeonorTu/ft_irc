@@ -11,7 +11,7 @@ ConnectionManager::ConnectionManager(SocketManager &socketManager, EventLoop &Ev
 
 ConnectionManager::~ConnectionManager()
 {
-    disconnectAllClients();
+    cleanUp();
 }
 
 void ConnectionManager::handleNewClient()
@@ -31,11 +31,10 @@ void ConnectionManager::handleNewClient()
     std::cout << "  IP:     " << ip << std::endl;
 }
 
-void ConnectionManager::disconnectClient(Client &client)
+void ConnectionManager::disconnectClient(Client &client, const std::string &reason)
 {
-    _EventLoop.removeFromWatch(client.getFd());
-    _socketManager.closeConnection(client.getFd());
-    _clients.remove(client);
+    markClientForDisconnection(client);
+    client.forceQuit(reason);
 }
 
 void ConnectionManager::recieveData(int clientFd)
@@ -58,13 +57,13 @@ void ConnectionManager::recieveData(int clientFd)
             }
             else {
                 // Handle error
-                disconnectClient(client);
+                disconnectClient(client, "Connection error: " + std::string(strerror(errno)));
                 return;
             }
         }
         else if (bytesRead == 0) {
             // Client disconnected
-            disconnectClient(client);
+            disconnectClient(client, "Connection closed");
             return;
         }
 
@@ -95,11 +94,6 @@ void ConnectionManager::extractFullMessages(Client &client, std::string &message
     }
 }
 
-void ConnectionManager::disconnectAllClients()
-{
-    _clients.forEachClient([this](Client &client) { disconnectClient(client); });
-}
-
 // if the message is over buffer limit, truncate and delete therest of the message.
 void ConnectionManager::handleOversized(Client &client, std::string &messageBuffer)
 {
@@ -119,33 +113,24 @@ std::vector<Client *> &ConnectionManager::getDisconnectedClients()
     return (_clientsToDisconnect);
 }
 
-
-void ConnectionManager::markClientForDisconnection(Client *client)
+void ConnectionManager::markClientForDisconnection(Client &client)
 {
-    // 중복 방지
-    for (auto it = _clientsToDisconnect.begin(); it != _clientsToDisconnect.end(); ++it) {
-        if (*it == client)
-            return;
-    }
-    _clientsToDisconnect.push_back(client);
-    std::cout << "Client " << client->getNickname() << " marked for disconnection" << std::endl;
+    // 중복 방지 just push duplicates and check for nullptr in rmDisconnectedClients?
+    // for (auto it = _clientsToDisconnect.begin(); it != _clientsToDisconnect.end(); ++it) {
+    //     if (*it == &client)
+    //         return;
+    // }
+    _clientsToDisconnect.push_back(&client);
+    std::cout << "Client " << client.getNickname() << " marked for disconnection" << std::endl;
 }
-
 
 void ConnectionManager::rmDisconnectedClients()
 {
-    // std::cout << "\nBefore disconnecting clients: " << _clients.size() << std::endl << std::endl;
-    // listClients();
-
-    // will delete the client that timed out from the list
     for (Client *client : _clientsToDisconnect) {
-        client->quit("Ping timeout : 120 seconds");
-        std::cout << "Client " << client->getNickname() << " deleted" << std::endl;
-        disconnectClient(*client);
+        if (client == nullptr)
+            continue;
+        deleteClient(*client);
     }
-    // std::cout << "\nRemained clients: " << _clients.size() << std::endl << std::endl;
-    // listClients();
-    // std::cout << "End of listing" << std::endl;
 }
 
 void ConnectionManager::checkInactivityClients(int timeoutMs)
@@ -153,8 +138,21 @@ void ConnectionManager::checkInactivityClients(int timeoutMs)
     // _clients->forEachClient([this, timeoutMs](Client &client) {
     for (Client *client : _clientsToDisconnect) {
         if (client->getTimeForNoActivity() > timeoutMs) {
-            PingPongManager.sendto
-            rmDisconnectedClients();
+            disconnectClient(*client, "Ping timeout: "+ std::to_string(timeoutMs / 1000) + " seconds");
         }
     };
+}
+
+void ConnectionManager::deleteClient(Client &client)
+{
+    _EventLoop.removeFromWatch(client.getFd());
+    _socketManager.closeConnection(client.getFd());
+    std::cout << "Client " << client.getNickname() << " data deleted" << std::endl;
+    _clients.remove(client);
+}
+
+// destructor, no need to broadcast anything
+void ConnectionManager::cleanUp()
+{
+    _clients.forEachClient([this](Client &client) { deleteClient(client); });
 }

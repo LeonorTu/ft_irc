@@ -12,7 +12,7 @@ void CommandRunner::pass()
     if (clientPassword != serverPassword) {
         sendToClient(_clientFd, ERR_PASSWDMISMATCH(_nickname));
         _client.setPasswordVerified(false);
-        Server::getInstance().getConnectionManager().disconnectClient(_client);
+        Server::getInstance().getConnectionManager().disconnectClient(_client, "Password mismatch");
         return;
     }
     _client.setPasswordVerified(true);
