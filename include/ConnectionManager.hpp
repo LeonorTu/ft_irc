@@ -20,18 +20,20 @@ public:
     void disconnectClient(Client &client);
     void recieveData(int clientFd);
     void disconnectAllClients();
+    std::vector<Client *> &getDisconnectedClients();
+    void markClientForDisconnection(Client *client);
+    void rmDisconnectedClients();
 
-    //Ping related functions
-    void sendPingToClient(Client &client);
-    void checkAllPingTimeouts(int timeoutMs);
-    void sendPingToAllClients();
-    void listClients();
-
-    private : ClientIndex &_clients;
+private: 
+    
+    ClientIndex &_clients;
     SocketManager &_socketManager;
     EventLoop &_EventLoop;
     CommandProcessor _commandProcessor;
+    std::vector<Client *> _clientsToDisconnect;
 
     void extractFullMessages(Client &client, std::string &messageBuffer);
     void handleOversized(Client &client, std::string &messageBuffer);
+    void listClients(ClientIndex &_clients);
+    // void rmDisconnectedClients(Channel &channel);
 };
