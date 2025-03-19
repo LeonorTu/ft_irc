@@ -124,9 +124,9 @@ inline std::string INVITE(const std::string &issuer, const std::string &target,
 }
 
 inline std::string KICK(const std::string &kicker, const std::string &target,
-                          const std::string &channel)
+                        const std::string &channel, const std::string &reason)
 {
-    return ":" + kicker + " KICK " + channel + " " + target;
+    return ":" + kicker + " KICK " + channel + " " + target + " :" + reason;
 }
 
 /* INFORMATIONAL RESPONSES (RPL_*) */

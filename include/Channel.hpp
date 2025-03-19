@@ -58,5 +58,5 @@ private:
     bool isOnChannel(Client &client);
     void removeFromInvites(Client &client);
     void addOp(std::string &nick, const std::string &modeMsg = "");
-    void removeOp(std::string &nick, const std::string &modeMsg = "");
+    void removeOp(const std::string &nick, const std::string &modeMsg = "");
 };
