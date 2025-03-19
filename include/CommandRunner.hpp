@@ -22,6 +22,7 @@ enum ParamType
     VAL_MODE,
     VAL_KEY,
     VAL_PASS,
+    VAL_TEXT,
     VAL_NONE
 };
 
@@ -57,6 +58,7 @@ private:
     void cap();
     void ping();
     void pong();
+    void kick();
     void silentIgnore();
     void invite();
 

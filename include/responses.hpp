@@ -254,9 +254,10 @@ inline std::string ERR_INVITEONLYCHAN(const std::string &client, const std::stri
     return "473 " + client + " " + channel + " :Cannot join channel (+i) - invite only";
 }
 
-inline std::string ERR_INVALIDTOPIC(const std::string &client, const std::string &topic)
+inline std::string ERR_INVALIDTEXT(const std::string &client,
+                                                   const std::string &text)
 {
-    return "479 " + client + topic + " :Invalid topic "; // selfmade
+    return "479 " + client + text + " :Invalid  "; // selfmade
 }
 
 inline std::string ERR_CHANOPRIVSNEEDED(const std::string &client, const std::string &channel)

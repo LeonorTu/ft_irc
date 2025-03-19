@@ -28,11 +28,12 @@ bool IRCValidator::isValidChannelName(int clientFd, const std::string &channelNa
     return true;
 }
 
-bool IRCValidator::isValidTopic(int clientFd, const std::string &nickname, const std::string &topic)
+bool IRCValidator::isPrintable(int clientFd, const std::string &nickname, const std::string &text,
+                               int limit)
 {
-    std::regex topicPattern("[[:print:]]+");
-    if (topic.length() > TOPICLEN || !std::regex_match(topic, topicPattern)) {
-        sendToClient(clientFd, ERR_INVALIDTOPIC(nickname, topic));
+    std::regex printablePattern("[[:print:]]+");
+    if (text.length() > limit || !std::regex_match(text, printablePattern)) {
+        sendToClient(clientFd, ERR_INVALIDTEXT(nickname, text));
         return false;
     }
     return true;
@@ -82,3 +83,16 @@ bool IRCValidator::isValidChannelKey(int clientFd, const std::string &nickname,
     }
     return true;
 }
+
+// bool IRCValidator::isValidUserList(int clientFd, const std::string &nickname,
+//                                    const std::string &userList)
+// {
+//     std::istringstream userStream(userList);
+//     std::string username;
+//     while (std::getline(userStream, username, ',') )
+//     {
+//         if (isValidNickname(clientFd, ))
+//     }
+
+//     return false;
+// }
