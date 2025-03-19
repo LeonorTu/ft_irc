@@ -10,6 +10,7 @@ Client::Client(int fd)
     , _isRegistered(false)
     , _nickname("*")
     , _ip("")
+    , _lastactivityTime(std::chrono::steady_clock::now())
 {}
 
 Client::~Client()
@@ -137,24 +138,9 @@ int Client::getTimeForNoActivity() const
     return (std::chrono::duration_cast<std::chrono::milliseconds>(now - _lastactivityTime).count());
 }
 
-
-// void Client::listClients(ClientIndex &clients)
-// {
-//     int count = 0;
-//     clients.forEachClient([&count](Client &client) {
-//         std::cout << "New client" << std::endl;
-//         std::cout << "  Nick name: " << client.getNickname() << std::endl;
-//         std::cout << "  User name: " << client.getUsername() << std::endl;
-//         std::cout << "  Real name: " << client.getRealname() << std::endl;
-//         std::cout << "  IsRegistered: " << (client.getIsRegistered() ? "Yes" : "No") << std::endl;
-//         count++;
-//     });
-// }
-
-void Client::quit(const std::string &reason)
+void Client::forceQuit(const std::string &reason)
 {
     for (auto &[_, channel] : _myChannels) {
-        channel->broadcastMessage(QUIT(_nickname, reason));
-        untrackChannel(channel);
+        channel->quit(*this, reason);
     }
 }

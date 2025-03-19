@@ -11,7 +11,7 @@ SocketManager::SocketManager(int port)
 
 SocketManager::~SocketManager()
 {
-    close(_serverFd);
+    closeServerSocket();
 }
 
 int SocketManager::initialize()
