@@ -123,6 +123,12 @@ inline std::string INVITE(const std::string &issuer, const std::string &target,
     return ":" + issuer + " INVITE " + target + " " + channel;
 }
 
+inline std::string KICK(const std::string &kicker, const std::string &target,
+                          const std::string &channel)
+{
+    return ":" + kicker + " KICK " + channel + " " + target;
+}
+
 /* INFORMATIONAL RESPONSES (RPL_*) */
 inline std::string RPL_NOTOPIC(const std::string &client, const std::string &channel)
 {
@@ -192,6 +198,10 @@ inline std::string ERR_ERRONEUSNICKNAME(const std::string &client, const std::st
 inline std::string ERR_NICKNAMEINUSE(const std::string &client, const std::string &nickname)
 {
     return "433 " + client + " " + nickname + " :Nickname is already in use";
+}
+inline std::string ERR_USERNOTINCHANNEL(const std::string &client, const std::string &nickname, const std::string &channel)
+{
+    return "441 " + client + " " + nickname + " " + channel + ": They aren't on that channel";
 }
 
 inline std::string ERR_NOTONCHANNEL(const std::string &client, const std::string &channel)
