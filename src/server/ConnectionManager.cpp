@@ -1,6 +1,7 @@
 #include <ConnectionManager.hpp>
 #include <common.hpp>
 #include <responses.hpp>
+#include <Channel.hpp>
 
 ConnectionManager::ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop,
                                      ClientIndex &clients)
@@ -68,7 +69,7 @@ void ConnectionManager::recieveData(int clientFd)
             disconnectClient(client);
             return;
         }
-
+        client.updateActivityTime();
         messageBuf.append(buffer, bytesRead);
     }
     extractFullMessages(client, messageBuf);
@@ -92,6 +93,7 @@ void ConnectionManager::extractFullMessages(Client &client, std::string &message
         messageBuffer.erase(0, pos + 1);
         // Call the command handler, currently just printing out the log message.
         _commandProcessor.parseCommand(client, completedMessage);
+        client.updateActivityTime();
     }
 }
 
@@ -113,26 +115,15 @@ void ConnectionManager::handleOversized(Client &client, std::string &messageBuff
     }
 }
 
-void ConnectionManager::sendPingToClient(Client &client)
+std::vector<Client *> &ConnectionManager::getDisconnectedClients()
 {
-    std::string token = "PING_" + std::to_string(time(NULL));
-    client.addPingToken(token);
-
-    sendToClient(client.getFd(), "PING " + token);
-    std::cout << "Sending PING to " << client.getNickname() << ": " << token << std::endl;
+    return (_clientsToDisconnect);
 }
 
-void ConnectionManager::sendPingToAllClients()
-{
-    _clients.forEachClient([this](Client &client) {
-        sendPingToClient(client);
-    });
-}
-
-void ConnectionManager::listClients()
+void ConnectionManager::listClients(ClientIndex &clients)
 {
     int count = 0;
-    _clients.forEachClient([&count](Client &client) {
+    clients.forEachClient([&count](Client &client) {
         std::cout << "New client" << std::endl;
         std::cout << "  Nick name: " << client.getNickname() << std::endl;
         std::cout << "  User name: " << client.getUsername() << std::endl;
@@ -142,29 +133,34 @@ void ConnectionManager::listClients()
     });
 }
 
-// check pong responses within 60s
-void ConnectionManager::checkAllPingTimeouts(int timeoutMs)
+void ConnectionManager::rmDisconnectedClients()
 {
-    // cannot reference in vector before initializing and also because it is modified while
-    // iterating pointer is better for memory usage
-    std::vector<Client *> clientsToDisconnect;
-
-    _clients.forEachClient([this, &clientsToDisconnect, timeoutMs](Client &client) {
-        if (client.checkPingTimeouts(timeoutMs)) {
-            std::cout << "Client " << client.getNickname() << " has no PONG response after "
-                      << timeoutMs / 1000 << " seconds" << std::endl;
-            clientsToDisconnect.push_back(&client);
-        }
-    });
     // std::cout << "\nBefore disconnecting clients: " << _clients.size() << std::endl << std::endl;
     // listClients();
 
     // will delete the client that timed out from the list
-    for (Client *client : clientsToDisconnect) {
+    for (Client *client : _clientsToDisconnect) {
+        std::unordered_map<std::string, Channel *> channels = client->getMyChannels();
+        for (auto &[_, channel] : channels) {
+            std::string response = client->getNickname() + "no longer connected";
+            channel->broadcastMessage(response);
+            client->untrackChannel(channel);
+        }
         std::cout << "Client " << client->getNickname() << " deleted" << std::endl;
         disconnectClient(*client);
     }
     // std::cout << "\nRemained clients: " << _clients.size() << std::endl << std::endl;
     // listClients();
     // std::cout << "End of listing" << std::endl;
+}
+
+void ConnectionManager::markClientForDisconnection(Client *client)
+{
+    // 중복 방지
+    for (auto it = _clientsToDisconnect.begin(); it != _clientsToDisconnect.end(); ++it) {
+        if (*it == client)
+            return;
+    }
+    _clientsToDisconnect.push_back(client);
+    std::cout << "Client " << client->getNickname() << " marked for disconnection" << std::endl;
 }

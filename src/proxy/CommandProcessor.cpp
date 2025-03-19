@@ -2,6 +2,8 @@
 #include <commandHandlers.hpp>
 #include <responses.hpp>
 #include <Client.hpp>
+#include <Server.hpp>
+#include <PingPongManager.hpp>
 
 CommandProcessor::CommandProcessor()
     : _context({})
@@ -110,8 +112,14 @@ void CommandProcessor::setupCommandHandlers()
     _commandHandlers["TOPIC"] = topic;
     // _commandHandlers["INVITE"] = invite;
     // _commandHandlers["KICK"] = kick;
-    _commandHandlers["PING"] = ping;
-    _commandHandlers["PONG"] = pong;
+    // _commandHandlers["PING"] = ping;
+    // _commandHandlers["PONG"] = pong;
+    PingPongManager &pingPongMgr = Server::getInstance().getPingPongManager();
+
+    _commandHandlers["PING"] = [&pingPongMgr](const CommandContext &ctx) { pingPongMgr.ping(ctx); };
+
+    _commandHandlers["PONG"] = [&pingPongMgr](const CommandContext &ctx) { pingPongMgr.pong(ctx); };
+
     // _commandHandlers["PRIVMSG"] = privmsg;
     // _commandHandlers["NOTICE"] = notice;
     // _commandHandlers["WHO"] = who;

@@ -5,12 +5,14 @@
 #include <cstring>
 #include <csignal>
 #include <memory>
+#include <PingPongManager.hpp>
 
 class SocketManager;
 class EventLoop;
 class ConnectionManager;
 class ClientIndex;
 class ChannelManager;
+class PingPongManager;
 
 class Server
 {
@@ -32,6 +34,8 @@ public:
     ConnectionManager &getConnectionManager();
     const std::string &getPassword();
     const std::string &getCreatedTime();
+    PingPongManager &getPingPongManager() const;
+    void checkInactivityClients(int timeoutMs);
 
     void pause();
     void resume();
@@ -47,6 +51,7 @@ private:
     std::unique_ptr<SocketManager> _socketManager;
     std::unique_ptr<EventLoop> _eventLoop;
     std::unique_ptr<ConnectionManager> _connectionManager;
+    std::unique_ptr<PingPongManager> _pingPongManager;
     static void signalHandler(int signum);
 
     // server info

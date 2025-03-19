@@ -34,12 +34,11 @@ public:
     bool isOnChannel(Channel *channel);
     size_t countChannelTypes(char type);
     std::unordered_map<std::string, Channel *> getMyChannels();
+    void updateActivityTime();
+    std::chrono::steady_clock::time_point getLastActivityTime() const;
+    int getTimeForNoActivity() const;
 
-    void addPingToken(const std::string &token);
-    void handlePongFromClient(const std::string &token);
-    bool checkPingTimeouts(int timeouts);
-
-private:
+    private:
     int _fd;
     std::string _messageBuf;
     std::string _username;
@@ -49,5 +48,5 @@ private:
     std::string _nickname;
     std::string _ip;
     std::unordered_map<std::string, Channel *> _myChannels;
-    std::unordered_map<std::string, std::chrono::steady_clock::time_point> _pingTokens;
+    std::chrono::steady_clock::time_point _lastactivityTime;
 };

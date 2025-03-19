@@ -12,5 +12,3 @@ void quit(const CommandProcessor::CommandContext &ctx);
 void topic(const CommandProcessor::CommandContext &ctx);
 void sendWelcome(int clientFd);
 void silentIgnore(const CommandProcessor::CommandContext &ctx);
-void ping(const CommandProcessor::CommandContext &ctx);
-void pong(const CommandProcessor::CommandContext &ctx);
