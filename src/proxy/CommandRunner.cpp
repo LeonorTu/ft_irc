@@ -36,7 +36,7 @@ bool CommandRunner::validateCommandAccess()
         return true;
     }
     if (!_client.getPasswordVerified()) {
-        sendToClient(_client.getFd(), ERR_NOTREGISTERED(_nickname));
+        sendToClient(_clientFd, ERR_NOTREGISTERED(_nickname));
         return false;
     }
     if (!_client.getIsRegistered() &&
@@ -44,7 +44,7 @@ bool CommandRunner::validateCommandAccess()
         return true;
     }
     if (!_client.getIsRegistered()) {
-        sendToClient(_client.getFd(), ERR_NOTREGISTERED(_nickname));
+        sendToClient(_clientFd, ERR_NOTREGISTERED(_nickname));
         return false;
     }
     return true;
@@ -63,7 +63,7 @@ void CommandRunner::execute()
         (this->*commandFunction)();
     }
     else {
-        sendToClient(_client.getFd(), ERR_UNKNOWNCOMMAND(_nickname, _command));
+        sendToClient(_clientFd, ERR_UNKNOWNCOMMAND(_nickname, _command));
     }
 }
 
@@ -72,9 +72,9 @@ bool CommandRunner::validateParams(size_t min, size_t max,
 {
     if (_params.size() < min) {
         if (_command == "NICK")
-            sendToClient(_client.getFd(), ERR_NONICKNAMEGIVEN(_nickname));
+            sendToClient(_clientFd, ERR_NONICKNAMEGIVEN(_nickname));
         else
-            sendToClient(_client.getFd(), ERR_NEEDMOREPARAMS(_nickname, _command));
+            sendToClient(_clientFd, ERR_NEEDMOREPARAMS(_nickname, _command));
         return false;
     }
 
@@ -89,19 +89,19 @@ bool CommandRunner::validateParams(size_t min, size_t max,
 
         switch (pattern[i]) {
         case VAL_NICK:
-            if (!IRCValidator::isValidNickname(_client.getFd(), _nickname, param)) {
+            if (!IRCValidator::isValidNickname(_clientFd, _nickname, param)) {
                 return false;
             }
             break;
 
         case VAL_CHAN:
-            if (!IRCValidator::isValidChannelName(_client.getFd(), param)) {
+            if (!IRCValidator::isValidChannelName(_clientFd, param)) {
                 return false;
             }
             break;
 
         case VAL_TOPIC:
-            if (!IRCValidator::isValidTopic(_client.getFd(), _nickname, param)) {
+            if (!IRCValidator::isValidTopic(_clientFd, _nickname, param)) {
                 return false;
             }
             break;
@@ -113,13 +113,13 @@ bool CommandRunner::validateParams(size_t min, size_t max,
             break;
 
         case VAL_USER:
-            if (!IRCValidator::isValidUsername(_client.getFd(), _nickname, param)) {
+            if (!IRCValidator::isValidUsername(_clientFd, _nickname, param)) {
                 return false;
             }
             break;
 
         case VAL_KEY:
-            if (!IRCValidator::isValidChannelKey()) {
+            if (!IRCValidator::isValidChannelKey(_clientFd, _nickname, param)) {
                 return false;
             }
             break;

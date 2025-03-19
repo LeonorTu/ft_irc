@@ -263,3 +263,8 @@ inline std::string ERR_INVALIDREALNAME(const std::string &client, const std::str
 {
     return "513 " + client + " " + realname + " :Invalid characters in realname";
 }
+
+inline std::string ERR_INVALIDKEY(const std::string &client, const std::string &channel)
+{
+    return "525 " + client + " " + channel + " :Key is not well-formed";
+}
