@@ -4,6 +4,8 @@
 #include <string>
 #include <netinet/in.h>
 #include <unordered_map>
+#include <chrono>
+#include <responses.hpp>
 
 class Channel;
 class Client
@@ -33,6 +35,10 @@ public:
     bool isOnChannel(Channel *channel);
     size_t countChannelTypes(char type);
     std::unordered_map<std::string, Channel *> getMyChannels();
+    void updateActivityTime();
+    std::chrono::steady_clock::time_point getLastActivityTime() const;
+    int getTimeForNoActivity() const;
+    void quit(const std::string &reason);
 
 private:
     int _fd;
@@ -44,4 +50,7 @@ private:
     std::string _nickname;
     std::string _ip;
     std::unordered_map<std::string, Channel *> _myChannels;
+   
+    // void listClients(ClientIndex &_clients);
+    std::chrono::steady_clock::time_point _lastactivityTime;
 };

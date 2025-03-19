@@ -121,3 +121,40 @@ size_t Client::countChannelTypes(char type)
     }
     return counter;
 }
+void Client::updateActivityTime()
+{
+    _lastactivityTime = std::chrono::steady_clock::now();
+}
+
+std::chrono::steady_clock::time_point Client::getLastActivityTime() const
+{
+    return _lastactivityTime;
+}
+
+int Client::getTimeForNoActivity() const
+{
+    auto now = std::chrono::steady_clock::now();
+    return (std::chrono::duration_cast<std::chrono::milliseconds>(now - _lastactivityTime).count());
+}
+
+
+// void Client::listClients(ClientIndex &clients)
+// {
+//     int count = 0;
+//     clients.forEachClient([&count](Client &client) {
+//         std::cout << "New client" << std::endl;
+//         std::cout << "  Nick name: " << client.getNickname() << std::endl;
+//         std::cout << "  User name: " << client.getUsername() << std::endl;
+//         std::cout << "  Real name: " << client.getRealname() << std::endl;
+//         std::cout << "  IsRegistered: " << (client.getIsRegistered() ? "Yes" : "No") << std::endl;
+//         count++;
+//     });
+// }
+
+void Client::quit(const std::string &reason)
+{
+    for (auto &[_, channel] : _myChannels) {
+        channel->broadcastMessage(QUIT(_nickname, reason));
+        untrackChannel(channel);
+    }
+}
