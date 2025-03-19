@@ -187,9 +187,9 @@ void CommandRunner::initCommandMap()
     _commandRunners["CAP"] = &CommandRunner::silentIgnore;
     // _commandRunners["LUSERS"] = &CommandRunner::lusers;
     // _commandRunners["MOTD"] = &CommandRunner::motd;
-    // _commandRunners["QUIT"] = &CommandRunner::quit;
-    // _commandRunners["JOIN"] = &CommandRunner::join;
-    // _commandRunners["PART"] = &CommandRunner::part;
+    _commandRunners["QUIT"] = &CommandRunner::quit;
+    _commandRunners["JOIN"] = &CommandRunner::join;
+    _commandRunners["PART"] = &CommandRunner::part;
     // _commandRunners["MODE"] = &CommandRunner::mode;
     _commandRunners["TOPIC"] = &CommandRunner::topic;
     _commandRunners["INVITE"] = &CommandRunner::invite;
