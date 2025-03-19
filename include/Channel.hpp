@@ -23,6 +23,7 @@ public:
     void part(Client &client, std::string const &reason);
     void quit(Client &client, std::string const &reason);
     void invite(Client &inviter, Client &target);
+    void kick(Client &kicker, Client &target, std::string const &reason);
     void changeTopic(Client &client, std::string &newTopic);
     void checkTopic(Client &client);
     const std::string &getName() const;
