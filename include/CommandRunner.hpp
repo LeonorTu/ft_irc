@@ -21,6 +21,7 @@ enum ParamType
     VAL_MODE,
     VAL_KEY,
     VAL_PASS,
+    VAL_TEXT,
     VAL_NONE
 };
 
@@ -53,6 +54,7 @@ private:
     void topic();
     void quit();
     void cap();
+    void kick();
     void silentIgnore();
     void invite();
 
