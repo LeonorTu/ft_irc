@@ -15,7 +15,8 @@ public:
                              const std::string &realname);
     static bool isValidChannelMode();
     static bool isValidServerPassword();
-    static bool isValidChannelKey();
+    static bool isValidChannelKey(int clientFd, const std::string &nickname,
+                                  const std::string &key);
 
 private:
 };

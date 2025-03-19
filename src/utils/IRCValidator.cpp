@@ -72,7 +72,13 @@ bool IRCValidator::isValidServerPassword()
     return true;
 }
 
-bool IRCValidator::isValidChannelKey()
+bool IRCValidator::isValidChannelKey(int clientFd, const std::string &nickname,
+                                     const std::string &key)
 {
+    std::regex keyPattern(R"(^[a-zA-Z0-9!@#$%^&*()\-_=+\[\]{}|;:'",.<>?/]+$)");
+    if (!std::regex_match(key, keyPattern)) {
+        sendToClient(clientFd, ERR_INVALIDKEY(nickname, key));
+        return false;
+    }
     return true;
 }
