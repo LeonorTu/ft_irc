@@ -1,13 +1,9 @@
-#include <pingPong.hpp>
+#include <CommandRunner.hpp>
 
-void pong(const CommandProcessor::CommandContext &ctx)
+void CommandRunner::pong()
 {
-    if (ctx.command != "PONG")
+    std::array<ParamType, MAX_PARAMS> pattern = {VAL_NONE};
+    if (!validateParams(1, 1, pattern))
         return;
-    if (EmptyToken(ctx) || MoreThanOneToken(ctx))
-        return;
-    Server &server = Server::getInstance();
-    ClientIndex &clients = server.getClients();
-    Client &client = clients.getByFd(ctx.clientFd);
-    client.handlePongFromClient(ctx.params[0]);
+    _PongManager.handlePongFromClient(_params[0], _client);
 }

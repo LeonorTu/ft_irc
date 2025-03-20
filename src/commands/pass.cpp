@@ -1,33 +1,19 @@
-#include <CommandProcessor.hpp>
-#include <Server.hpp>
-#include <Client.hpp>
-#include <responses.hpp>
-#include <ClientIndex.hpp>
+#include <CommandRunner.hpp>
 #include <ConnectionManager.hpp>
-#include <commandHandlers.hpp>
 
-void pass(const CommandProcessor::CommandContext &ctx)
+void CommandRunner::pass()
 {
-    Server &server = Server::getInstance();
-    Client &client = server.getClients().getByFd(ctx.clientFd);
-    std::string clientPassword = ctx.params[0];
-
-    if (client.getIsRegistered()) {
-        sendToClient(ctx.clientFd, ERR_ALREADYREGISTERED(ctx.source));
+    std::array<ParamType, MAX_PARAMS> pattern = {VAL_PASS};
+    if (!validateParams(1, 1, pattern))
         return;
-    }
 
-    if (clientPassword.empty()) {
-        sendToClient(ctx.clientFd, ERR_NEEDMOREPARAMS(ctx.source, "PASS"));
-        return;
-    }
-
-    std::string serverPassword = server.getPassword();
+    std::string clientPassword = _params[0];
+    std::string serverPassword = Server::getInstance().getPassword();
     if (clientPassword != serverPassword) {
-        sendToClient(ctx.clientFd, ERR_PASSWDMISMATCH(ctx.source));
-        server.getConnectionManager().disconnectClient(client);
+        sendToClient(_clientFd, ERR_PASSWDMISMATCH(_nickname));
+        _client.setPasswordVerified(false);
+        Server::getInstance().getConnectionManager().disconnectClient(_client, "Password mismatch");
         return;
     }
-
-    client.setPasswordVerified(true);
+    _client.setPasswordVerified(true);
 }

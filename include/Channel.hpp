@@ -22,6 +22,7 @@ public:
     void join(Client &client, std::string const &key = "");
     void part(Client &client, std::string const &reason);
     void quit(Client &client, std::string const &reason);
+    void invite(Client &inviter, Client &target);
     void changeTopic(Client &client, std::string &newTopic);
     void checkTopic(Client &client);
     const std::string &getName() const;
@@ -30,6 +31,7 @@ public:
     void setMode(Client &client, bool enable, ChannelMode mode, std::string param = "");
     void setMode(Client &client, bool enable, const char mode, std::string param = "");
     bool isEmpty() const;
+    void broadcastMessage(const std::string &message);
 
 private:
     std::string _channelName;
@@ -44,7 +46,6 @@ private:
     std::string _key;
     size_t _userLimit;
 
-    void broadcastMessage(const std::string &message);
     void enableMode(ChannelMode mode);
     void disableMode(ChannelMode mode);
     std::string prefixNick(Client &client);

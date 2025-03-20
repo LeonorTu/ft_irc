@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <unordered_map>
 #include <chrono>
+#include <responses.hpp>
 
 class Channel;
 class Client
@@ -34,10 +35,16 @@ public:
     bool isOnChannel(Channel *channel);
     size_t countChannelTypes(char type);
     std::unordered_map<std::string, Channel *> getMyChannels();
+    void updateActivityTime();
+    std::chrono::steady_clock::time_point getLastActivityTime() const;
+    // int getTimeForNoActivity() const;
+    void forceQuit(const std::string &reason);
+    void markPingSent(const std::string &token);
+    bool isWaitingForPong() const;
+    void noPongWait();
+    const std::string &getLastPingToken() const;
+    int getTimeSinceLastPing() const;
 
-    void addPingToken(const std::string &token);
-    void handlePongFromClient(const std::string &token);
-    bool checkPingTimeouts(int timeouts);
 
 private:
     int _fd;
@@ -49,5 +56,10 @@ private:
     std::string _nickname;
     std::string _ip;
     std::unordered_map<std::string, Channel *> _myChannels;
-    std::unordered_map<std::string, std::chrono::steady_clock::time_point> _pingTokens;
+
+    // when you receive pong from client
+    std::chrono::steady_clock::time_point _lastactivityTime; 
+    std::chrono::steady_clock::time_point _lastPingSentTime;
+    bool _waitingForPong;
+    std::string _lastPingToken;
 };

@@ -1,35 +1,21 @@
-#include <CommandProcessor.hpp>
-#include <Server.hpp>
-#include <Client.hpp>
-#include <Channel.hpp>
-#include <ClientIndex.hpp>
-#include <commandHandlers.hpp>
-#include <responses.hpp>
-#include <ChannelManager.hpp>
-#include <IRCValidator.hpp>
+#include <CommandRunner.hpp>
 
-void topic(const CommandProcessor::CommandContext &ctx)
+void CommandRunner::topic()
 {
-    Server &server = Server::getInstance();
-    ClientIndex &clients = server.getClients();
-    Client &client = clients.getByFd(ctx.clientFd);
-    ChannelManager &channels = server.getChannels();
+    std::array<ParamType, MAX_PARAMS> pattern = {VAL_CHAN, VAL_TOPIC};
+    if (!validateParams(1, 2, pattern))
+        return;
 
-    if (ctx.params.empty()) {
-        sendToClient(ctx.clientFd, ERR_NEEDMOREPARAMS(client.getNickname(), "JOIN"));
+    std::string channelName = _params[0];
+    if (channelNotFound(channelName))
         return;
+
+    Channel &channel = _channels.getChannel(channelName);
+    if (_params.size() == 1) {
+        channel.checkTopic(_client);
     }
-    std::string channelName = ctx.params[0];
-    if (!IRCValidator::isValidChannelName(ctx.clientFd, client.getNickname(), channelName))
-        return;
-    if (!channels.channelExists(channelName))
-        sendToClient(ctx.clientFd, ERR_NOSUCHCHANNEL(client.getNickname(), channelName));
-    Channel &channel = channels.getChannel(ctx.params[0]);
-    if (ctx.params.size() == 1) {
-        channel.checkTopic(client);
-    }
-    else if (ctx.params.size() == 2) {
-        std::string topic = ctx.params[1];
-        channel.changeTopic(client, topic);
+    else if (_params.size() == 2) {
+        std::string topic = _params[1];
+        channel.changeTopic(_client, topic);
     }
 }

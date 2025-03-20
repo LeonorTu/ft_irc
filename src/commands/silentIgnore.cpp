@@ -1,6 +1,4 @@
-#include <commandHandlers.hpp>
+#include <CommandRunner.hpp>
 
-void silentIgnore(const CommandProcessor::CommandContext &ctx)
-{
-    (void)ctx;
-}
+void CommandRunner::silentIgnore()
+{}

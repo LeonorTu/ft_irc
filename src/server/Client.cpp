@@ -10,6 +10,10 @@ Client::Client(int fd)
     , _isRegistered(false)
     , _nickname("*")
     , _ip("")
+    , _lastactivityTime(std::chrono::steady_clock::now())
+    , _lastPingSentTime(std::chrono::steady_clock::now())
+    , _waitingForPong(false)
+    , _lastPingToken("")
 {}
 
 Client::~Client()
@@ -121,37 +125,53 @@ size_t Client::countChannelTypes(char type)
     }
     return counter;
 }
-
-void Client::addPingToken(const std::string &token)
+void Client::updateActivityTime()
 {
-    _pingTokens[token] = std::chrono::steady_clock::now();
+    _lastactivityTime = std::chrono::steady_clock::now();
 }
 
-void Client::handlePongFromClient(const std::string &token)
+std::chrono::steady_clock::time_point Client::getLastActivityTime() const
 {
-    auto it = _pingTokens.find(token);
-    if (it != _pingTokens.end()) {
-        auto now = std::chrono::steady_clock::now();
-        auto pingTime = it->second;
-        auto duration =
-            std::chrono::duration_cast<std::chrono::milliseconds>(now - pingTime).count();
+    return _lastactivityTime;
+}
 
-        std::cout << "PONG received from " << _nickname << " in " << duration << "ms" << std::endl;
-        _pingTokens.erase(it);
+// int Client::getTimeForNoActivity() const
+// {
+//     auto now = std::chrono::steady_clock::now();
+//     return (std::chrono::duration_cast<std::chrono::milliseconds>(now - _lastactivityTime).count());
+// }
+
+void Client::forceQuit(const std::string &reason)
+{
+    for (auto &[_, channel] : _myChannels) {
+        channel->quit(*this, reason);
     }
 }
 
-bool Client::checkPingTimeouts(int timeoutMs)
+void Client::markPingSent(const std::string &token)
+{
+    _lastPingSentTime = std::chrono::steady_clock::now();
+    _waitingForPong = true;
+    _lastPingToken = token;
+}
+
+bool Client::isWaitingForPong() const
+{
+    return _waitingForPong;
+}
+
+void Client::noPongWait()
+{
+    _waitingForPong = false;
+}
+
+const std::string &Client::getLastPingToken() const
+{
+    return _lastPingToken;
+}
+
+int Client::getTimeSinceLastPing() const
 {
     auto now = std::chrono::steady_clock::now();
-
-    for (auto it = _pingTokens.begin(); it != _pingTokens.end();) {
-        auto duration =
-            std::chrono::duration_cast<std::chrono::milliseconds>(now - it->second).count();
-        if (duration > timeoutMs) {
-            return true;
-        }
-        ++it;
-    }
-    return false;
+    return std::chrono::duration_cast<std::chrono::milliseconds>(now - _lastPingSentTime).count();
 }

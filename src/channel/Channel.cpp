@@ -16,7 +16,7 @@ Channel::Channel(const std::string &name, Client &creator)
     join(creator);
 }
 
-Channel::~Channel()
+    Channel::~Channel()
 {
     for (auto &[_, client] : _connectedClients) {
         client->untrackChannel(this);
@@ -66,6 +66,25 @@ void Channel::quit(Client &client, const std::string &reason)
     removeOp(nick);
     client.untrackChannel(this);
     broadcastMessage(quitMessage);
+}
+
+void Channel::invite(Client &inviter, Client &target)
+{
+    if (!isOnChannel(inviter))
+        sendToClient(inviter.getFd(), ERR_NOTONCHANNEL(inviter.getNickname(), _channelName));
+    if (isOnChannel(target))
+        sendToClient(inviter.getFd(),
+                     ERR_USERONCHANNEL(inviter.getNickname(), target.getNickname(), _channelName));
+    if (hasMode(ChannelMode::INVITE_ONLY) && !hasOp(inviter))
+        sendToClient(inviter.getFd(), ERR_CHANOPRIVSNEEDED(inviter.getNickname(), _channelName));
+
+    auto it = _invites.find(target.getNickname());
+    if (it != _invites.end()) {
+        _invites.insert_or_assign(target.getNickname(), it->second);
+    }
+    sendToClient(target.getFd(), INVITE(inviter.getNickname(), target.getNickname(), _channelName));
+    sendToClient(inviter.getFd(),
+                 RPL_INVITING(inviter.getNickname(), target.getNickname(), _channelName));
 }
 
 void Channel::changeTopic(Client &client, std::string &newTopic)

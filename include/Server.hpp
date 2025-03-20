@@ -5,12 +5,15 @@
 #include <cstring>
 #include <csignal>
 #include <memory>
+#include <chrono>
+
 
 class SocketManager;
 class EventLoop;
 class ConnectionManager;
 class ClientIndex;
 class ChannelManager;
+class PongManager;
 
 class Server
 {
@@ -32,7 +35,8 @@ public:
     ConnectionManager &getConnectionManager();
     const std::string &getPassword();
     const std::string &getCreatedTime();
-
+    PongManager &getPongManager();
+    
     void pause();
     void resume();
 
@@ -46,9 +50,12 @@ private:
     std::unique_ptr<ChannelManager> _channels;
     std::unique_ptr<SocketManager> _socketManager;
     std::unique_ptr<EventLoop> _eventLoop;
+    std::unique_ptr<PongManager> _PongManager;
     std::unique_ptr<ConnectionManager> _connectionManager;
-    static void signalHandler(int signum);
 
+    static void signalHandler(int signum);
+    void pingSchedule(int64_t &last_ping);
+    // void sendPingToInactivityClients(int timeoutMs, const int pingTimeout);
     // server info
     const std::string _createdTime;
 };

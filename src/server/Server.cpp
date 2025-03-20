@@ -6,6 +6,7 @@
 #include <ChannelManager.hpp>
 #include <ConnectionManager.hpp>
 #include <responses.hpp>
+#include <PongManager.hpp>
 
 Server *Server::_instance = nullptr;
 
@@ -18,8 +19,9 @@ Server::Server()
     , _channels(std::make_unique<ChannelManager>())
     , _socketManager(std::make_unique<SocketManager>(SERVER_PORT))
     , _eventLoop(createEventLoop())
-    , _connectionManager(
-          std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop, *_clients))
+    , _PongManager(std::make_unique<PongManager>())
+    , _connectionManager(std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop,
+                                                             *_clients)) //, *_PongManager))
     , _createdTime(getCurrentTime())
 {
     // setup signalshandlers
@@ -50,9 +52,9 @@ void Server::start(std::string password)
 
 void Server::loop()
 {
-    std::chrono::steady_clock::time_point last_ping = std::chrono::steady_clock::now();
-    const int pingCheckInterval = 10 * 1000;
-    const int pingTimeout = 30 * 1000;
+    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                      std::chrono::steady_clock::now().time_since_epoch())
+                      .count();
     while (_running) {
         std::vector<Event> events = getEventLoop().waitForEvents(100);
         for (const Event &event : events) {
@@ -63,14 +65,8 @@ void Server::loop()
                 getConnectionManager().recieveData(event.fd);
             }
         }
-        auto now = std::chrono::steady_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_ping).count();
-        if (pingCheckInterval < duration) {
-            std::cout << "Sending PINGs to all clients...\n" << std::endl;
-            last_ping = now;
-            getConnectionManager().sendPingToAllClients();
-            getConnectionManager().checkAllPingTimeouts(pingTimeout);
-        }
+        pingSchedule(now);
+        getConnectionManager().rmDisconnectedClients();
         if (_paused) {
             std::cout << "Server paused. Waiting for SIGTSTP to resume..." << std::endl;
             while (_paused && _running) {
@@ -79,6 +75,35 @@ void Server::loop()
             std::cout << "Server resumed!" << std::endl;
         }
     }
+}
+
+// void Server::sendPingToInactivityClients(int timeoutMs, const int pingTimeout)
+// {
+//     // Check for inactive clients and send PING if needed
+//     getClients().forEachClient([this, timeoutMs](Client &client) {
+//         if (client.getTimeForNoActivity() > timeoutMs) {
+//             std::cout << "Client " << client.getNickname() << " inactive for "
+//                       << client.getTimeForNoActivity() / 1000 << " seconds. Sending PING."
+//                       << std::endl;
+//             getPongManager().sendPingToClient(client);
+//         }
+//     });
+// }
+
+void Server::pingSchedule(int64_t &last_ping)
+{
+    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                      std::chrono::steady_clock::now().time_since_epoch())
+                      .count();
+    const int pingCheckInterval = 120 * 1000;
+    const int pingTimeout = 60 * 1000;
+    // const int inactivityTimeout = 120 * 1000;
+    if (now - last_ping > pingCheckInterval) {
+        getPongManager().sendPingToAllClients(*_clients);
+        last_ping = now;
+    }
+    // getConnectionManager().checkInactivityClients(inactivityTimeout);
+    getPongManager().checkAllPingTimeouts(pingTimeout, *_clients, *_connectionManager);
 }
 
 Server &Server::getInstance()
@@ -114,6 +139,11 @@ SocketManager &Server::getSocketManager()
 EventLoop &Server::getEventLoop()
 {
     return *_eventLoop;
+}
+
+PongManager &Server::getPongManager()
+{
+    return *_PongManager;
 }
 
 ConnectionManager &Server::getConnectionManager()
@@ -166,7 +196,8 @@ void Server::signalHandler(int signum)
 void Server::shutdown()
 {
     _running = false;
-    _connectionManager->disconnectAllClients();
+    _connectionManager->cleanUp();
     _socketManager->closeServerSocket();
+    _eventLoop->removeFromWatch(_serverFd);
     std::cout << "Server shutdown complete" << std::endl;
 }
