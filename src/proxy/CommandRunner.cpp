@@ -146,7 +146,7 @@ bool CommandRunner::validateParams(size_t min, size_t max,
             break;
 
         case VAL_USERLIST:
-            
+
 
         default:
             break;

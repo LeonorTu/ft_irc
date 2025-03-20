@@ -83,5 +83,4 @@ private:
     bool tryRegisterClient();
     void sendWelcome();
     void sendPongResponse();
-    void handlePongFromClient(const std::string &token);
 };
