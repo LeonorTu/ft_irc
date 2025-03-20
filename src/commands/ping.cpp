@@ -2,7 +2,7 @@
 
 void CommandRunner::sendPongResponse()
 {
-    std::string response = ":" + SERVER_NAME + " PONG " + SERVER_NAME + " :" + ctx.params[0];
+    std::string response = ":" + SERVER_NAME + " PONG " + SERVER_NAME + " :" + _params[0];
     sendToClient(_clientFd, response);
 }
 
