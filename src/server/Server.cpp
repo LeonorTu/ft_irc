@@ -6,6 +6,7 @@
 #include <ChannelManager.hpp>
 #include <ConnectionManager.hpp>
 #include <responses.hpp>
+#include <PongManager.hpp>
 
 Server *Server::_instance = nullptr;
 
@@ -19,8 +20,8 @@ Server::Server()
     , _socketManager(std::make_unique<SocketManager>(SERVER_PORT))
     , _eventLoop(createEventLoop())
     , _PongManager(std::make_unique<PongManager>())
-    , _connectionManager(
-          std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop, *_clients))
+    , _connectionManager(std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop,
+                                                             *_clients)) //, *_PongManager))
     , _createdTime(getCurrentTime())
 {
     // setup signalshandlers
@@ -51,6 +52,9 @@ void Server::start(std::string password)
 
 void Server::loop()
 {
+    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                      std::chrono::steady_clock::now().time_since_epoch())
+                      .count();
     while (_running) {
         std::vector<Event> events = getEventLoop().waitForEvents(100);
         for (const Event &event : events) {
@@ -61,7 +65,7 @@ void Server::loop()
                 getConnectionManager().recieveData(event.fd);
             }
         }
-
+        pingSchedule(now);
         getConnectionManager().rmDisconnectedClients();
         if (_paused) {
             std::cout << "Server paused. Waiting for SIGTSTP to resume..." << std::endl;
@@ -71,6 +75,35 @@ void Server::loop()
             std::cout << "Server resumed!" << std::endl;
         }
     }
+}
+
+// void Server::sendPingToInactivityClients(int timeoutMs, const int pingTimeout)
+// {
+//     // Check for inactive clients and send PING if needed
+//     getClients().forEachClient([this, timeoutMs](Client &client) {
+//         if (client.getTimeForNoActivity() > timeoutMs) {
+//             std::cout << "Client " << client.getNickname() << " inactive for "
+//                       << client.getTimeForNoActivity() / 1000 << " seconds. Sending PING."
+//                       << std::endl;
+//             getPongManager().sendPingToClient(client);
+//         }
+//     });
+// }
+
+void Server::pingSchedule(int64_t &last_ping)
+{
+    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                      std::chrono::steady_clock::now().time_since_epoch())
+                      .count();
+    const int pingCheckInterval = 120 * 1000;
+    const int pingTimeout = 60 * 1000;
+    // const int inactivityTimeout = 120 * 1000;
+    if (now - last_ping > pingCheckInterval) {
+        getPongManager().sendPingToAllClients(*_clients);
+        last_ping = now;
+    }
+    // getConnectionManager().checkInactivityClients(inactivityTimeout);
+    getPongManager().checkAllPingTimeouts(pingTimeout, *_clients, *_connectionManager);
 }
 
 Server &Server::getInstance()

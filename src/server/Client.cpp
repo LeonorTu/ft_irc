@@ -11,6 +11,9 @@ Client::Client(int fd)
     , _nickname("*")
     , _ip("")
     , _lastactivityTime(std::chrono::steady_clock::now())
+    , _lastPingSentTime(std::chrono::steady_clock::now())
+    , _waitingForPong(false)
+    , _lastPingToken("")
 {}
 
 Client::~Client()
@@ -132,15 +135,43 @@ std::chrono::steady_clock::time_point Client::getLastActivityTime() const
     return _lastactivityTime;
 }
 
-int Client::getTimeForNoActivity() const
-{
-    auto now = std::chrono::steady_clock::now();
-    return (std::chrono::duration_cast<std::chrono::milliseconds>(now - _lastactivityTime).count());
-}
+// int Client::getTimeForNoActivity() const
+// {
+//     auto now = std::chrono::steady_clock::now();
+//     return (std::chrono::duration_cast<std::chrono::milliseconds>(now - _lastactivityTime).count());
+// }
 
 void Client::forceQuit(const std::string &reason)
 {
     for (auto &[_, channel] : _myChannels) {
         channel->quit(*this, reason);
     }
+}
+
+void Client::markPingSent(const std::string &token)
+{
+    _lastPingSentTime = std::chrono::steady_clock::now();
+    _waitingForPong = true;
+    _lastPingToken = token;
+}
+
+bool Client::isWaitingForPong() const
+{
+    return _waitingForPong;
+}
+
+void Client::noPongWait()
+{
+    _waitingForPong = false;
+}
+
+const std::string &Client::getLastPingToken() const
+{
+    return _lastPingToken;
+}
+
+int Client::getTimeSinceLastPing() const
+{
+    auto now = std::chrono::steady_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(now - _lastPingSentTime).count();
 }

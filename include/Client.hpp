@@ -37,8 +37,14 @@ public:
     std::unordered_map<std::string, Channel *> getMyChannels();
     void updateActivityTime();
     std::chrono::steady_clock::time_point getLastActivityTime() const;
-    int getTimeForNoActivity() const;
+    // int getTimeForNoActivity() const;
     void forceQuit(const std::string &reason);
+    void markPingSent(const std::string &token);
+    bool isWaitingForPong() const;
+    void noPongWait();
+    const std::string &getLastPingToken() const;
+    int getTimeSinceLastPing() const;
+
 
 private:
     int _fd;
@@ -51,5 +57,9 @@ private:
     std::string _ip;
     std::unordered_map<std::string, Channel *> _myChannels;
 
-    std::chrono::steady_clock::time_point _lastactivityTime;
+    // when you receive pong from client
+    std::chrono::steady_clock::time_point _lastactivityTime; 
+    std::chrono::steady_clock::time_point _lastPingSentTime;
+    bool _waitingForPong;
+    std::string _lastPingToken;
 };

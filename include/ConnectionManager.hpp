@@ -15,15 +15,16 @@ class ConnectionManager
 {
 public:
     ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop, ClientIndex &clients);
+                    //   ,PongManager &PongManager);
     ~ConnectionManager();
 
     void handleNewClient();
     void disconnectClient(Client &client, const std::string &reason);
     void recieveData(int clientFd);
     std::vector<Client *> &getDisconnectedClients();
-    void markClientForDisconnection(Client *client);
+    void markClientForDisconnection(Client &client);
     void rmDisconnectedClients();
-    void checkInactivityClients(int timeoutMs);
+    // void checkInactivityClients(int timeoutMs);
 
     void cleanUp();
 

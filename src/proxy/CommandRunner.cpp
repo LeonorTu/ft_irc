@@ -75,7 +75,10 @@ bool CommandRunner::validateParams(size_t min, size_t max,
         if (_command == "NICK")
             sendToClient(_client.getFd(), ERR_NONICKNAMEGIVEN(_nickname));
         else
+        {
             sendToClient(_client.getFd(), ERR_NEEDMOREPARAMS(_nickname, _command));
+            std::cout << "Not enough parameters for command: " << _command << std::endl;
+        }
         return false;
     }
 
