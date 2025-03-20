@@ -145,9 +145,6 @@ bool CommandRunner::validateParams(size_t min, size_t max,
             }
             break;
 
-        case VAL_USERLIST:
-
-
         default:
             break;
         }
@@ -204,7 +201,7 @@ void CommandRunner::initCommandMap()
     // _commandRunners["MODE"] = &CommandRunner::mode;
     _commandRunners["TOPIC"] = &CommandRunner::topic;
     _commandRunners["INVITE"] = &CommandRunner::invite;
-    _commandRunners["KICK"] = &CommandRunner::kick;
+    // _commandRunners["KICK"] = &CommandRunner::kick;
     // _commandRunners["PING"] = &CommandRunner::ping;
     // _commandRunners["PONG"] = &CommandRunner::pong;
     // _commandRunners["PRIVMSG"] = &CommandRunner::privmsg;
