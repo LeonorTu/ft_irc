@@ -58,6 +58,7 @@ private:
     void cap();
     void ping();
     void pong();
+    void mode();
     void kick();
     void silentIgnore();
     void invite();
