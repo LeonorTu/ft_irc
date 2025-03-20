@@ -32,7 +32,7 @@ public:
     ConnectionManager &getConnectionManager();
     const std::string &getPassword();
     const std::string &getCreatedTime();
-    PingPongManager& Server::getPingPongManager();
+    PongManager& Server::getPongManager();
     
     void pause();
     void resume();
@@ -47,7 +47,7 @@ private:
     std::unique_ptr<ChannelManager> _channels;
     std::unique_ptr<SocketManager> _socketManager;
     std::unique_ptr<EventLoop> _eventLoop;
-    std::unique_ptr<PingPongManager> _pingPongManager;
+    std::unique_ptr<PongManager> _PongManager;
     std::unique_ptr<ConnectionManager> _connectionManager;
     static void signalHandler(int signum);
 

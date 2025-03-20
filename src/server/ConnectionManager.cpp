@@ -33,7 +33,7 @@ void ConnectionManager::handleNewClient()
 
 void ConnectionManager::disconnectClient(Client &client, const std::string &reason)
 {
-    markClientForDisconnection(client);
+    markClientForDisconnection(&client);
     client.forceQuit(reason);
 }
 
@@ -113,22 +113,24 @@ std::vector<Client *> &ConnectionManager::getDisconnectedClients()
     return (_clientsToDisconnect);
 }
 
-void ConnectionManager::markClientForDisconnection(Client &client)
+void ConnectionManager::markClientForDisconnection(Client *client)
 {
     // 중복 방지 just push duplicates and check for nullptr in rmDisconnectedClients?
     // for (auto it = _clientsToDisconnect.begin(); it != _clientsToDisconnect.end(); ++it) {
     //     if (*it == &client)
     //         return;
     // }
-    _clientsToDisconnect.push_back(&client);
-    std::cout << "Client " << client.getNickname() << " marked for disconnection" << std::endl;
+    if (client == nullptr)
+        return;
+    _clientsToDisconnect.push_back(client);
+    std::cout << "Client " << client->getNickname() << " marked for disconnection" << std::endl;
 }
 
 void ConnectionManager::rmDisconnectedClients()
 {
     for (Client *client : _clientsToDisconnect) {
-        if (client == nullptr)
-            continue;
+        // if (client == nullptr)
+        //     continue;
         deleteClient(*client);
     }
 }

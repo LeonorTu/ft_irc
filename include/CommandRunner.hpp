@@ -9,7 +9,7 @@
 #include <MessageParser.hpp>
 #include <responses.hpp>
 #include <vector>
-#include <PingPongManager.hpp>
+#include <PongManager.hpp>
 
 enum ParamType
 {
@@ -36,7 +36,7 @@ private:
     ClientIndex &_clients;
     ChannelManager &_channels;
     Client &_client;
-    PingPongManager &_pingPongManager;
+    PongManager &_PongManager;
 
     // shared pre-loads
     const std::string &_command;
