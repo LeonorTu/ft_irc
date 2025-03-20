@@ -54,6 +54,7 @@ private:
     void topic();
     void quit();
     void cap();
+    void mode();
     void kick();
     void silentIgnore();
     void invite();
