@@ -12,7 +12,7 @@ void CommandRunner::mode()
 
     Channel &channel = _channels.getChannel(target);
     bool adding = true;
-    size_t argIndex = 0;
+    // size_t argIndex = 0;
     for (char mode : modeString) {
         if (mode == '+')
             adding = true;
