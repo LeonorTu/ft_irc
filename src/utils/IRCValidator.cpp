@@ -29,7 +29,7 @@ bool IRCValidator::isValidChannelName(int clientFd, const std::string &channelNa
 }
 
 bool IRCValidator::isPrintable(int clientFd, const std::string &nickname, const std::string &text,
-                               unsigned int limit)
+                               size_t limit)
 {
     std::regex printablePattern("[[:print:]]+");
     if (text.length() > limit || !std::regex_match(text, printablePattern)) {

@@ -43,7 +43,7 @@ private:
     // shared pre-loads
     const std::string &_command;
     int _clientFd;
-    const std::string &_nickname;
+    const std::string _nickname;
     const std::string &_messageSource;
     std::vector<std::string> _params;
 
@@ -56,10 +56,11 @@ private:
     void topic();
     void quit();
     void cap();
-    void ping();
-    void pong();
     void mode();
     void kick();
+    void ping();
+    void pong();
+    void motd();
     void silentIgnore();
     void invite();
 

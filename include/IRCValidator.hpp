@@ -12,7 +12,7 @@ public:
                                 const std::string &realname);
     static bool isValidChannelName(int clientFd, const std::string &channelName);
     static bool isPrintable(int clientFd, const std::string &nickname, const std::string &text,
-                            unsigned int limit);
+                            size_t limit);
     static bool isValidChannelMode();
     static bool isValidServerPassword();
     static bool isValidChannelKey(int clientFd, const std::string &nickname,

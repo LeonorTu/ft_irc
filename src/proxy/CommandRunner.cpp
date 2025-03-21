@@ -75,10 +75,7 @@ bool CommandRunner::validateParams(size_t min, size_t max,
         if (_command == "NICK")
             sendToClient(_clientFd, ERR_NONICKNAMEGIVEN(_nickname));
         else
-        {
-            sendToClient(_client.getFd(), ERR_NEEDMOREPARAMS(_nickname, _command));
-            std::cout << "Not enough parameters for command: " << _command << std::endl;
-        }
+            sendToClient(_clientFd, ERR_NEEDMOREPARAMS(_nickname, _command));
         return false;
     }
 
@@ -148,9 +145,6 @@ bool CommandRunner::validateParams(size_t min, size_t max,
             }
             break;
 
-        // case VAL_USERLIST:
-
-
         default:
             break;
         }
@@ -198,9 +192,9 @@ void CommandRunner::initCommandMap()
     _commandRunners["NICK"] = &CommandRunner::nick;
     _commandRunners["PASS"] = &CommandRunner::pass;
     _commandRunners["USER"] = &CommandRunner::user;
-    _commandRunners["CAP"] = &CommandRunner::silentIgnore;
+    _commandRunners["CAP"] = &CommandRunner::cap;
     // _commandRunners["LUSERS"] = &CommandRunner::lusers;
-    // _commandRunners["MOTD"] = &CommandRunner::motd;
+    _commandRunners["MOTD"] = &CommandRunner::motd;
     _commandRunners["QUIT"] = &CommandRunner::quit;
     _commandRunners["JOIN"] = &CommandRunner::join;
     _commandRunners["PART"] = &CommandRunner::part;
@@ -251,4 +245,5 @@ void CommandRunner::sendWelcome()
     sendToClient(_clientFd, RPL_CREATED(_nickname, Server::getInstance().getCreatedTime()));
     sendToClient(_clientFd, RPL_MYINFO(_nickname));
     sendToClient(_clientFd, RPL_ISUPPORT(_nickname));
+    motd();
 }
