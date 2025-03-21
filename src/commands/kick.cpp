@@ -10,6 +10,8 @@ void CommandRunner::kick()
     std::istringstream ss(targetNicknames);
     std::string targetNickname;
     while (std::getline(ss, targetNickname, ',')) {
+        if (nickNotFound(targetNickname))
+            continue;
         Client &targetClient = _clients.getByNick(targetNickname);
         channel.kick(_client, targetClient, reason);
     }

@@ -10,6 +10,7 @@ Channel::Channel(const std::string &name, Client &creator)
     , _modes("")
     , _key("")
     , _userLimit(0)
+    , _createdTime(getCurrentTime())
 {
     _ops.insert_or_assign(creator.getNickname(), &creator);
     setMode(creator, true, ChannelMode::OP, creator.getNickname());
@@ -94,7 +95,7 @@ void Channel::kick(Client &kicker, Client &target, std::string const &reason)
     if (!isOnChannel(target))
         sendToClient(kicker.getFd(), ERR_USERNOTINCHANNEL(kicker.getNickname(),
                                                           target.getNickname(), _channelName));
-    if (hasMode(ChannelMode::INVITE_ONLY) && !hasOp(kicker))
+    if (!hasOp(kicker))
         sendToClient(kicker.getFd(), ERR_CHANOPRIVSNEEDED(kicker.getNickname(), _channelName));
     std::string kickMessage =
         KICK(kicker.getNickname(), target.getNickname(), _channelName, reason);
@@ -134,6 +135,11 @@ void Channel::checkTopic(Client &client)
 const std::string &Channel::getName() const
 {
     return _channelName;
+}
+
+const std::string &Channel::getCreatedTime()
+{
+    return _createdTime;
 }
 
 bool Channel::hasMode(ChannelMode mode) const
@@ -205,6 +211,22 @@ void Channel::setMode(Client &client, bool enable, const char mode, std::string 
     setMode(client, enable, channelMode, param);
 }
 
+void Channel::printModes(Client &client)
+{
+    std::string modeString;
+    if (!_modes.empty())
+        modeString = '+' + _modes;
+    for (char mode : _modes) {
+        if (mode == 'k')
+            modeString = modeString + ' ' + _key;
+        else if (mode == 'l')
+            modeString = modeString + ' ' + std::to_string(_userLimit);
+    }
+    sendToClient(client.getFd(), RPL_CHANNELMODEIS(client.getNickname(), _channelName, modeString));
+    sendToClient(client.getFd(),
+                 RPL_CREATIONTIME(client.getNickname(), _channelName, getCreatedTime()));
+}
+
 bool Channel::isEmpty() const
 {
     return _connectedClients.empty();
@@ -221,6 +243,8 @@ void Channel::broadcastMessage(const std::string &message)
 
 void Channel::enableMode(ChannelMode mode)
 {
+    if (mode == ChannelMode::OP)
+        return;
     if (_modes.find(static_cast<char>(mode)) == std::string::npos) {
         _modes.push_back(mode);
     }
