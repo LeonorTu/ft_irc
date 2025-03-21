@@ -1,7 +1,11 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
+class ClientIndex;
+class Client;
+class ChannelManager;
 class IRCValidator
 {
 public:
@@ -13,13 +17,10 @@ public:
     static bool isValidChannelName(int clientFd, const std::string &channelName);
     static bool isPrintable(int clientFd, const std::string &nickname, const std::string &text,
                             size_t limit);
-    static bool isValidChannelMode();
     static bool isValidPort(const std::string &portStr);
     static bool isValidServerPassword(const std::string &password);
-    static bool isValidChannelKey(int clientFd, const std::string &nickname,
-                                  const std::string &key);
-    // static bool isValidUserList(int clientFd, const std::string &nickname,
-    //                               const std::string &userList);
+    static bool isValidChannelKey(int clientFd, const std::string &nickname, const std::string &key);
+    static bool isValidTarget(ClientIndex &clients, ChannelManager &channelManager, std::vector<std::string> params, Client &client);
 
 private:
 };

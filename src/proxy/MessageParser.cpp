@@ -79,6 +79,7 @@ void MessageParser::param(std::istringstream &iss)
             iss.get(); // skip the :
             std::getline(iss, tail);
             _context.params.push_back(tail);
+            // std::cout << "Param: " << tail << std::endl;
             break;
         }
         if (!(iss >> param))

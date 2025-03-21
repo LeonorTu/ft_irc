@@ -2,6 +2,10 @@
 #include <common.hpp>
 #include <regex>
 #include <responses.hpp>
+#include <ClientIndex.hpp>
+#include <Client.hpp>
+#include <ChannelManager.hpp>
+#include <Channel.hpp>
 
 bool IRCValidator::isValidNickname(int clientFd, const std::string &oldNickname,
                                    const std::string &newNickname)
@@ -115,3 +119,75 @@ bool IRCValidator::isValidChannelKey(int clientFd, const std::string &nickname,
 
 //     return false;
 // }
+
+// std::vector<std::string> returnTargets(std::vector<std::string> params)
+// {
+//     std::vector<std::string> targets;
+//     for (auto it = params.begin(); it != params.end() - 1; ++it) {
+//         targets.push_back(*it);
+//     }
+//     return targets;
+// }
+
+// std::string returnMessage(std::vector<std::string> params)
+// {
+//     std::string message = params.back();
+//     return message;
+// }
+
+std::string truncateAfterCommaInTargets(std::string target)
+{
+    size_t commaPos = target.find(',');
+    if (commaPos != std::string::npos) {
+        target.erase(commaPos);
+    }
+    return target;
+}
+
+std::string putMessageInOne(std::vector<std::string> params)
+{
+    std::string message;
+    for (size_t i = 1; i < params.size(); ++i) {
+        message += params[i];
+        if (i != params.size() - 1) {
+            message += " ";
+        }
+    }
+    return message;
+}
+
+bool IRCValidator::isValidTarget(ClientIndex &clients, ChannelManager &channelManager, 
+                                  std::vector<std::string> params, Client &client)
+{
+
+    std::string target = params[0];
+
+    //client will handle the message adding ':' instead but should i handle it or not
+    if (params[1].empty()) {
+        sendToClient(client.getFd(), ERR_NOTEXTTOSEND(client.getNickname()));
+        return false;
+    }
+    std::string message = putMessageInOne(params);
+    if (target[0] == CHANTYPES[0] || target[0] == CHANTYPES[1]) 
+    {
+        try {
+            Channel &channel = channelManager.getChannel(target);
+           channel.broadcastMessage(":" + client.getPrefixPrivmsg() + " PRIVMSG " + target + " :" +
+                                      message);
+            std::cout << "Sending message to channel: " << target << std::endl;
+        }
+        catch (const std::exception &e) {
+            sendToClient(client.getFd(), ERR_NOSUCHCHANNEL(client.getNickname(), target));
+            return false;
+        }
+    }
+    else 
+    {
+        target = truncateAfterCommaInTargets(target);
+        if (!clients.nickExists(target)) {
+            sendToClient(client.getFd(), ERR_NOSUCHNICK(client.getNickname(), target));
+            return false;
+        }
+    }
+    return true;
+}

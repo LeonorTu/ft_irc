@@ -125,7 +125,11 @@ bool CommandRunner::validateParams(size_t min, size_t max,
                 return false;
             }
             break;
-
+        case VAL_TARGET:
+            if (!IRCValidator::isValidTarget(_clients, _channels, _params, _client)) {
+                return false;
+            }
+            break;
         case VAL_REAL:
             // Usually no validation for realname
             break;
@@ -199,7 +203,7 @@ void CommandRunner::initCommandMap()
     _commandRunners["PING"] = &CommandRunner::ping;
     _commandRunners["PONG"] = &CommandRunner::pong;
     _commandRunners["KICK"] = &CommandRunner::kick;
-    // _commandRunners["PRIVMSG"] = &CommandRunner::privmsg;
+    _commandRunners["PRIVMSG"] = &CommandRunner::privmsg;
     // _commandRunners["NOTICE"] = &CommandRunner::notice;
     // _commandRunners["WHO"] = &CommandRunner::who;
     // _commandRunners["WHOIS"] = &CommandRunner::whois;}

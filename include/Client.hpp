@@ -46,7 +46,7 @@ public:
     void noPongWait();
     const std::string &getLastPingToken() const;
     int getTimeSinceLastPing() const;
-
+    std::string getPrefixPrivmsg();
 
 private:
     int _fd;

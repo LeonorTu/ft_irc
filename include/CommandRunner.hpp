@@ -22,6 +22,7 @@ enum ParamType
     VAL_KEY,
     VAL_PASS,
     VAL_TEXT,
+    VAL_TARGET,
     VAL_NONE
 };
 
@@ -63,6 +64,7 @@ private:
     void motd();
     void silentIgnore();
     void invite();
+    void privmsg();
 
     //utils
     void leaveAllChannels();

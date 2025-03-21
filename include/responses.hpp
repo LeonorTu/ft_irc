@@ -80,6 +80,7 @@ inline std::string RPL_ISUPPORT(const std::string &nickname)
     oss << "NICKLEN=" << NICKLEN << " ";
     oss << "TOPICLEN=" << TOPICLEN << " ";
     oss << "USERLEN=" << USERLEN << " ";
+    // oss << "MAXTARGETS=" << MAXTARGETS << " ";
     oss << ":are supported by this server";
     return oss.str();
 }
@@ -211,6 +212,11 @@ inline std::string RPL_ENDOFMOTD(const std::string &client)
 inline std::string ERR_NOORIGIN(const std::string &client)
 {
     return "409 " + client + " :No origin specified";
+}
+
+inline std::string ERR_NOTEXTTOSEND(const std::string &client)
+{
+    return "412 " + client + " :No text to send";
 }
 
 inline std::string ERR_UNKNOWNCOMMAND(const std::string &client, const std::string &command)

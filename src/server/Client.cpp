@@ -185,3 +185,8 @@ int Client::getTimeSinceLastPing() const
     auto now = std::chrono::steady_clock::now();
     return std::chrono::duration_cast<std::chrono::milliseconds>(now - _lastPingSentTime).count();
 }
+
+std::string Client::getPrefixPrivmsg()
+{
+    return ":" + _nickname + "!" + _username + "@" + _ip;
+}
