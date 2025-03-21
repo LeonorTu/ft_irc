@@ -156,24 +156,23 @@ std::string putMessageInOne(std::vector<std::string> params)
     return message;
 }
 
-bool IRCValidator::isValidTarget(ClientIndex &clients, ChannelManager &channelManager, 
-                                  std::vector<std::string> params, Client &client)
+bool IRCValidator::isValidTarget(ClientIndex &clients, ChannelManager &channelManager,
+                                 std::vector<std::string> params, Client &client)
 {
 
     std::string target = params[0];
 
-    //client will handle the message adding ':' instead but should i handle it or not
+    // client will handle the message adding ':' instead but should i handle it or not
     if (params[1].empty()) {
         sendToClient(client.getFd(), ERR_NOTEXTTOSEND(client.getNickname()));
         return false;
     }
     std::string message = putMessageInOne(params);
-    if (target[0] == CHANTYPES[0] || target[0] == CHANTYPES[1]) 
-    {
+    if (target[0] == CHANTYPES[0] || target[0] == CHANTYPES[1]) {
         try {
             Channel &channel = channelManager.getChannel(target);
-           channel.broadcastMessage(":" + client.getPrefixPrivmsg() + " PRIVMSG " + target + " :" +
-                                      message);
+            channel.broadcastMessage(":" + client.getPrefixPrivmsg() + " PRIVMSG " + target + " :" +
+                                     message);
             std::cout << "Sending message to channel: " << target << std::endl;
         }
         catch (const std::exception &e) {
@@ -181,13 +180,15 @@ bool IRCValidator::isValidTarget(ClientIndex &clients, ChannelManager &channelMa
             return false;
         }
     }
-    else 
-    {
+    else {
         target = truncateAfterCommaInTargets(target);
         if (!clients.nickExists(target)) {
             sendToClient(client.getFd(), ERR_NOSUCHNICK(client.getNickname(), target));
             return false;
         }
+        sendToClient(clients.getByNick(target).getFd(),
+                     ":" + client.getPrefixPrivmsg() + " PRIVMSG " + target + " :" + message);
+        // std::cout << "Sending message to channel: " << target << std::endl;
     }
     return true;
 }

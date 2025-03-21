@@ -249,6 +249,7 @@ void Channel::broadcastMessage(const std::string &message)
         return;
     for (auto &[_, client] : _connectedClients) {
         sendToClient(client->getFd(), message);
+        // std::cout << "Sending message to " << client->getNickname() << ": " << message << std::endl;
     }
 }
 
