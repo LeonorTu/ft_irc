@@ -10,6 +10,7 @@ void PongManager::handlePongFromClient(const std::string &token, Client &client)
     if (client.getLastPingToken() == token) {
         client.noPongWait();
         client.updateActivityTime();
+        std::cout << "PONG received from " << client.getNickname() << ": " << token << std::endl;
     }
 }
 
