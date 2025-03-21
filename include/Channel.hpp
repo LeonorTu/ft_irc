@@ -27,10 +27,12 @@ public:
     void changeTopic(Client &client, std::string &newTopic);
     void checkTopic(Client &client);
     const std::string &getName() const;
+    const std::string &getCreatedTime();
     bool hasMode(ChannelMode mode) const;
     bool hasMode(const char mode) const;
     void setMode(Client &client, bool enable, ChannelMode mode, std::string param = "");
     void setMode(Client &client, bool enable, const char mode, std::string param = "");
+    void printModes(Client &client);
     bool isEmpty() const;
     void broadcastMessage(const std::string &message);
     bool hasOp(Client &client);
@@ -47,6 +49,7 @@ private:
     std::string _modes;
     std::string _key;
     size_t _userLimit;
+    std::string _createdTime;
 
     void enableMode(ChannelMode mode);
     void disableMode(ChannelMode mode);

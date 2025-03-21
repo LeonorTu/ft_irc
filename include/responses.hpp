@@ -164,6 +164,18 @@ inline std::string RPL_ENDOFNAMES(const std::string &client, const std::string &
     return "366 " + client + " " + channel + " :End of /NAMES list";
 }
 
+inline std::string RPL_CHANNELMODEIS(const std::string &client, const std::string &channel,
+                                     const std::string &modeString)
+{
+    return "324 " + client + " " + channel + " " +  modeString;
+}
+
+inline std::string RPL_CREATIONTIME(const std::string &client, const std::string &channel,
+                                    const std::string &creationTime)
+{
+    return "329 " + client + " " + channel + " " + creationTime;
+}
+
 inline std::string ERR_NOSUCHNICK(const std::string &client, const std::string &nickname)
 {
     return "401 " + client + " " + nickname + " :No such nick/channel";
