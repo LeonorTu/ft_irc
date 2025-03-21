@@ -28,8 +28,6 @@ public:
 
     void cleanUp();
 
-    void cleanUp();
-
     //Ping related functions
     void sendPingToClient(Client &client);
     void checkAllPingTimeouts(int timeoutMs);
