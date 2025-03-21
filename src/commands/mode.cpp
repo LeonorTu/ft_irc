@@ -4,21 +4,46 @@ void CommandRunner::mode()
 {
     std::string target = _params[0];
     std::string modeString = (_params.size() > 1) ? _params[1] : "";
-    std::string param = (_params.size() > 2) ? _params[2] : "";
+    std::vector<std::string> params;
+    for (size_t i = 2; i < _params.size(); ++i) {
+        params.push_back(_params[i]);
+    }
 
+    if (CHANTYPES.find(target[0]) == std::string::npos)
+        return;
     if (!_channels.channelExists(target)) {
         sendToClient(_clientFd, ERR_NOSUCHCHANNEL(_client.getNickname(), target));
+        return;
     }
 
     Channel &channel = _channels.getChannel(target);
     bool adding = true;
-    // size_t argIndex = 0;
+    size_t i = 0;
     for (char mode : modeString) {
         if (mode == '+')
             adding = true;
         else if (mode == '-')
             adding = false;
-        else
-            channel.setMode(_client, adding, mode, param);
+        else {
+            if (mode == 'k' || mode == 'o' || mode == 'l') {
+                if (i >= params.size()) {
+                    sendToClient(_clientFd, ERR_NEEDMOREPARAMS(_client.getNickname(), "MODE"));
+                    return;
+                }
+                std::string param = params[i++];
+                if (mode == 'k' && (param.empty() || !IRCValidator::isValidChannelKey(
+                                                         _clientFd, _nickname, param))) {
+                    sendToClient(_clientFd,
+                                 ERR_INVALIDKEY(_client.getNickname(),
+                                                param)); // need to fix IRCValidator send error
+                    return;
+                }
+                if (mode == 'o' && nickNotFound(param))
+                    return;
+                channel.setMode(_client, adding, mode, param);
+            }
+            else if (mode == 'i' || mode == 't')
+                channel.setMode(_client, adding, mode);
+        }
     }
 }

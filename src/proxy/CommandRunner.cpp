@@ -198,10 +198,9 @@ void CommandRunner::initCommandMap()
     _commandRunners["QUIT"] = &CommandRunner::quit;
     _commandRunners["JOIN"] = &CommandRunner::join;
     _commandRunners["PART"] = &CommandRunner::part;
-    // _commandRunners["MODE"] = &CommandRunner::mode;
+    _commandRunners["MODE"] = &CommandRunner::mode;
     _commandRunners["TOPIC"] = &CommandRunner::topic;
     _commandRunners["INVITE"] = &CommandRunner::invite;
-    // _commandRunners["KICK"] = &CommandRunner::kick;
     _commandRunners["PING"] = &CommandRunner::ping;
     _commandRunners["PONG"] = &CommandRunner::pong;
     _commandRunners["KICK"] = &CommandRunner::kick;
