@@ -33,6 +33,7 @@ public:
     void setMode(Client &client, bool enable, const char mode, std::string param = "");
     bool isEmpty() const;
     void broadcastMessage(const std::string &message);
+    bool hasOp(Client &client);
 
 private:
     std::string _channelName;
@@ -52,7 +53,6 @@ private:
     std::string prefixNick(Client &client);
     void sendNameReply(Client &client);
     void sendTopic(Client &client);
-    bool hasOp(Client &client);
     bool isInvited(Client &client);
     bool isJoinable(Client &client, std::string key);
     bool isOnChannel(Client &client);
