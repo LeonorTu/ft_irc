@@ -192,7 +192,7 @@ void CommandRunner::initCommandMap()
     _commandRunners["NICK"] = &CommandRunner::nick;
     _commandRunners["PASS"] = &CommandRunner::pass;
     _commandRunners["USER"] = &CommandRunner::user;
-    _commandRunners["CAP"] = &CommandRunner::silentIgnore;
+    _commandRunners["CAP"] = &CommandRunner::cap;
     // _commandRunners["LUSERS"] = &CommandRunner::lusers;
     _commandRunners["MOTD"] = &CommandRunner::motd;
     _commandRunners["QUIT"] = &CommandRunner::quit;
