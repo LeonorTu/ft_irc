@@ -71,37 +71,50 @@ void Channel::quit(Client &client, const std::string &reason)
 
 void Channel::invite(Client &inviter, Client &target)
 {
-    if (!isOnChannel(inviter))
-        sendToClient(inviter.getFd(), ERR_NOTONCHANNEL(inviter.getNickname(), _channelName));
-    if (isOnChannel(target))
-        sendToClient(inviter.getFd(),
-                     ERR_USERONCHANNEL(inviter.getNickname(), target.getNickname(), _channelName));
-    if (hasMode(ChannelMode::INVITE_ONLY) && !hasOp(inviter))
-        sendToClient(inviter.getFd(), ERR_CHANOPRIVSNEEDED(inviter.getNickname(), _channelName));
+    int inviterFd = inviter.getFd();
+    std::string inviterName = inviter.getNickname();
+    std::string targetName = target.getNickname();
 
-    auto it = _invites.find(target.getNickname());
-    if (it != _invites.end()) {
-        _invites.insert_or_assign(target.getNickname(), it->second);
+    if (!isOnChannel(inviter)) {
+        sendToClient(inviterFd, ERR_NOTONCHANNEL(inviterName, _channelName));
+        return;
     }
-    sendToClient(target.getFd(), INVITE(inviter.getNickname(), target.getNickname(), _channelName));
-    sendToClient(inviter.getFd(),
-                 RPL_INVITING(inviter.getNickname(), target.getNickname(), _channelName));
+    if (isOnChannel(target)) {
+        sendToClient(inviterFd, ERR_USERONCHANNEL(inviterName, targetName, _channelName));
+        return;
+    }
+    if (hasMode(ChannelMode::INVITE_ONLY) && !hasOp(inviter)) {
+        sendToClient(inviterFd, ERR_CHANOPRIVSNEEDED(inviterName, _channelName));
+        return;
+    }
+
+    _invites.insert_or_assign(targetName, &target);
+    sendToClient(target.getFd(), INVITE(inviterName, targetName, _channelName));
+    sendToClient(inviterFd, RPL_INVITING(inviterName, targetName, _channelName));
 }
 
 void Channel::kick(Client &kicker, Client &target, std::string const &reason)
 {
-    if (!isOnChannel(kicker))
-        sendToClient(kicker.getFd(), ERR_NOTONCHANNEL(kicker.getNickname(), _channelName));
-    if (!isOnChannel(target))
-        sendToClient(kicker.getFd(), ERR_USERNOTINCHANNEL(kicker.getNickname(),
-                                                          target.getNickname(), _channelName));
-    if (!hasOp(kicker))
-        sendToClient(kicker.getFd(), ERR_CHANOPRIVSNEEDED(kicker.getNickname(), _channelName));
-    std::string kickMessage =
-        KICK(kicker.getNickname(), target.getNickname(), _channelName, reason);
+    int kickerFd = kicker.getFd();
+    std::string kickerName = kicker.getNickname();
+    std::string targetName = target.getNickname();
+
+    if (!isOnChannel(kicker)) {
+        sendToClient(kickerFd, ERR_NOTONCHANNEL(kickerName, _channelName));
+        return;
+    }
+    if (!isOnChannel(target)) {
+        sendToClient(kickerFd, ERR_USERNOTINCHANNEL(kickerName, targetName, _channelName));
+        return;
+    }
+    if (hasMode(ChannelMode::INVITE_ONLY) && !hasOp(kicker)) {
+        sendToClient(kickerFd, ERR_CHANOPRIVSNEEDED(kickerName, _channelName));
+        return;
+    }
+    std::string kickMessage = KICK(kickerName, targetName, _channelName, reason);
     broadcastMessage(kickMessage);
-    _connectedClients.erase(target.getNickname());
-    removeOp(target.getNickname());
+    _connectedClients.erase(targetName);
+    removeOp(targetName);
     target.untrackChannel(this);
 }
 
@@ -188,6 +201,8 @@ void Channel::setMode(Client &client, bool enable, ChannelMode mode, std::string
         case ChannelMode::OP:
             addOp(param, modeMsg);
             return;
+        case ChannelMode::INVITE_ONLY:
+            _invites.clear();
         default:
             break;
         }
