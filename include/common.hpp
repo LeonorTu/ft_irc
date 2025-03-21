@@ -23,8 +23,17 @@ const int MAX_PARAMS = 4;
 
 // server info
 const int SERVER_PORT = 6667;
-const std::string SERVER_NAME = "localhost";
+const std::string SERVER_NAME = "JAS 42";
 const std::string NETWORK_NAME = "J-A-S";
 const std::string SERVER_VERSION = "0210";
 const std::string USER_MODES = "";
 const std::string CHANNEL_MODES = "itklo";
+
+// MOTD array with funny messages
+const std::string MOTD_LINES[] = {
+    "Welcome to ft_irc - Where bugs come to party!",
+    "Remember: If your code works the first time, you're doing it wrong.",
+    "IRC: Because sometimes you need to talk to humans without seeing them.",
+    "42 is not just the answer to life, it's also our uptime in seconds.",
+    "If you find any bugs, they're features we haven't documented yet."};
+const int MOTD_LINE_COUNT = 5;

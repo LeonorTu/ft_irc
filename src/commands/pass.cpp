@@ -1,5 +1,4 @@
 #include <CommandRunner.hpp>
-#include <ConnectionManager.hpp>
 
 void CommandRunner::pass()
 {
@@ -12,7 +11,7 @@ void CommandRunner::pass()
     if (clientPassword != serverPassword) {
         sendToClient(_clientFd, ERR_PASSWDMISMATCH(_nickname));
         _client.setPasswordVerified(false);
-        Server::getInstance().getConnectionManager().disconnectClient(_client, "Password mismatch");
+        _server.getConnectionManager().disconnectClient(_client, "Wrong Password");
         return;
     }
     _client.setPasswordVerified(true);

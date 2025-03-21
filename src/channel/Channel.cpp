@@ -16,7 +16,7 @@ Channel::Channel(const std::string &name, Client &creator)
     join(creator);
 }
 
-    Channel::~Channel()
+Channel::~Channel()
 {
     for (auto &[_, client] : _connectedClients) {
         client->untrackChannel(this);
@@ -85,6 +85,23 @@ void Channel::invite(Client &inviter, Client &target)
     sendToClient(target.getFd(), INVITE(inviter.getNickname(), target.getNickname(), _channelName));
     sendToClient(inviter.getFd(),
                  RPL_INVITING(inviter.getNickname(), target.getNickname(), _channelName));
+}
+
+void Channel::kick(Client &kicker, Client &target, std::string const &reason)
+{
+    if (!isOnChannel(kicker))
+        sendToClient(kicker.getFd(), ERR_NOTONCHANNEL(kicker.getNickname(), _channelName));
+    if (!isOnChannel(target))
+        sendToClient(kicker.getFd(), ERR_USERNOTINCHANNEL(kicker.getNickname(),
+                                                          target.getNickname(), _channelName));
+    if (hasMode(ChannelMode::INVITE_ONLY) && !hasOp(kicker))
+        sendToClient(kicker.getFd(), ERR_CHANOPRIVSNEEDED(kicker.getNickname(), _channelName));
+    std::string kickMessage =
+        KICK(kicker.getNickname(), target.getNickname(), _channelName, reason);
+    broadcastMessage(kickMessage);
+    _connectedClients.erase(target.getNickname());
+    removeOp(target.getNickname());
+    target.untrackChannel(this);
 }
 
 void Channel::changeTopic(Client &client, std::string &newTopic)
@@ -314,7 +331,7 @@ void Channel::addOp(std::string &nick, const std::string &modeMsg)
     }
 }
 
-void Channel::removeOp(std::string &nick, const std::string &modeMsg)
+void Channel::removeOp(const std::string &nick, const std::string &modeMsg)
 {
     if (_ops.find(nick) != _ops.end()) {
         _ops.erase(nick);

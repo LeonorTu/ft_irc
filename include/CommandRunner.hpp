@@ -8,6 +8,7 @@
 #include <IRCValidator.hpp>
 #include <MessageParser.hpp>
 #include <responses.hpp>
+#include <ConnectionManager.hpp>
 #include <vector>
 #include <PongManager.hpp>
 
@@ -21,6 +22,7 @@ enum ParamType
     VAL_MODE,
     VAL_KEY,
     VAL_PASS,
+    VAL_TEXT,
     VAL_NONE
 };
 
@@ -41,7 +43,7 @@ private:
     // shared pre-loads
     const std::string &_command;
     int _clientFd;
-    const std::string &_nickname;
+    const std::string _nickname;
     const std::string &_messageSource;
     std::vector<std::string> _params;
 
@@ -54,8 +56,11 @@ private:
     void topic();
     void quit();
     void cap();
+    void mode();
+    void kick();
     void ping();
     void pong();
+    void motd();
     void silentIgnore();
     void invite();
 

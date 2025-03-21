@@ -123,6 +123,12 @@ inline std::string INVITE(const std::string &issuer, const std::string &target,
     return ":" + issuer + " INVITE " + target + " " + channel;
 }
 
+inline std::string KICK(const std::string &kicker, const std::string &target,
+                        const std::string &channel, const std::string &reason)
+{
+    return ":" + kicker + " KICK " + channel + " " + target + " :" + reason;
+}
+
 /* INFORMATIONAL RESPONSES (RPL_*) */
 inline std::string RPL_NOTOPIC(const std::string &client, const std::string &channel)
 {
@@ -173,6 +179,21 @@ inline std::string ERR_TOOMANYCHANNELS(const std::string &client, const std::str
     return "405 " + client + " " + channel + " :You have joined too many channels";
 }
 
+inline std::string RPL_MOTDSTART(const std::string &client)
+{
+    return "375 " + client + " :- " + SERVER_NAME + " Message of the Day -";
+}
+
+inline std::string RPL_MOTD(const std::string &client, const std::string &line)
+{
+    return "372 " + client + " :- " + line;
+}
+
+inline std::string RPL_ENDOFMOTD(const std::string &client)
+{
+    return "376 " + client + " :End of /MOTD command";
+}
+
 /* ERROR RESPONSES */
 inline std::string ERR_NOORIGIN(const std::string &client)
 {
@@ -197,6 +218,11 @@ inline std::string ERR_ERRONEUSNICKNAME(const std::string &client, const std::st
 inline std::string ERR_NICKNAMEINUSE(const std::string &client, const std::string &nickname)
 {
     return "433 " + client + " " + nickname + " :Nickname is already in use";
+}
+inline std::string ERR_USERNOTINCHANNEL(const std::string &client, const std::string &nickname,
+                                        const std::string &channel)
+{
+    return "441 " + client + " " + nickname + " " + channel + ": They aren't on that channel";
 }
 
 inline std::string ERR_NOTONCHANNEL(const std::string &client, const std::string &channel)
@@ -254,9 +280,9 @@ inline std::string ERR_INVITEONLYCHAN(const std::string &client, const std::stri
     return "473 " + client + " " + channel + " :Cannot join channel (+i) - invite only";
 }
 
-inline std::string ERR_INVALIDTOPIC(const std::string &client, const std::string &topic)
+inline std::string ERR_INVALIDTEXT(const std::string &client, const std::string &text)
 {
-    return "479 " + client + topic + " :Invalid topic "; // selfmade
+    return "479 " + client + text + " :Invalid  "; // selfmade
 }
 
 inline std::string ERR_CHANOPRIVSNEEDED(const std::string &client, const std::string &channel)
@@ -267,4 +293,9 @@ inline std::string ERR_CHANOPRIVSNEEDED(const std::string &client, const std::st
 inline std::string ERR_INVALIDREALNAME(const std::string &client, const std::string &realname)
 {
     return "513 " + client + " " + realname + " :Invalid characters in realname";
+}
+
+inline std::string ERR_INVALIDKEY(const std::string &client, const std::string &channel)
+{
+    return "525 " + client + " " + channel + " :Key is not well-formed";
 }

@@ -116,6 +116,42 @@ TEST_F(ChannelTest, ModeTest)
     EXPECT_TRUE(regularUser->isOnChannel(channel));
 }
 
+// Test channel modes with invalid parameters
+TEST_F(ChannelTest, ModeTypeTest)
+{
+    // Set channel key
+    channel->setMode(*creator, true, ChannelMode::KEY, "secret");
+    EXPECT_TRUE(channel->hasMode(ChannelMode::KEY));
+
+    // Join channel with correct key
+    channel->join(*regularUser, "secret");
+    EXPECT_TRUE(regularUser->isOnChannel(channel));
+
+    // Grant operator status to regular user
+    channel->setMode(*creator, true, ChannelMode::OP, regularUser->getNickname());
+    EXPECT_TRUE(channel->hasOp(*regularUser));
+
+    // Test invalid parameters
+    clearOutput();
+
+    // Try to set channel key without a parameter
+    channel->setMode(*creator, true, ChannelMode::KEY);
+    EXPECT_TRUE(outputContains("696")); // ERR_NEEDMOREPARAMS
+
+    // Try to set operator status without a parameter
+    channel->setMode(*creator, true, ChannelMode::OP);
+    EXPECT_TRUE(outputContains("461")); // ERR_NEEDMOREPARAMS
+
+    // Try to set an unknown mode
+    channel->setMode(*creator, true, static_cast<ChannelMode>('z'));
+    EXPECT_TRUE(outputContains("501")); // ERR_UMODEUNKNOWNFLAG
+
+    // Try to set a mode without being an operator
+    channel->setMode(*regularUser, true, ChannelMode::INVITE_ONLY);
+    EXPECT_FALSE(channel->hasMode(ChannelMode::INVITE_ONLY));
+    EXPECT_TRUE(outputContains("482")); // ERR_CHANOPRIVSNEEDED
+}
+
 // Test topic functionality
 TEST_F(ChannelTest, TopicTest)
 {

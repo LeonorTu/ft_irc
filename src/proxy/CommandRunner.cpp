@@ -37,7 +37,7 @@ bool CommandRunner::validateCommandAccess()
         return true;
     }
     if (!_client.getPasswordVerified()) {
-        sendToClient(_client.getFd(), ERR_NOTREGISTERED(_nickname));
+        sendToClient(_clientFd, ERR_NOTREGISTERED(_nickname));
         return false;
     }
     if (!_client.getIsRegistered() &&
@@ -45,7 +45,7 @@ bool CommandRunner::validateCommandAccess()
         return true;
     }
     if (!_client.getIsRegistered()) {
-        sendToClient(_client.getFd(), ERR_NOTREGISTERED(_nickname));
+        sendToClient(_clientFd, ERR_NOTREGISTERED(_nickname));
         return false;
     }
     return true;
@@ -64,7 +64,7 @@ void CommandRunner::execute()
         (this->*commandFunction)();
     }
     else {
-        sendToClient(_client.getFd(), ERR_UNKNOWNCOMMAND(_nickname, _command));
+        sendToClient(_clientFd, ERR_UNKNOWNCOMMAND(_nickname, _command));
     }
 }
 
@@ -73,12 +73,9 @@ bool CommandRunner::validateParams(size_t min, size_t max,
 {
     if (_params.size() < min) {
         if (_command == "NICK")
-            sendToClient(_client.getFd(), ERR_NONICKNAMEGIVEN(_nickname));
+            sendToClient(_clientFd, ERR_NONICKNAMEGIVEN(_nickname));
         else
-        {
-            sendToClient(_client.getFd(), ERR_NEEDMOREPARAMS(_nickname, _command));
-            std::cout << "Not enough parameters for command: " << _command << std::endl;
-        }
+            sendToClient(_clientFd, ERR_NEEDMOREPARAMS(_nickname, _command));
         return false;
     }
 
@@ -93,19 +90,19 @@ bool CommandRunner::validateParams(size_t min, size_t max,
 
         switch (pattern[i]) {
         case VAL_NICK:
-            if (!IRCValidator::isValidNickname(_client.getFd(), _nickname, param)) {
+            if (!IRCValidator::isValidNickname(_clientFd, _nickname, param)) {
                 return false;
             }
             break;
 
         case VAL_CHAN:
-            if (!IRCValidator::isValidChannelName(_client.getFd(), param)) {
+            if (!IRCValidator::isValidChannelName(_clientFd, param)) {
                 return false;
             }
             break;
 
         case VAL_TOPIC:
-            if (!IRCValidator::isValidTopic(_client.getFd(), _nickname, param)) {
+            if (!IRCValidator::isPrintable(_clientFd, _nickname, param, TOPICLEN)) {
                 return false;
             }
             break;
@@ -117,13 +114,13 @@ bool CommandRunner::validateParams(size_t min, size_t max,
             break;
 
         case VAL_USER:
-            if (!IRCValidator::isValidUsername(_client.getFd(), _nickname, param)) {
+            if (!IRCValidator::isValidUsername(_clientFd, _nickname, param)) {
                 return false;
             }
             break;
 
         case VAL_KEY:
-            if (!IRCValidator::isValidChannelKey()) {
+            if (!IRCValidator::isValidChannelKey(_clientFd, _nickname, param)) {
                 return false;
             }
             break;
@@ -141,6 +138,13 @@ bool CommandRunner::validateParams(size_t min, size_t max,
         case VAL_NONE:
             // No validation needed
             break;
+
+        case VAL_TEXT:
+            if (!IRCValidator::isPrintable(_clientFd, _nickname, param, MSG_BUFFER_SIZE)) {
+                return false;
+            }
+            break;
+
         default:
             break;
         }
@@ -188,18 +192,19 @@ void CommandRunner::initCommandMap()
     _commandRunners["NICK"] = &CommandRunner::nick;
     _commandRunners["PASS"] = &CommandRunner::pass;
     _commandRunners["USER"] = &CommandRunner::user;
-    _commandRunners["CAP"] = &CommandRunner::silentIgnore;
+    _commandRunners["CAP"] = &CommandRunner::cap;
     // _commandRunners["LUSERS"] = &CommandRunner::lusers;
-    // _commandRunners["MOTD"] = &CommandRunner::motd;
-    // _commandRunners["QUIT"] = &CommandRunner::quit;
-    // _commandRunners["JOIN"] = &CommandRunner::join;
-    // _commandRunners["PART"] = &CommandRunner::part;
+    _commandRunners["MOTD"] = &CommandRunner::motd;
+    _commandRunners["QUIT"] = &CommandRunner::quit;
+    _commandRunners["JOIN"] = &CommandRunner::join;
+    _commandRunners["PART"] = &CommandRunner::part;
     // _commandRunners["MODE"] = &CommandRunner::mode;
     _commandRunners["TOPIC"] = &CommandRunner::topic;
     _commandRunners["INVITE"] = &CommandRunner::invite;
     // _commandRunners["KICK"] = &CommandRunner::kick;
     _commandRunners["PING"] = &CommandRunner::ping;
     _commandRunners["PONG"] = &CommandRunner::pong;
+    _commandRunners["KICK"] = &CommandRunner::kick;
     // _commandRunners["PRIVMSG"] = &CommandRunner::privmsg;
     // _commandRunners["NOTICE"] = &CommandRunner::notice;
     // _commandRunners["WHO"] = &CommandRunner::who;
@@ -240,4 +245,5 @@ void CommandRunner::sendWelcome()
     sendToClient(_clientFd, RPL_CREATED(_nickname, Server::getInstance().getCreatedTime()));
     sendToClient(_clientFd, RPL_MYINFO(_nickname));
     sendToClient(_clientFd, RPL_ISUPPORT(_nickname));
+    motd();
 }

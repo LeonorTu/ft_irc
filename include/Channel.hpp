@@ -23,6 +23,7 @@ public:
     void part(Client &client, std::string const &reason);
     void quit(Client &client, std::string const &reason);
     void invite(Client &inviter, Client &target);
+    void kick(Client &kicker, Client &target, std::string const &reason);
     void changeTopic(Client &client, std::string &newTopic);
     void checkTopic(Client &client);
     const std::string &getName() const;
@@ -32,6 +33,7 @@ public:
     void setMode(Client &client, bool enable, const char mode, std::string param = "");
     bool isEmpty() const;
     void broadcastMessage(const std::string &message);
+    bool hasOp(Client &client);
 
 private:
     std::string _channelName;
@@ -51,11 +53,10 @@ private:
     std::string prefixNick(Client &client);
     void sendNameReply(Client &client);
     void sendTopic(Client &client);
-    bool hasOp(Client &client);
     bool isInvited(Client &client);
     bool isJoinable(Client &client, std::string key);
     bool isOnChannel(Client &client);
     void removeFromInvites(Client &client);
     void addOp(std::string &nick, const std::string &modeMsg = "");
-    void removeOp(std::string &nick, const std::string &modeMsg = "");
+    void removeOp(const std::string &nick, const std::string &modeMsg = "");
 };

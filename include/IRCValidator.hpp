@@ -11,11 +11,14 @@ public:
     static bool isValidRealname(int clientFd, const std::string &nickname,
                                 const std::string &realname);
     static bool isValidChannelName(int clientFd, const std::string &channelName);
-    static bool isValidTopic(int clientFd, const std::string &nickname,
-                             const std::string &realname);
+    static bool isPrintable(int clientFd, const std::string &nickname, const std::string &text,
+                            size_t limit);
     static bool isValidChannelMode();
     static bool isValidServerPassword();
-    static bool isValidChannelKey();
+    static bool isValidChannelKey(int clientFd, const std::string &nickname,
+                                  const std::string &key);
+    // static bool isValidUserList(int clientFd, const std::string &nickname,
+    //                               const std::string &userList);
 
 private:
 };

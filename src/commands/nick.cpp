@@ -14,4 +14,7 @@ void CommandRunner::nick()
     _client.setNickname(newNickname);
     if (tryRegisterClient())
         _clients.addNick(_clientFd);
+    else
+        _clients.updateNick(_nickname, newNickname);
+    sendToClient(_clientFd, NICK(_nickname, newNickname));
 }
