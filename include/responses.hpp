@@ -179,6 +179,21 @@ inline std::string ERR_TOOMANYCHANNELS(const std::string &client, const std::str
     return "405 " + client + " " + channel + " :You have joined too many channels";
 }
 
+inline std::string RPL_MOTDSTART(const std::string &client)
+{
+    return "375 " + client + " :- " + SERVER_NAME + " Message of the Day -";
+}
+
+inline std::string RPL_MOTD(const std::string &client, const std::string &line)
+{
+    return "372 " + client + " :- " + line;
+}
+
+inline std::string RPL_ENDOFMOTD(const std::string &client)
+{
+    return "376 " + client + " :End of /MOTD command";
+}
+
 /* ERROR RESPONSES */
 inline std::string ERR_UNKNOWNCOMMAND(const std::string &client, const std::string &command)
 {
@@ -199,7 +214,8 @@ inline std::string ERR_NICKNAMEINUSE(const std::string &client, const std::strin
 {
     return "433 " + client + " " + nickname + " :Nickname is already in use";
 }
-inline std::string ERR_USERNOTINCHANNEL(const std::string &client, const std::string &nickname, const std::string &channel)
+inline std::string ERR_USERNOTINCHANNEL(const std::string &client, const std::string &nickname,
+                                        const std::string &channel)
 {
     return "441 " + client + " " + nickname + " " + channel + ": They aren't on that channel";
 }
@@ -259,8 +275,7 @@ inline std::string ERR_INVITEONLYCHAN(const std::string &client, const std::stri
     return "473 " + client + " " + channel + " :Cannot join channel (+i) - invite only";
 }
 
-inline std::string ERR_INVALIDTEXT(const std::string &client,
-                                                   const std::string &text)
+inline std::string ERR_INVALIDTEXT(const std::string &client, const std::string &text)
 {
     return "479 " + client + text + " :Invalid  "; // selfmade
 }

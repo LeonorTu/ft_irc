@@ -60,6 +60,7 @@ private:
     void kick();
     void ping();
     void pong();
+    void motd();
     void silentIgnore();
     void invite();
 

@@ -194,7 +194,7 @@ void CommandRunner::initCommandMap()
     _commandRunners["USER"] = &CommandRunner::user;
     _commandRunners["CAP"] = &CommandRunner::silentIgnore;
     // _commandRunners["LUSERS"] = &CommandRunner::lusers;
-    // _commandRunners["MOTD"] = &CommandRunner::motd;
+    _commandRunners["MOTD"] = &CommandRunner::motd;
     _commandRunners["QUIT"] = &CommandRunner::quit;
     _commandRunners["JOIN"] = &CommandRunner::join;
     _commandRunners["PART"] = &CommandRunner::part;
@@ -202,8 +202,8 @@ void CommandRunner::initCommandMap()
     _commandRunners["TOPIC"] = &CommandRunner::topic;
     _commandRunners["INVITE"] = &CommandRunner::invite;
     // _commandRunners["KICK"] = &CommandRunner::kick;
-    // _commandRunners["PING"] = &CommandRunner::ping;
-    // _commandRunners["PONG"] = &CommandRunner::pong;
+    _commandRunners["PING"] = &CommandRunner::ping;
+    _commandRunners["PONG"] = &CommandRunner::pong;
     // _commandRunners["PRIVMSG"] = &CommandRunner::privmsg;
     // _commandRunners["NOTICE"] = &CommandRunner::notice;
     // _commandRunners["WHO"] = &CommandRunner::who;
@@ -244,4 +244,5 @@ void CommandRunner::sendWelcome()
     sendToClient(_clientFd, RPL_CREATED(_nickname, Server::getInstance().getCreatedTime()));
     sendToClient(_clientFd, RPL_MYINFO(_nickname));
     sendToClient(_clientFd, RPL_ISUPPORT(_nickname));
+    motd();
 }
