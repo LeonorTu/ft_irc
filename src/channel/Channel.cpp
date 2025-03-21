@@ -94,7 +94,7 @@ void Channel::kick(Client &kicker, Client &target, std::string const &reason)
     if (!isOnChannel(target))
         sendToClient(kicker.getFd(), ERR_USERNOTINCHANNEL(kicker.getNickname(),
                                                           target.getNickname(), _channelName));
-    if (hasMode(ChannelMode::INVITE_ONLY) && !hasOp(kicker))
+    if (!hasOp(kicker))
         sendToClient(kicker.getFd(), ERR_CHANOPRIVSNEEDED(kicker.getNickname(), _channelName));
     std::string kickMessage =
         KICK(kicker.getNickname(), target.getNickname(), _channelName, reason);
