@@ -20,6 +20,8 @@ const int USERLEN = 32;
 const int REALLEN = 128;
 const int EPOLL_MAX_EVENTS = 128;
 const int MAX_PARAMS = 4;
+const int MIN_PASS = 2;
+const int MAX_PASS = 32;
 
 // server info
 const int SERVER_PORT = 6667;

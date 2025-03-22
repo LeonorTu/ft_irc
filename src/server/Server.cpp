@@ -10,14 +10,15 @@
 
 Server *Server::_instance = nullptr;
 
-Server::Server()
+Server::Server(int port, std::string password)
     : _serverFd(-1)
-    , _password("42")
-    , _running(false)
+    , _port(port)
+    , _password(password)
+    , _running(true)
     , _paused(false)
     , _clients(std::make_unique<ClientIndex>())
     , _channels(std::make_unique<ChannelManager>())
-    , _socketManager(std::make_unique<SocketManager>(SERVER_PORT))
+    , _socketManager(std::make_unique<SocketManager>(_port))
     , _eventLoop(createEventLoop())
     , _PongManager(std::make_unique<PongManager>())
     , _connectionManager(std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop,
@@ -30,6 +31,14 @@ Server::Server()
     signal(SIGTERM, signalHandler); // Handle termination request
     signal(SIGTSTP, signalHandler); // handle server pause
     signal(SIGPIPE, SIG_IGN);       // Ignore SIGPIPE (broken pipe)
+
+    _serverFd = getSocketManager().initialize();
+    if (_serverFd < 0) {
+        std::cerr << "server failed to start" << std::endl;
+        return;
+    }
+    getEventLoop().addToWatch(_serverFd);
+    loop();
 }
 
 Server::~Server()
@@ -40,7 +49,7 @@ Server::~Server()
     std::cout << "Server shutdown complete" << std::endl;
 }
 
-void Server::start(std::string password)
+void Server::start(int port, std::string password)
 {
     _serverFd = getSocketManager().initialize();
     if (_serverFd < 0) {
@@ -48,6 +57,7 @@ void Server::start(std::string password)
         return;
     }
     getEventLoop().addToWatch(_serverFd);
+    _port = port;
     _password = password;
     _running = true;
     loop();

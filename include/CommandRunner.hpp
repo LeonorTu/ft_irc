@@ -19,7 +19,6 @@ enum ParamType
     VAL_REAL,
     VAL_CHAN,
     VAL_TOPIC,
-    VAL_MODE,
     VAL_KEY,
     VAL_PASS,
     VAL_TEXT,

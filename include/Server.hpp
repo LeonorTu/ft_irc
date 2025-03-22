@@ -7,7 +7,6 @@
 #include <memory>
 #include <chrono>
 
-
 class SocketManager;
 class EventLoop;
 class ConnectionManager;
@@ -18,9 +17,9 @@ class PongManager;
 class Server
 {
 public:
-    Server();
+    Server(int port, std::string password);
     ~Server();
-    void start(std::string password);
+    void start(int port, std::string password);
     void loop();
     void shutdown();
 
@@ -36,12 +35,13 @@ public:
     const std::string &getPassword();
     const std::string &getCreatedTime();
     PongManager &getPongManager();
-    
+
     void pause();
     void resume();
 
 private:
     int _serverFd;
+    int _port;
     std::string _password;
     static Server *_instance;
     volatile sig_atomic_t _running;

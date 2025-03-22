@@ -3,12 +3,31 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <iostream>
+#include <IRCValidator.hpp>
 
-int main()
+int main(int argc, char *argv[])
 {
-    // std::cout << "Hello" << std::endl;
+    if (argc != 3) {
+        std::cerr << "Usage: " << argv[0] << " <port> <password>" << std::endl;
+        return 1;
+    }
 
-    Server myserver;
-    myserver.start("42");
+    std::string portStr = argv[1];
+    std::string password = argv[2];
+    IRCValidator validator;
+    if (!validator.isValidPort(portStr)) {
+        std::cerr << "Invalid port. Port must be an integer in the range 1-65535." << std::endl;
+        return 1;
+    }
+    int port = std::stoi(portStr);
+    if (!validator.isValidServerPassword(password)) {
+        std::cerr << "Invalid password. Password must be 2-32 characters long and contain only "
+                     "printable characters."
+                  << std::endl;
+        return 1;
+    }
+
+    Server myserver(port, password);
+
+    return 0;
 }

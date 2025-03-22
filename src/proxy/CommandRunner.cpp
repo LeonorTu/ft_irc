@@ -108,12 +108,6 @@ bool CommandRunner::validateParams(size_t min, size_t max,
             }
             break;
 
-        case VAL_MODE:
-            if (!IRCValidator::isValidChannelMode()) {
-                return false;
-            }
-            break;
-
         case VAL_USER:
             if (!IRCValidator::isValidUsername(_clientFd, _nickname, param)) {
                 return false;
@@ -127,7 +121,7 @@ bool CommandRunner::validateParams(size_t min, size_t max,
             break;
 
         case VAL_PASS:
-            if (!IRCValidator::isValidServerPassword()) {
+            if (!IRCValidator::isValidServerPassword(param)) {
                 return false;
             }
             break;

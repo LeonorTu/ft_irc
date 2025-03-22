@@ -63,13 +63,32 @@ bool IRCValidator::isValidRealname(int clientFd, const std::string &nickname,
     return true;
 }
 
-bool IRCValidator::isValidChannelMode()
+bool IRCValidator::isValidPort(const std::string &portStr)
 {
+    try {
+        int port = std::stoi(portStr);
+        if (port < 1 || port > 65535) {
+            return false;
+        }
+    }
+    catch (const std::invalid_argument &e) {
+        return false;
+    }
+    catch (const std::out_of_range &e) {
+        return false;
+    }
     return true;
 }
 
-bool IRCValidator::isValidServerPassword()
+bool IRCValidator::isValidServerPassword(const std::string &password)
 {
+    if (password.length() < MIN_PASS || password.length() > MAX_PASS) {
+        return false;
+    }
+    std::regex passwordPattern(R"(^[a-zA-Z0-9!@#$%^&*()\-_=+\[\]{}|;:'",.<>?/]+$)");
+    if (!std::regex_match(password, passwordPattern)) {
+        return false;
+    }
     return true;
 }
 

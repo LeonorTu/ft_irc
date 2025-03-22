@@ -14,7 +14,8 @@ public:
     static bool isPrintable(int clientFd, const std::string &nickname, const std::string &text,
                             size_t limit);
     static bool isValidChannelMode();
-    static bool isValidServerPassword();
+    static bool isValidPort(const std::string &portStr);
+    static bool isValidServerPassword(const std::string &password);
     static bool isValidChannelKey(int clientFd, const std::string &nickname,
                                   const std::string &key);
     // static bool isValidUserList(int clientFd, const std::string &nickname,
