@@ -135,12 +135,6 @@ std::chrono::steady_clock::time_point Client::getLastActivityTime() const
     return _lastactivityTime;
 }
 
-// int Client::getTimeForNoActivity() const
-// {
-//     auto now = std::chrono::steady_clock::now();
-//     return (std::chrono::duration_cast<std::chrono::milliseconds>(now - _lastactivityTime).count());
-// }
-
 void Client::forceQuit(const std::string &reason)
 {
     for (auto &[_, channel] : _myChannels) {
