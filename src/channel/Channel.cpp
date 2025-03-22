@@ -253,6 +253,18 @@ void Channel::broadcastMessage(const std::string &message)
     }
 }
 
+void Channel::broadcastToOthers(Client &client, const std::string &message)
+{
+    if (message.empty())
+        return;
+    for (auto &[_, connected] : _connectedClients) {
+        if (connected == &client)
+            continue;
+        sendToClient(connected->getFd(), message);
+        // std::cout << "Sending message to " << client->getNickname() << ": " << message << std::endl;
+    }
+}
+
 void Channel::enableMode(ChannelMode mode)
 {
     if (mode == ChannelMode::OP)

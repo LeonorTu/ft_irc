@@ -11,15 +11,14 @@ void CommandRunner::privmsg()
         {
             Channel *channel = nullptr;
             try{
-                *channel = _channels.getChannel(target);
+                channel = &_channels.getChannel(target);
             }
             catch(const std::exception &e)
             {
                 sendToClient(_clientFd, ERR_NOSUCHCHANNEL(_nickname, target));
                 return;
             }
-
-            channel->broadcastMessage(":" + _client.getPrefixPrivmsg() + " PRIVMSG " + target + " :" + _message);
+            channel->broadcastToOthers( _client, ":" + _client.getUserHost() + " PRIVMSG " + target + " :" + _message);
             std::cout << "Sending message to channel: " << target << std::endl;
             return;
         }
@@ -30,8 +29,9 @@ void CommandRunner::privmsg()
                 sendToClient(_clientFd, ERR_NOSUCHNICK(_nickname, target));
                 return;
             }
-            sendToClient(_clientFd,
-                         ":" + _client.getPrefixPrivmsg() + " PRIVMSG " + target + " :" + _message);
+            Client &targetClient = _clients.getByNick(target);
+            sendToClient(targetClient.getFd(),
+                         ":" + _client.getUserHost() + " PRIVMSG " + target + " :" + _message);
             std::cout << "Sending message to nickname: " << target << std::endl;
         }
     }

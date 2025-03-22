@@ -35,6 +35,7 @@ public:
     void printModes(Client &client);
     bool isEmpty() const;
     void broadcastMessage(const std::string &message);
+    void broadcastToOthers(Client &client, const std::string &message);
     bool hasOp(Client &client);
 
 private:

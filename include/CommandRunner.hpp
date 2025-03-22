@@ -14,6 +14,7 @@
 
 enum ParamType
 {
+    VAL_NONE,
     VAL_NICK,
     VAL_USER,
     VAL_REAL,
@@ -22,8 +23,7 @@ enum ParamType
     VAL_KEY,
     VAL_PASS,
     VAL_TEXT,
-    VAL_TARGET,
-    VAL_NONE
+    VAL_TARGET
 };
 
 class CommandRunner

@@ -22,7 +22,7 @@ Server::Server(int port, std::string password)
     , _eventLoop(createEventLoop())
     , _PongManager(std::make_unique<PongManager>())
     , _connectionManager(std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop,
-                                                             *_clients)) //, *_PongManager))
+                                                             *_clients))
     , _createdTime(getCurrentTime())
 {
     // setup signalshandlers

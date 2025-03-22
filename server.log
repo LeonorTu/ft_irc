@@ -1,0 +1,120 @@
+<< CAP LS
+<< PASS 42
+<< NICK user1
+<< USER codespace codespace localhost :Unknown
+>> CAP * LS :
+<< CAP END
+>> :*!@127.0.0.1 NICK user1
+>> :JAS 42 001 user1 :Welcome to J-A-S Network, user1
+>> :JAS 42 002 user1 :Your host is JAS 42, running version 0210
+>> :JAS 42 003 user1 :This server was created Sat 22 Mar 18:25:12 2025
+>> :JAS 42 004 user1 JAS 42 0210  itklo
+>> :JAS 42 005 user1 CASEMAPPING=ascii CHANNELLEN=50 CHANLIMIT=#&:50 CHANTYPES=#& CHANMODES=,,kl,it PREFIX=o(@) MODES=3 NICKLEN=30 TOPICLEN=307 USERLEN=32 MAXTARGETS=4 :are supported by this server
+>> 375 user1 :- JAS 42 Message of the Day -
+<< MODE user1 +i
+<< JOIN #test,#ch
+>> 372 user1 :- Welcome to ft_irc - Where bugs come to party!
+>> 372 user1 :- Remember: If your code works the first time, you're doing it wrong.
+>> 372 user1 :- IRC: Because sometimes you need to talk to humans without seeing them.
+>> 372 user1 :- 42 is not just the answer to life, it's also our uptime in seconds.
+>> 372 user1 :- If you find any bugs, they're features we haven't documented yet.
+>> 376 user1 :End of /MOTD command
+>> :user1!codespace@127.0.0.1 JOIN #test
+>> 331 user1 #test :No topic is set
+>> 353 user1 = #test :@user1
+>> 366 user1 #test :End of /NAMES list
+<< MODE #test
+>> :user1!codespace@127.0.0.1 JOIN #ch
+>> 331 user1 #ch :No topic is set
+>> 353 user1 = #ch :@user1
+>> 366 user1 #ch :End of /NAMES list
+>> 324 user1 #test 
+--> chanquery mode
+<< MODE #ch
+>> 329 user1 #test 1742667913
+--> event 329
+>> 324 user1 #ch 
+--> chanquery mode
+>> 329 user1 #ch 1742667913
+--> event 329
+<< WHO #test
+>> 421 user1 WHO :Unknown command
+>> :user2!codespace@127.0.0.1 JOIN #test
+>> :user2!codespace@127.0.0.1 JOIN #ch
+<< PRIVMSG #ch :hi
+>> :user1!codespace@127.0.0.1 PRIVMSG #ch :hi
+<< CAP LS
+<< PASS 42
+<< NICK user3
+<< USER codespace codespace localhost :Unknown
+>> CAP * LS :
+<< CAP END
+>> :*!@127.0.0.1 NICK user3
+>> :JAS 42 001 user3 :Welcome to J-A-S Network, user3
+>> :JAS 42 002 user3 :Your host is JAS 42, running version 0210
+>> :JAS 42 003 user3 :This server was created Sat 22 Mar 18:54:37 2025
+>> :JAS 42 004 user3 JAS 42 0210  itklo
+>> :JAS 42 005 user3 CASEMAPPING=ascii CHANNELLEN=50 CHANLIMIT=#&:50 CHANTYPES=#& CHANMODES=,,kl,it PREFIX=o(@) MODES=3 NICKLEN=30 TOPICLEN=307 USERLEN=32 MAXTARGETS=4 :are supported by this server
+>> 375 user3 :- JAS 42 Message of the Day -
+<< MODE user3 +i
+>> 372 user3 :- Welcome to ft_irc - Where bugs come to party!
+>> 372 user3 :- Remember: If your code works the first time, you're doing it wrong.
+>> 372 user3 :- IRC: Because sometimes you need to talk to humans without seeing them.
+>> 372 user3 :- 42 is not just the answer to life, it's also our uptime in seconds.
+>> 372 user3 :- If you find any bugs, they're features we haven't documented yet.
+>> 376 user3 :End of /MOTD command
+<< PRIVMSG user1 :hi
+<< PRIVMSG user2 :hi
+>> PING PING_8_1742669917
+<< PONG :PING_8_1742669917
+<< JOIN #test
+>> :user3!codespace@127.0.0.1 JOIN #test
+>> 331 user3 #test :No topic is set
+>> 353 user3 = #test :user3 user2 @user1
+>> 366 user3 #test :End of /NAMES list
+<< MODE #test
+>> 324 user3 #test 
+--> chanquery mode
+<< WHO #test
+>> 329 user3 #test 1742669682
+--> event 329
+>> 421 user3 WHO :Unknown command
+<< PRIVMSG #test :hi
+<< CAP LS
+<< PASS 42
+<< NICK user3
+<< USER codespace codespace localhost :Unknown
+>> CAP * LS :
+<< CAP END
+>> :*!@127.0.0.1 NICK user3
+>> :JAS 42 001 user3 :Welcome to J-A-S Network, user3
+>> :JAS 42 002 user3 :Your host is JAS 42, running version 0210
+>> :JAS 42 003 user3 :This server was created Sat 22 Mar 18:54:37 2025
+>> :JAS 42 004 user3 JAS 42 0210  itklo
+>> :JAS 42 005 user3 CASEMAPPING=ascii CHANNELLEN=50 CHANLIMIT=#&:50 CHANTYPES=#& CHANMODES=,,kl,it PREFIX=o(@) MODES=3 NICKLEN=30 TOPICLEN=307 USERLEN=32 MAXTARGETS=4 :are supported by this server
+>> 375 user3 :- JAS 42 Message of the Day -
+<< MODE user3 +i
+>> 372 user3 :- Welcome to ft_irc - Where bugs come to party!
+>> 372 user3 :- Remember: If your code works the first time, you're doing it wrong.
+>> 372 user3 :- IRC: Because sometimes you need to talk to humans without seeing them.
+>> 372 user3 :- 42 is not just the answer to life, it's also our uptime in seconds.
+>> 372 user3 :- If you find any bugs, they're features we haven't documented yet.
+>> 376 user3 :End of /MOTD command
+<< PRIVMSG user1 :hi
+<< PRIVMSG user2 :hi
+>> PING PING_8_1742669917
+<< PONG :PING_8_1742669917
+<< JOIN #test
+>> :user3!codespace@127.0.0.1 JOIN #test
+>> 331 user3 #test :No topic is set
+>> 353 user3 = #test :user3 user2 @user1
+>> 366 user3 #test :End of /NAMES list
+<< MODE #test
+>> 324 user3 #test 
+--> chanquery mode
+<< WHO #test
+>> 329 user3 #test 1742669682
+--> event 329
+>> 421 user3 WHO :Unknown command
+<< PRIVMSG #test :hi
+<< PRIVMSG #test :hi
