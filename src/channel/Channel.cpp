@@ -65,7 +65,6 @@ void Channel::quit(Client &client, const std::string &reason)
 
     _connectedClients.erase(nick);
     removeOp(nick);
-    client.untrackChannel(this);
     broadcastMessage(quitMessage);
 }
 

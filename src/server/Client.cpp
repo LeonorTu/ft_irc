@@ -140,6 +140,7 @@ void Client::forceQuit(const std::string &reason)
     for (auto &[_, channel] : _myChannels) {
         channel->quit(*this, reason);
     }
+    _myChannels.clear();
 }
 
 void Client::markPingSent(const std::string &token)
