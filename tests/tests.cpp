@@ -40,7 +40,7 @@ TEST_F(ServerTest, StartStopTest)
     // Create server in non-blocking mode
     server = new Server(6667, "42", false);
     ASSERT_NE(server, nullptr);
-    EXPECT_FALSE(server->getIsPaused());
+    EXPECT_FALSE(server->_paused);
 }
 
 TEST_F(ServerTest, WelcomeMessageTest)
@@ -85,11 +85,11 @@ TEST_F(ServerTest, PauseResumeTest)
     server = new Server(6667, "42", false);
     ASSERT_NE(server, nullptr);
 
-    EXPECT_FALSE(server->getIsPaused());
+    EXPECT_FALSE(server->_paused);
     server->pause();
-    EXPECT_TRUE(server->getIsPaused());
+    EXPECT_TRUE(server->_paused);
     server->resume();
-    EXPECT_FALSE(server->getIsPaused());
+    EXPECT_FALSE(server->_paused);
 }
 
 TEST_F(ServerTest, MessageSizeLimitTest)
