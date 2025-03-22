@@ -64,6 +64,10 @@ private:
     void silentIgnore();
     void invite();
 
+    //utils
+    void leaveAllChannels();
+    void handleJoinChannel(const std::string &channelName, const std::string &key);
+    
     // validation
     bool validateCommandAccess();
     bool validateParams(size_t min, size_t max, std::array<ParamType, MAX_PARAMS> pattern);
