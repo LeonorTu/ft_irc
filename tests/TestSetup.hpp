@@ -25,7 +25,7 @@ protected:
     std::thread serverThread;
     std::mutex outputMutex;
 
-    TestSetup(bool verbose = false)
+    TestSetup(bool verbose = true)
         : verboseOutput(verbose)
     {}
 

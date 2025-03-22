@@ -111,12 +111,32 @@ TEST_F(TestSetup, JOINCommand)
 
     registerClient(client1, "user1");
     registerClient(client2, "user2");
-    
+
     sendCommand(client1, "JOIN #test");
     EXPECT_TRUE(outputContains("user1 JOIN #test"));
     clearServerOutput();
 
     sendCommand(client2, "JOIN #test");
     EXPECT_TRUE(outputContains("user2 JOIN #test"));
+    clearServerOutput();
+}
+
+TEST_F(TestSetup, TestTopic)
+{
+    // Register both clients with different nicknames
+    int client1 = connectClient();
+    int client2 = connectClient();
+
+    // Make sure clients are connected successfully
+    ASSERT_GT(client1, 0);
+    ASSERT_GT(client2, 0);
+    registerClient(client1, "user1");
+    registerClient(client2, "user2");
+    sendCommand(client1, "JOIN #test");
+    sendCommand(client2, "JOIN #test");
+    clearServerOutput();
+    sendCommand(client1, "TOPIC #test :mew topic");
+
+    EXPECT_TRUE(outputContains("user1!testuser@127.0.0.1 TOPIC #test :mew topic"));
     clearServerOutput();
 }
