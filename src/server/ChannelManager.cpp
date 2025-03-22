@@ -28,8 +28,10 @@ void ChannelManager::createChannel(const std::string &name, Client &creator)
 
 void ChannelManager::removeChannel(const std::string &name)
 {
-    if (channelExists(caseMapped(name)))
+    if (channelExists(caseMapped(name))) {
         _channels.erase(caseMapped(name));
+        std::cout << "removed channel " << name << std::endl;
+    }
 }
 
 std::string ChannelManager::caseMapped(const std::string &name) const
@@ -49,4 +51,18 @@ Channel &ChannelManager::getChannel(const std::string &name) const
         // throw std::out_of_range("Channel '" + name + "' not found");
     }
     return *it->second;
+}
+
+void ChannelManager::rmEmptyChannels()
+{
+    std::vector<std::string> channelsToRemove;
+    for (auto &[name, channel] : _channels) {
+        if (channel->isEmpty()) {
+            channelsToRemove.push_back(name);
+        }
+    }
+
+    for (const auto &name : channelsToRemove) {
+        removeChannel(name);
+    }
 }

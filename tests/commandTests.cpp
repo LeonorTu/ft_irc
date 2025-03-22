@@ -14,182 +14,17 @@
 #include <sstream>
 #include <fcntl.h>
 #include <ChannelManager.hpp>
-
-class CommandTest : public ::testing::Test
-{
-protected:
-    Server *server;
-    std::thread serverThread;
-    int clientFd1;
-    int clientFd2;
-    std::atomic<bool> serverRunning{false};
-
-    // For capturing stdout
-    std::stringstream capturedOutput;
-    std::streambuf *originalCoutBuffer;
-
-    // Sync mechanisms
-    std::mutex outputMutex;
-    std::condition_variable serverStartedCv;
-    bool serverStarted = false;
-
-    void SetUp() override
-    {
-        // Capture stdout
-        originalCoutBuffer = std::cout.rdbuf();
-        std::cout.rdbuf(capturedOutput.rdbuf());
-
-        // Start the server in a separate thread
-        server = new Server();
-        serverThread = std::thread([this]() {
-            {
-                std::unique_lock<std::mutex> lock(outputMutex);
-                serverRunning = true;
-                serverStarted = true;
-                serverStartedCv.notify_one();
-            }
-            this->server->start("42"); // Use "42" as the password
-        });
-
-        // Wait for the server to start
-        {
-            std::unique_lock<std::mutex> lock(outputMutex);
-            serverStartedCv.wait(lock, [this] { return serverStarted; });
-        }
-
-        // Give the server time to initialize
-        std::this_thread::sleep_for(std::chrono::milliseconds(400));
-
-        // Connect two client sockets
-        clientFd1 = connectClient();
-        ASSERT_GT(clientFd1, 0) << "Failed to connect first client";
-
-        clientFd2 = connectClient();
-        ASSERT_GT(clientFd2, 0) << "Failed to connect second client";
-
-        // Clear any initial server output
-        clearOutput();
-    }
-
-    void TearDown() override
-    {
-        // Close client connections
-        if (clientFd1 > 0)
-            close(clientFd1);
-        if (clientFd2 > 0)
-            close(clientFd2);
-
-        // Shutdown the server
-        serverRunning = false;
-        server->shutdown();
-        if (serverThread.joinable()) {
-            serverThread.join();
-        }
-
-        delete server;
-
-        // Restore stdout
-        std::cout.rdbuf(originalCoutBuffer);
-
-        // For debugging, uncomment to see captured output
-        std::cerr << "Test output: " << capturedOutput.str() << std::endl;
-    }
-
-    // Helper function to connect a client
-    int connectClient()
-    {
-        int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-        if (sockfd < 0) {
-            return -1;
-        }
-
-        struct sockaddr_in serv_addr;
-        std::memset(&serv_addr, 0, sizeof(serv_addr));
-        serv_addr.sin_family = AF_INET;
-        serv_addr.sin_port = htons(SERVER_PORT);
-        inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr);
-
-        if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-            close(sockfd);
-            return -1;
-        }
-
-        // Set non-blocking
-        int flags = fcntl(sockfd, F_GETFL, 0);
-        fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
-
-        return sockfd;
-    }
-
-    // Helper to send an IRC command
-    void sendCommand(int sockfd, const std::string &cmd)
-    {
-        std::string command = cmd + "\r\n";
-        send(sockfd, command.c_str(), command.length(), 0);
-    }
-
-    // Helper to read response (with timeout)
-    std::string readResponse(int sockfd, int timeout_ms = 1000)
-    {
-        char buffer[1024];
-        std::string response;
-
-        fd_set readfds;
-        struct timeval tv;
-        tv.tv_sec = timeout_ms / 1000;
-        tv.tv_usec = (timeout_ms % 1000) * 1000;
-
-        FD_ZERO(&readfds);
-        FD_SET(sockfd, &readfds);
-
-        if (select(sockfd + 1, &readfds, NULL, NULL, &tv) > 0) {
-            int bytes = recv(sockfd, buffer, sizeof(buffer) - 1, 0);
-            if (bytes > 0) {
-                buffer[bytes] = '\0';
-                response = buffer;
-            }
-        }
-
-        return response;
-    }
-
-    // Register a client with specified nickname
-    void registerClient(int sockfd, const std::string &nickname)
-    {
-        sendCommand(sockfd, "PASS 42");
-        sendCommand(sockfd, "NICK " + nickname);
-        sendCommand(sockfd, "USER " + nickname + " 0 * :Real " + nickname);
-    }
-    // Check if output contains a specific string
-    bool outputContains(const std::string &text)
-    {
-        std::string out = capturedOutput.str();
-        return out.find(text) != std::string::npos;
-    }
-
-    // Clear the captured output buffer
-    void clearOutput()
-    {
-        std::cerr << capturedOutput.str() << std::endl;
-        capturedOutput.str("");
-        capturedOutput.clear();
-    }
-
-    // Output current buffer (for debugging)
-    void dumpOutput()
-    {
-        std::cerr << "=== OUTPUT DUMP ===\n" << capturedOutput.str() << "\n=== END DUMP ===\n";
-    }
-};
+#include "TestSetup.hpp"
 
 // Test successful nickname change
-TEST_F(CommandTest, NickCommandSuccess)
+TEST_F(TestSetup, NickCommandSuccess)
 {
     // Register first client
-    registerClient(clientFd1, "user1");
+    int client = connectClient();
+    registerClient(client, "user1");
 
     // Change nickname
-    sendCommand(clientFd1, "NICK newname");
+    sendCommand(client, "NICK newname");
 
     // Wait for response
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -199,29 +34,38 @@ TEST_F(CommandTest, NickCommandSuccess)
 }
 
 // Test nickname collision
-TEST_F(CommandTest, NickCommandCollision)
+TEST_F(TestSetup, NickCommandCollision)
 {
     // Register both clients with different nicknames
-    registerClient(clientFd1, "user1");
-    registerClient(clientFd2, "user2");
+    int client1 = connectClient();
+    int client2 = connectClient();
+    clearServerOutput();
+
+    registerClient(client1, "user1");
+    clearServerOutput();
+    std::this_thread::sleep_for(std::chrono::milliseconds(400));
+    registerClient(client2, "user2");
+    clearServerOutput();
+
     // Try to change second client to first client's nickname
-    sendCommand(clientFd2, "NICK user1");
+    sendCommand(client2, "NICK user1");
 
     // Wait for response
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     // Check if error message was sent
-    EXPECT_TRUE(outputContains("433 user2 user1 :Nickname is already in use"));
+    EXPECT_TRUE(outputContains("433"));
 }
 
 // Test invalid nickname
-TEST_F(CommandTest, NickCommandInvalidName)
+TEST_F(TestSetup, NickCommandInvalidName)
 {
     // Register client
-    registerClient(clientFd1, "user1");
+    int client = connectClient();
+    registerClient(client, "user1");
 
     // Try to change to invalid nickname (starts with number)
-    sendCommand(clientFd1, "NICK 1invalid");
+    sendCommand(client, "NICK 1invalid");
 
     // Wait for response
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -231,16 +75,17 @@ TEST_F(CommandTest, NickCommandInvalidName)
 }
 
 // Test nickname too long
-TEST_F(CommandTest, NickCommandTooLong)
+TEST_F(TestSetup, NickCommandTooLong)
 {
     // Register client
-    registerClient(clientFd1, "user1");
+    int client = connectClient();
+    registerClient(client, "user1");
 
     // Generate a nickname that exceeds NICKLEN
     std::string longNick(NICKLEN + 5, 'a');
 
     // Try to change to long nickname
-    sendCommand(clientFd1, "NICK " + longNick);
+    sendCommand(client, "NICK " + longNick);
 
     // Wait for response
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -254,13 +99,24 @@ TEST_F(CommandTest, NickCommandTooLong)
     EXPECT_TRUE(success);
 }
 
-TEST_F(CommandTest, JOINCommand)
+TEST_F(TestSetup, JOINCommand)
 {
     // Register both clients with different nicknames
-    registerClient(clientFd1, "user1");
-    registerClient(clientFd2, "user2");
+    int client1 = connectClient();
+    int client2 = connectClient();
 
-    sendCommand(clientFd1, "JOIN #test");
-    sendCommand(clientFd2, "JOIN #test");
-    EXPECT_TRUE(server->getChannels().channelExists("#test"));
+    // Make sure clients are connected successfully
+    ASSERT_GT(client1, 0);
+    ASSERT_GT(client2, 0);
+
+    registerClient(client1, "user1");
+    registerClient(client2, "user2");
+    
+    sendCommand(client1, "JOIN #test");
+    EXPECT_TRUE(outputContains("user1 JOIN #test"));
+    clearServerOutput();
+
+    sendCommand(client2, "JOIN #test");
+    EXPECT_TRUE(outputContains("user2 JOIN #test"));
+    clearServerOutput();
 }

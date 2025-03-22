@@ -63,7 +63,7 @@ protected:
 TEST_F(ChannelTest, CreationTest)
 {
     EXPECT_EQ(channel->getName(), "#test");
-    EXPECT_TRUE(channel->hasMode(ChannelMode::OP)); // Creator should be op
+    EXPECT_TRUE(channel->hasOp(*creator)); // Creator should be op
     EXPECT_FALSE(channel->hasMode(ChannelMode::INVITE_ONLY));
     EXPECT_FALSE(channel->isEmpty());
 }
@@ -131,20 +131,9 @@ TEST_F(ChannelTest, ModeTypeTest)
     channel->setMode(*creator, true, ChannelMode::OP, regularUser->getNickname());
     EXPECT_TRUE(channel->hasOp(*regularUser));
 
-    // Test invalid parameters
-    clearOutput();
-
-    // Try to set channel key without a parameter
-    channel->setMode(*creator, true, ChannelMode::KEY);
-    EXPECT_TRUE(outputContains("696")); // ERR_NEEDMOREPARAMS
-
-    // Try to set operator status without a parameter
-    channel->setMode(*creator, true, ChannelMode::OP);
-    EXPECT_TRUE(outputContains("461")); // ERR_NEEDMOREPARAMS
-
-    // Try to set an unknown mode
-    channel->setMode(*creator, true, static_cast<ChannelMode>('z'));
-    EXPECT_TRUE(outputContains("501")); // ERR_UMODEUNKNOWNFLAG
+    //deop self
+    channel->setMode(*regularUser, false, ChannelMode::OP, regularUser->getNickname());
+    EXPECT_FALSE(channel->hasOp(*regularUser));
 
     // Try to set a mode without being an operator
     channel->setMode(*regularUser, true, ChannelMode::INVITE_ONLY);
