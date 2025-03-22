@@ -10,7 +10,7 @@ Channel::Channel(const std::string &name, Client &creator)
     , _modes("")
     , _key("")
     , _userLimit(0)
-    , _createdTime(getCurrentTime())
+    , _createdTime(std::to_string(time(0)))
 {
     _ops.insert_or_assign(creator.getNickname(), &creator);
     setMode(creator, true, ChannelMode::OP, creator.getNickname());
