@@ -18,7 +18,7 @@
 class TestSetup : public ::testing::Test
 {
 protected:
-    Server server;
+    Server *server = nullptr;
     std::stringstream capturedOutput;
     std::streambuf *originalCoutBuffer;
     bool verboseOutput;
@@ -36,7 +36,7 @@ protected:
         std::cout.rdbuf(capturedOutput.rdbuf());
 
         // Start the server in a separate thread
-        serverThread = std::thread([this]() { server.start("42"); });
+        serverThread = std::thread([this]() { server = new Server(6667, "42"); });
 
         // Add a delay to ensure the server is fully running
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -49,7 +49,7 @@ protected:
     void TearDown() override
     {
         // Stop the server
-        server.shutdown();
+        server->shutdown();
 
         // Join the server thread
         if (serverThread.joinable()) {

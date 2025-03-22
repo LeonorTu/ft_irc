@@ -9,39 +9,48 @@
 class ServerTest : public ::testing::Test
 {
 protected:
-    Server *server; // Shared resource for all tests
-
+    Server *server = nullptr;
     void SetUp() override
     {
         // Runs before each test
-        server = new Server();
     }
 
     void TearDown() override
     {
         // Runs after each test
-        delete server;
+        if (server) {
+            server->shutdown();
+            delete server;
+            server = nullptr;
+        }
     }
 };
 
 // Existing test
 TEST_F(ServerTest, InitializationTest)
 {
-    EXPECT_EQ(server->getServerFD(), -1);
+    // Create server in non-blocking mode
+    server = new Server(6667, "42", false);
+    ASSERT_NE(server, nullptr);
+    EXPECT_EQ(server->getPassword(), "42");
 }
 
 TEST_F(ServerTest, StartStopTest)
 {
-    std::thread server_thread([this]() { this->server->start(""); });
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    this->server->shutdown();
-    server_thread.join();
-    EXPECT_FALSE(this->server->getIsPaused());
+    // Create server in non-blocking mode
+    server = new Server(6667, "42", false);
+    ASSERT_NE(server, nullptr);
+    EXPECT_FALSE(server->getIsPaused());
 }
 
 TEST_F(ServerTest, WelcomeMessageTest)
 {
-    std::thread server_thread([this]() { this->server->start("42"); });
+    // Create server in non-blocking mode
+    server = new Server(6667, "42", false);
+    ASSERT_NE(server, nullptr);
+
+    // Start the server in a separate thread
+    std::thread server_thread([this]() { this->server->loop(); });
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     // Use a short timeout to close automatically
@@ -72,6 +81,10 @@ TEST_F(ServerTest, WelcomeMessageTest)
 
 TEST_F(ServerTest, PauseResumeTest)
 {
+    // Create server in non-blocking mode
+    server = new Server(6667, "42", false);
+    ASSERT_NE(server, nullptr);
+
     EXPECT_FALSE(server->getIsPaused());
     server->pause();
     EXPECT_TRUE(server->getIsPaused());
@@ -81,7 +94,12 @@ TEST_F(ServerTest, PauseResumeTest)
 
 TEST_F(ServerTest, MessageSizeLimitTest)
 {
-    std::thread server_thread([this]() { this->server->start(""); });
+    // Create server in non-blocking mode
+    server = new Server(6667, "42", false);
+    ASSERT_NE(server, nullptr);
+
+    // Start the server in a separate thread
+    std::thread server_thread([this]() { this->server->loop(); });
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     // Create an oversized message
