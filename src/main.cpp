@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     int port = std::stoi(portStr);
     if (!validator.isValidServerPassword(password)) {
         std::cerr << "Invalid password. Password must be 2-32 characters long and contain only "
-                     "printable characters."
+                     "printable characters without spaces."
                   << std::endl;
         return 1;
     }
