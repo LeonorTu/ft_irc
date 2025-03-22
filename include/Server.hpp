@@ -17,16 +17,14 @@ class PongManager;
 class Server
 {
 public:
-    Server(int port, std::string password);
+    Server(int port, std::string password, bool startBlocking = true);
     ~Server();
-    void start(int port, std::string password);
     void loop();
     void shutdown();
 
     // getters
     static Server &getInstance();
     int getServerFD() const;
-    bool getIsPaused() const;
     SocketManager &getSocketManager();
     EventLoop &getEventLoop();
     ClientIndex &getClients();
@@ -39,13 +37,14 @@ public:
     void pause();
     void resume();
 
+    volatile sig_atomic_t _running;
+    volatile sig_atomic_t _paused;
+
 private:
     int _serverFd;
     int _port;
     std::string _password;
     static Server *_instance;
-    volatile sig_atomic_t _running;
-    volatile sig_atomic_t _paused;
     std::unique_ptr<ClientIndex> _clients;
     std::unique_ptr<ChannelManager> _channels;
     std::unique_ptr<SocketManager> _socketManager;

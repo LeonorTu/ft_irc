@@ -7,13 +7,22 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc != 3) {
+    std::string portStr;
+    std::string password;
+    if (argc == 1) {
+        std::cerr << "running with defaults, port: 6667 and password 42" << std::endl;
+        portStr = "6667";
+        password = "42";
+    }
+    else if (argc != 3) {
         std::cerr << "Usage: " << argv[0] << " <port> <password>" << std::endl;
         return 1;
     }
+    else {
+        portStr = argv[1];
+        password = argv[2];
+    }
 
-    std::string portStr = argv[1];
-    std::string password = argv[2];
     IRCValidator validator;
     if (!validator.isValidPort(portStr)) {
         std::cerr << "Invalid port. Port must be an integer in the range 1-65535." << std::endl;
@@ -27,7 +36,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    Server myserver(port, password);
+    Server myserver(port, password, true);
 
     return 0;
 }

@@ -10,19 +10,19 @@
 
 Server *Server::_instance = nullptr;
 
-Server::Server(int port, std::string password)
-    : _serverFd(-1)
+Server::Server(int port, std::string password, bool startBlocking)
+    : _running(false)
+    , _paused(false)
+    , _serverFd(-1)
     , _port(port)
     , _password(password)
-    , _running(true)
-    , _paused(false)
     , _clients(std::make_unique<ClientIndex>())
     , _channels(std::make_unique<ChannelManager>())
     , _socketManager(std::make_unique<SocketManager>(_port))
     , _eventLoop(createEventLoop())
     , _PongManager(std::make_unique<PongManager>())
-    , _connectionManager(std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop,
-                                                             *_clients))
+    , _connectionManager(
+          std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop, *_clients))
     , _createdTime(getCurrentTime())
 {
     // setup signalshandlers
@@ -38,7 +38,9 @@ Server::Server(int port, std::string password)
         return;
     }
     getEventLoop().addToWatch(_serverFd);
-    loop();
+    if (startBlocking) {
+        loop();
+    }
 }
 
 Server::~Server()
@@ -49,22 +51,10 @@ Server::~Server()
     std::cout << "Server shutdown complete" << std::endl;
 }
 
-void Server::start(int port, std::string password)
-{
-    _serverFd = getSocketManager().initialize();
-    if (_serverFd < 0) {
-        std::cerr << "server failed to start" << std::endl;
-        return;
-    }
-    getEventLoop().addToWatch(_serverFd);
-    _port = port;
-    _password = password;
-    _running = true;
-    loop();
-}
 
 void Server::loop()
 {
+    _running = true;
     int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                       std::chrono::steady_clock::now().time_since_epoch())
                       .count();
@@ -128,11 +118,6 @@ Server &Server::getInstance()
 int Server::getServerFD() const
 {
     return this->_serverFd;
-}
-
-bool Server::getIsPaused() const
-{
-    return this->_paused;
 }
 
 ClientIndex &Server::getClients()
