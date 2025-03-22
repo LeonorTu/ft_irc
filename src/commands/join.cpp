@@ -8,11 +8,7 @@ void CommandRunner::join()
     }
 
     if (_params[0] == "0") {
-        std::unordered_map<std::string, Channel *> channels = _client.getMyChannels();
-        for (auto &pair : channels) {
-            Channel *channel = pair.second;
-            channel->part(_client, "Client is leaving all the channels");
-        }
+        leaveAllChannels();
         return;
     }
 
