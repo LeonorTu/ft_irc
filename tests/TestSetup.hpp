@@ -35,8 +35,20 @@ protected:
         originalCoutBuffer = std::cout.rdbuf();
         std::cout.rdbuf(capturedOutput.rdbuf());
 
+        // Create server in non-blocking mode
+        server = new Server(6667, "42", false);
+
         // Start the server in a separate thread
-        serverThread = std::thread([this]() { server = new Server(6667, "42"); });
+        serverThread = std::thread([this]() {
+            try {
+                if (this->server) {
+                    this->server->loop();
+                }
+            }
+            catch (const std::exception &e) {
+                std::cerr << "Server exception: " << e.what() << std::endl;
+            }
+        });
 
         // Add a delay to ensure the server is fully running
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -48,13 +60,19 @@ protected:
 
     void TearDown() override
     {
-        // Stop the server
-        server->shutdown();
+        // Stop the server if it exists
+        if (server) {
+            server->shutdown();
+        }
 
         // Join the server thread
         if (serverThread.joinable()) {
             serverThread.join();
         }
+
+        // Clean up the server object
+        delete server;
+        server = nullptr;
 
         // Restore original cout
         std::cout.rdbuf(originalCoutBuffer);
@@ -173,66 +191,6 @@ protected:
         return true;
     }
 
-    // Thread-safe function to run client operations
-    template <typename Func> bool runClientOperation(const std::string &nickname, Func operation)
-    {
-        int clientSocket = connectClient();
-        if (clientSocket < 0) {
-            return false;
-        }
-
-        bool result = registerClient(clientSocket, nickname);
-        if (!result) {
-            close(clientSocket);
-            return false;
-        }
-
-        result = operation(clientSocket);
-
-        close(clientSocket);
-        return result;
-    }
-
-    // Helper for running multi-client tests with concurrent clients
-    void
-    runMultiClientTest(const std::vector<std::string> &nicknames,
-                       const std::function<void(int socketFd, const std::string &nick)> &clientFunc)
-    {
-        std::vector<std::thread> clientThreads;
-        std::atomic<int> successCount{0};
-
-        // Start all client threads
-        for (const auto &nick : nicknames) {
-            clientThreads.emplace_back([this, &nick, &clientFunc, &successCount]() {
-                int socketFd = connectClient();
-                if (socketFd < 0) {
-                    return;
-                }
-
-                if (registerClient(socketFd, nick)) {
-                    clientFunc(socketFd, nick);
-                    successCount++;
-                }
-
-                close(socketFd);
-            });
-
-            // Slight stagger to avoid connection issues
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        }
-
-        // Wait for all client threads to complete
-        for (auto &thread : clientThreads) {
-            if (thread.joinable()) {
-                thread.join();
-            }
-        }
-
-        // Verify all clients succeeded
-        EXPECT_EQ(successCount.load(), nicknames.size());
-    }
-
-    // Helper function to get captured server output
     std::string getServerOutput()
     {
         std::lock_guard<std::mutex> lock(outputMutex);

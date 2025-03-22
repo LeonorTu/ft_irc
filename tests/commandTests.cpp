@@ -27,10 +27,11 @@ TEST_F(TestSetup, NickCommandSuccess)
     sendCommand(client, "NICK newname");
 
     // Wait for response
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
+    std::cerr << getServerOutput() << std::endl;
     // Check if nickname was changed successfully
-    EXPECT_TRUE(outputContains(":user1 NICK newname"));
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 NICK newname"));
 }
 
 // Test nickname collision
@@ -43,7 +44,7 @@ TEST_F(TestSetup, NickCommandCollision)
 
     registerClient(client1, "user1");
     clearServerOutput();
-    std::this_thread::sleep_for(std::chrono::milliseconds(400));
+    std::this_thread::sleep_for(std::chrono::milliseconds(40));
     registerClient(client2, "user2");
     clearServerOutput();
 
@@ -51,7 +52,7 @@ TEST_F(TestSetup, NickCommandCollision)
     sendCommand(client2, "NICK user1");
 
     // Wait for response
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     // Check if error message was sent
     EXPECT_TRUE(outputContains("433"));
@@ -113,11 +114,11 @@ TEST_F(TestSetup, JOINCommand)
     registerClient(client2, "user2");
 
     sendCommand(client1, "JOIN #test");
-    EXPECT_TRUE(outputContains("user1 JOIN #test"));
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 JOIN #test"));
     clearServerOutput();
 
     sendCommand(client2, "JOIN #test");
-    EXPECT_TRUE(outputContains("user2 JOIN #test"));
+    EXPECT_TRUE(outputContains(":user2!testuser@127.0.0.1 JOIN #test"));
     clearServerOutput();
 }
 
