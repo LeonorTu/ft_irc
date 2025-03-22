@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <memory>
 #include <unordered_map>
 
@@ -17,6 +18,7 @@ public:
     void createChannel(const std::string &name, Client &creator);
     void removeChannel(const std::string &name);
     Channel &getChannel(const std::string &name) const;
+    void rmEmptyChannels();
 
 private:
     std::unordered_map<std::string, std::unique_ptr<Channel>> _channels;

@@ -34,7 +34,10 @@ Server::Server()
 
 Server::~Server()
 {
-    shutdown();
+    _connectionManager->cleanUp();
+    _socketManager->closeServerSocket();
+    _eventLoop->removeFromWatch(_serverFd);
+    std::cout << "Server shutdown complete" << std::endl;
 }
 
 void Server::start(std::string password)
@@ -67,6 +70,7 @@ void Server::loop()
         }
         pingSchedule(now);
         getConnectionManager().rmDisconnectedClients();
+        getChannels().rmEmptyChannels();
         if (_paused) {
             std::cout << "Server paused. Waiting for SIGTSTP to resume..." << std::endl;
             while (_paused && _running) {
@@ -196,8 +200,4 @@ void Server::signalHandler(int signum)
 void Server::shutdown()
 {
     _running = false;
-    _connectionManager->cleanUp();
-    _socketManager->closeServerSocket();
-    _eventLoop->removeFromWatch(_serverFd);
-    std::cout << "Server shutdown complete" << std::endl;
 }
