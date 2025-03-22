@@ -17,6 +17,8 @@ CommandRunner::CommandRunner(const MessageParser::CommandContext &ctx)
     , _userHost(_client.getUserHost())
     , _messageSource(ctx.source)
     , _params(ctx.params)
+    , _targets({})
+    , _message("")
 {
     if (!_mapInitialized)
         initCommandMap();
@@ -67,6 +69,27 @@ void CommandRunner::execute()
     else {
         sendToClient(_clientFd, ERR_UNKNOWNCOMMAND(_nickname, _command));
     }
+}
+
+
+std::unordered_map<WhichType, std::string> CommandRunner::splitTargets(std::string target)
+{
+    std::unordered_map<WhichType, std::string> targets;
+    std::istringstream iss(target);
+    std::string tmp;
+    WhichType type;
+    for (int i = 0; i < MAXTARGETS; i++){
+
+        std::getline(iss, tmp, ',');
+        if (target[0] == CHANTYPES[0] || target[0] == CHANTYPES[1]) {
+            type = static_cast<WhichType>(CHANNEL);
+        }
+        else {
+            type = static_cast<WhichType>(NICKNAME);
+        }
+        targets[type] = tmp;
+    }
+    return targets;
 }
 
 bool CommandRunner::validateParams(size_t min, size_t max,
@@ -126,14 +149,15 @@ bool CommandRunner::validateParams(size_t min, size_t max,
             }
             break;
         case VAL_TARGET:
-            if (!IRCValidator::isValidTarget(_clients, _channels, _params, _client)) {
+            _targets = splitTargets(_params[0]);
+            _message = _params[1];
+            if (!IRCValidator::isValidTarget(_targets, _clientFd, _nickname)) {
                 return false;
             }
             break;
         case VAL_REAL:
             // Usually no validation for realname
             break;
-
         case VAL_NONE:
             // No validation needed
             break;
@@ -151,6 +175,8 @@ bool CommandRunner::validateParams(size_t min, size_t max,
 
     return true;
 }
+
+
 
 bool CommandRunner::nickNotFound(std::string &target)
 {

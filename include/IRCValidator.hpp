@@ -2,10 +2,14 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
-class ClientIndex;
-class Client;
-class ChannelManager;
+enum WhichType
+{
+    CHANNEL,
+    NICKNAME
+};
+
 class IRCValidator
 {
 public:
@@ -20,7 +24,7 @@ public:
     static bool isValidPort(const std::string &portStr);
     static bool isValidServerPassword(const std::string &password);
     static bool isValidChannelKey(int clientFd, const std::string &nickname, const std::string &key);
-    static bool isValidTarget(ClientIndex &clients, ChannelManager &channelManager, std::vector<std::string> params, Client &client);
-
+    static bool isValidTarget(const std::unordered_map<WhichType, std::string> &targets, int clientFd, std::string nickname);
+    static bool isValidText(int clientFd, const std::string &nickname, const std::string &message);
 private:
 };

@@ -3,7 +3,7 @@
 
 // Common constants for the IRC server
 const int MSG_BUFFER_SIZE = 512; // Buffer size for message handling
-
+const int TEXT_LIMIT = 300;      // Limit for text messages
 // ISUPPORT
 const std::string CASEMAPPING = "ascii";
 const int CHANNELLEN = 50;

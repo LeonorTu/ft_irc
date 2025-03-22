@@ -47,6 +47,8 @@ private:
     const std::string _userHost;
     const std::string &_messageSource;
     std::vector<std::string> _params;
+    std::unordered_map<WhichType, std::string> _targets;
+    std::string _message;
 
     // commands
     void nick();
@@ -73,6 +75,7 @@ private:
     // validation
     bool validateCommandAccess();
     bool validateParams(size_t min, size_t max, std::array<ParamType, MAX_PARAMS> pattern);
+    std::unordered_map<WhichType, std::string> splitTargets(std::string target);
 
     // common error handlers
     bool nickNotFound(std::string &nickname);

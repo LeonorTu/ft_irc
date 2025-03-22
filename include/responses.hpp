@@ -80,7 +80,7 @@ inline std::string RPL_ISUPPORT(const std::string &nickname)
     oss << "NICKLEN=" << NICKLEN << " ";
     oss << "TOPICLEN=" << TOPICLEN << " ";
     oss << "USERLEN=" << USERLEN << " ";
-    // oss << "MAXTARGETS=" << MAXTARGETS << " ";
+    oss << "MAXTARGETS=" << MAXTARGETS << " ";
     oss << ":are supported by this server";
     return oss.str();
 }

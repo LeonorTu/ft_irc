@@ -107,88 +107,27 @@ bool IRCValidator::isValidChannelKey(int clientFd, const std::string &nickname,
     return true;
 }
 
-// bool IRCValidator::isValidUserList(int clientFd, const std::string &nickname,
-//                                    const std::string &userList)
-// {
-//     std::istringstream userStream(userList);
-//     std::string username;
-//     while (std::getline(userStream, username, ',') )
-//     {
-//         if (isValidNickname(clientFd, ))
-//     }
-
-//     return false;
-// }
-
-// std::vector<std::string> returnTargets(std::vector<std::string> params)
-// {
-//     std::vector<std::string> targets;
-//     for (auto it = params.begin(); it != params.end() - 1; ++it) {
-//         targets.push_back(*it);
-//     }
-//     return targets;
-// }
-
-// std::string returnMessage(std::vector<std::string> params)
-// {
-//     std::string message = params.back();
-//     return message;
-// }
-
-std::string truncateAfterCommaInTargets(std::string target)
+bool IRCValidator::isValidTarget(const std::unordered_map<WhichType, std::string> &targets, int clientFd, std::string nickname)
 {
-    size_t commaPos = target.find(',');
-    if (commaPos != std::string::npos) {
-        target.erase(commaPos);
-    }
-    return target;
-}
 
-std::string putMessageInOne(std::vector<std::string> params)
-{
-    std::string message;
-    for (size_t i = 1; i < params.size(); ++i) {
-        message += params[i];
-        if (i != params.size() - 1) {
-            message += " ";
+    for (auto &it : targets) {
+        if (it.first == CHANNEL)
+        {
+            if(!isValidChannelName(clientFd, it.second))
+                return false;
+        }
+        else if(it.first == NICKNAME)
+        {
+            if(!isValidNickname(clientFd, nickname, it.second))
+                return false;
         }
     }
-    return message;
+    return true;
 }
 
-bool IRCValidator::isValidTarget(ClientIndex &clients, ChannelManager &channelManager,
-                                 std::vector<std::string> params, Client &client)
+bool IRCValidator::isValidText(int clientFd, const std::string &nickname, const std::string &message)
 {
-
-    std::string target = params[0];
-
-    // client will handle the message adding ':' instead but should i handle it or not
-    if (params[1].empty()) {
-        sendToClient(client.getFd(), ERR_NOTEXTTOSEND(client.getNickname()));
+    if (!isPrintable(clientFd, nickname, message, TEXT_LIMIT))
         return false;
-    }
-    std::string message = putMessageInOne(params);
-    if (target[0] == CHANTYPES[0] || target[0] == CHANTYPES[1]) {
-        try {
-            Channel &channel = channelManager.getChannel(target);
-            channel.broadcastMessage(":" + client.getPrefixPrivmsg() + " PRIVMSG " + target + " :" +
-                                     message);
-            std::cout << "Sending message to channel: " << target << std::endl;
-        }
-        catch (const std::exception &e) {
-            sendToClient(client.getFd(), ERR_NOSUCHCHANNEL(client.getNickname(), target));
-            return false;
-        }
-    }
-    else {
-        target = truncateAfterCommaInTargets(target);
-        if (!clients.nickExists(target)) {
-            sendToClient(client.getFd(), ERR_NOSUCHNICK(client.getNickname(), target));
-            return false;
-        }
-        sendToClient(clients.getByNick(target).getFd(),
-                     ":" + client.getPrefixPrivmsg() + " PRIVMSG " + target + " :" + message);
-        // std::cout << "Sending message to channel: " << target << std::endl;
-    }
     return true;
 }
