@@ -3,11 +3,10 @@
 #include <responses.hpp>
 
 ConnectionManager::ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop,
-                                     ClientIndex &clients)//, PongManager &PongManager)
+                                     ClientIndex &clients)
     : _clients(clients)
     , _socketManager(socketManager)
     , _EventLoop(EventLoop)
-    // , _PongManager(PongManager)
 {}
 
 ConnectionManager::~ConnectionManager()
@@ -116,11 +115,6 @@ std::vector<Client *> &ConnectionManager::getDisconnectedClients()
 
 void ConnectionManager::markClientForDisconnection(Client &client)
 {
-    // 중복 방지 just push duplicates and check for nullptr in rmDisconnectedClients?
-    // for (auto it = _clientsToDisconnect.begin(); it != _clientsToDisconnect.end(); ++it) {
-    //     if (*it == &client)
-    //         return;
-    // }
     _clientsToDisconnect.push_back(&client);
     std::cout << "Client " << client.getNickname() << " marked for disconnection" << std::endl;
 }
@@ -136,19 +130,6 @@ void ConnectionManager::rmDisconnectedClients()
     //vector has still the pointers to the deleted clients, so have to clean up the vector
     _clientsToDisconnect.clear();
 }
-
-// void ConnectionManager::checkInactivityClients(int timeoutMs)
-// {
-//     _clients.forEachClient([this, timeoutMs](Client &client) {
-//         if (client.getTimeForNoActivity() > timeoutMs) {
-//             std::cout << "Client " << client.getNickname() << " inactive for "
-//                       << client.getTimeForNoActivity() / 1000 << " seconds. Sending PING."
-//                       << std::endl;
-//             _PongManager.sendPingToClient(client);
-            
-//         }
-//     });
-// }
 
 void ConnectionManager::deleteClient(Client &client)
 {
