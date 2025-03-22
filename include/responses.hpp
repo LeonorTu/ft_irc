@@ -85,48 +85,49 @@ inline std::string RPL_ISUPPORT(const std::string &nickname)
 }
 
 /* COMMAND RESPONSES */
-inline std::string JOIN(const std::string &sourceNick, const std::string &channel)
+inline std::string JOIN(const std::string &userHost, const std::string &channel)
 {
-    return ":" + sourceNick + " JOIN " + channel;
+    return ":" + userHost + " JOIN " + channel;
 }
 
-inline std::string QUIT(const std::string &sourceNick, const std::string &reason)
+inline std::string QUIT(const std::string &userHost, const std::string &reason)
 {
-    return ":" + sourceNick + " QUIT " + "Quit: :" + reason;
+    return ":" + userHost + " QUIT " + "Quit: :" + reason;
 }
 
-inline std::string PART(const std::string &sourceNick, const std::string &channel,
+inline std::string PART(const std::string &userHost, const std::string &channel,
                         const std::string &reason)
 {
-    return ":" + sourceNick + " PART " + channel + " :" + reason;
+    return ":" + userHost + " PART " + channel + " :" + reason;
 }
 
-inline std::string TOPIC(const std::string &channel, const std::string &topic)
+inline std::string TOPIC(const std::string &userHost, const std::string &channel,
+                         const std::string &topic)
 {
-    return "TOPIC " + channel + " :" + topic;
+    return ":" + userHost + " TOPIC " + channel + " :" + topic;
 }
 
-inline std::string MODE(const std::string &sourceNick, const std::string &tar,
+inline std::string MODE(const std::string &userHost, const std::string &tar,
                         const std::string &modeChange, const std::string &args = "")
 {
-    return ":" + sourceNick + " MODE " + tar + " " + modeChange + " " + args;
+    return ":" + userHost + " MODE " + tar + " " + modeChange + " " + args;
 }
 
-inline std::string NICK(const std::string &oldNickname, const std::string &newNickname)
+inline std::string NICK(const std::string &oldUserHost, const std::string &newNickname)
 {
-    return ":" + oldNickname + " NICK " + newNickname;
+    return ":" + oldUserHost + " NICK " + newNickname;
 }
 
-inline std::string INVITE(const std::string &issuer, const std::string &target,
+inline std::string INVITE(const std::string &userHost, const std::string &target,
                           const std::string &channel)
 {
-    return ":" + issuer + " INVITE " + target + " " + channel;
+    return ":" + userHost + " INVITE " + target + " " + channel;
 }
 
-inline std::string KICK(const std::string &kicker, const std::string &target,
+inline std::string KICK(const std::string &userHost, const std::string &target,
                         const std::string &channel, const std::string &reason)
 {
-    return ":" + kicker + " KICK " + channel + " " + target + " :" + reason;
+    return ":" + userHost + " KICK " + channel + " " + target + " :" + reason;
 }
 
 /* INFORMATIONAL RESPONSES (RPL_*) */

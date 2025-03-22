@@ -18,12 +18,14 @@ public:
     int getFd() const;
     const std::string &getNickname() const;
     const std::string &getIP() const;
-    std::string &getUsername();
-    std::string &getRealname();
+    const std::string &getUsername() const;
+    const std::string &getRealname() const;
     void setUsername(const std::string username);
     void setRealname(const std::string realname);
     void setNickname(const std::string &newNickname);
     void setIp(const std::string &ip);
+    const std::string &getUserHost() const;
+    void updateUserHost();
     void registerUser();
     bool getIsRegistered() const;
     bool getPasswordVerified() const;
@@ -55,10 +57,11 @@ private:
     bool _isRegistered;
     std::string _nickname;
     std::string _ip;
+    std::string _userHost;
     std::unordered_map<std::string, Channel *> _myChannels;
 
     // when you receive pong from client
-    std::chrono::steady_clock::time_point _lastactivityTime; 
+    std::chrono::steady_clock::time_point _lastactivityTime;
     std::chrono::steady_clock::time_point _lastPingSentTime;
     bool _waitingForPong;
     std::string _lastPingToken;

@@ -28,10 +28,9 @@ void Channel::join(Client &client, const std::string &key)
 {
     if (!isJoinable(client, key))
         return;
-    std::string nick = client.getNickname();
-    std::string joinMessage = JOIN(nick, _channelName);
+    std::string joinMessage = JOIN(client.getUserHost(), _channelName);
 
-    _connectedClients.insert_or_assign(nick, &client);
+    _connectedClients.insert_or_assign(client.getNickname(), &client);
     client.trackChannel(this);
     removeFromInvites(client);
 
@@ -47,9 +46,9 @@ void Channel::part(Client &client, const std::string &reason)
         sendToClient(client.getFd(), ERR_NOTONCHANNEL(client.getNickname(), _channelName));
         return;
     }
-    std::string nick = client.getNickname();
-    std::string partMessage = PART(nick, _channelName, reason);
+    std::string partMessage = PART(client.getUserHost(), _channelName, reason);
 
+    std::string nick = client.getNickname();
     broadcastMessage(partMessage);
     _connectedClients.erase(nick);
     removeOp(nick);
@@ -60,9 +59,9 @@ void Channel::quit(Client &client, const std::string &reason)
 {
     if (!isOnChannel(client))
         return;
-    std::string nick = client.getNickname();
-    std::string quitMessage = QUIT(client.getNickname(), reason);
+    std::string quitMessage = QUIT(client.getUserHost(), reason);
 
+    std::string nick = client.getNickname();
     _connectedClients.erase(nick);
     removeOp(nick);
     broadcastMessage(quitMessage);
@@ -88,7 +87,7 @@ void Channel::invite(Client &inviter, Client &target)
     }
 
     _invites.insert_or_assign(targetName, &target);
-    sendToClient(target.getFd(), INVITE(inviterName, targetName, _channelName));
+    sendToClient(target.getFd(), INVITE(inviter.getUserHost(), targetName, _channelName));
     sendToClient(inviterFd, RPL_INVITING(inviterName, targetName, _channelName));
 }
 
@@ -110,7 +109,7 @@ void Channel::kick(Client &kicker, Client &target, std::string const &reason)
         sendToClient(kickerFd, ERR_CHANOPRIVSNEEDED(kickerName, _channelName));
         return;
     }
-    std::string kickMessage = KICK(kickerName, targetName, _channelName, reason);
+    std::string kickMessage = KICK(kicker.getUserHost(), targetName, _channelName, reason);
     broadcastMessage(kickMessage);
     _connectedClients.erase(targetName);
     removeOp(targetName);
@@ -130,9 +129,7 @@ void Channel::changeTopic(Client &client, std::string &newTopic)
     _topic = newTopic;
     _topicAuthor = client.getNickname();
     _topicTime = std::to_string(time(0));
-    for (auto &[_, client] : _connectedClients) {
-        sendTopic(*client);
-    }
+    broadcastMessage(TOPIC(client.getUserHost(), _channelName, _topic));
 }
 
 void Channel::checkTopic(Client &client)
@@ -184,7 +181,7 @@ void Channel::setMode(Client &client, bool enable, ChannelMode mode, std::string
 
     std::string operation = enable ? "+" : "-";
     std::string modeStr = operation + static_cast<char>(mode);
-    std::string modeMsg = MODE(client.getNickname(), _channelName, modeStr, param);
+    std::string modeMsg = MODE(client.getUserHost(), _channelName, modeStr, param);
 
     if (enable) {
         enableMode(mode);

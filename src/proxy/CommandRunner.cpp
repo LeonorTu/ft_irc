@@ -14,6 +14,7 @@ CommandRunner::CommandRunner(const MessageParser::CommandContext &ctx)
     , _command(ctx.command)
     , _clientFd(ctx.clientFd)
     , _nickname(_client.getNickname())
+    , _userHost(_client.getUserHost())
     , _messageSource(ctx.source)
     , _params(ctx.params)
 {

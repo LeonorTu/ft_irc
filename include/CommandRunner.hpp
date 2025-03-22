@@ -44,6 +44,7 @@ private:
     const std::string &_command;
     int _clientFd;
     const std::string _nickname;
+    const std::string _userHost;
     const std::string &_messageSource;
     std::vector<std::string> _params;
 
@@ -67,7 +68,7 @@ private:
     //utils
     void leaveAllChannels();
     void handleJoinChannel(const std::string &channelName, const std::string &key);
-    
+
     // validation
     bool validateCommandAccess();
     bool validateParams(size_t min, size_t max, std::array<ParamType, MAX_PARAMS> pattern);

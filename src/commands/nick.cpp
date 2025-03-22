@@ -16,5 +16,5 @@ void CommandRunner::nick()
         _clients.addNick(_clientFd);
     else
         _clients.updateNick(_nickname, newNickname);
-    sendToClient(_clientFd, NICK(_nickname, newNickname));
+    sendToClient(_clientFd, NICK(_userHost, newNickname));
 }

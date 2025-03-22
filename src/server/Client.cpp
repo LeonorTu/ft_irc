@@ -10,6 +10,7 @@ Client::Client(int fd)
     , _isRegistered(false)
     , _nickname("*")
     , _ip("")
+    , _userHost(_nickname + "!" + _username + "@" + _ip)
     , _lastactivityTime(std::chrono::steady_clock::now())
     , _lastPingSentTime(std::chrono::steady_clock::now())
     , _waitingForPong(false)
@@ -36,7 +37,7 @@ const std::string &Client::getIP() const
     return _ip;
 }
 
-std::string &Client::getUsername()
+const std::string &Client::getUsername() const
 {
     return _username;
 }
@@ -45,7 +46,7 @@ void Client::setRealname(const std::string realname)
     _realname = realname;
 }
 
-std::string &Client::getRealname()
+const std::string &Client::getRealname() const
 {
     return _realname;
 }
@@ -53,17 +54,31 @@ std::string &Client::getRealname()
 void Client::setUsername(const std::string username)
 {
     _username = username;
+    updateUserHost();
 }
 
 void Client::setNickname(const std::string &newNickname)
 {
     _nickname = newNickname;
+    updateUserHost();
 }
 
 void Client::setIp(const std::string &ip)
 {
     _ip = ip;
+    updateUserHost();
 }
+
+const std::string &Client::getUserHost() const
+{
+    return _userHost;
+}
+
+void Client::updateUserHost()
+{
+    _userHost = _nickname + "!" + _username + "@" + _ip;
+}
+
 
 void Client::registerUser()
 {
