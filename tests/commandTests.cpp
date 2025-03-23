@@ -154,33 +154,6 @@ TEST_F(TestSetup, NameStealOp)
     clearServerOutput();
 }
 
-TEST_F(TestSetup, NickChangeOp)
-{
-    basicSetupTwo();
-
-    // operator status stays through a nick change
-    sendCommand(basicCreator, "NICK creator");
-    sendCommand(basicCreator, "MODE #test +o basicRegular1");
-    // no ERR_CHANOPRIVSNEEDED message in the output
-    EXPECT_FALSE(outputContains("482"));
-    clearServerOutput();
-}
-
-TEST_F(TestSetup, NameStealOp)
-{
-    basicSetupTwo();
-
-    // op changes name to creator
-    sendCommand(basicCreator, "NICK creator");
-    // regular non-op changes name to the old creators op name
-    sendCommand(basicRegular1, "NICK basicCreator");
-    // op status should not be enabled by name for basicRegular now
-    sendCommand(basicRegular1, "MODE #test +l 2");
-    // ERR_CHANOPRIVSNEEDED message should be in the output
-    EXPECT_TRUE(outputContains("482"));
-    clearServerOutput();
-}
-
 TEST_F(TestSetup, InviteCommand)
 {
     // Register both clients with different nicknames
