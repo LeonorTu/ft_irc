@@ -230,7 +230,7 @@ void CommandRunner::initCommandMap()
     _commandRunners["PONG"] = &CommandRunner::pong;
     _commandRunners["KICK"] = &CommandRunner::kick;
     _commandRunners["PRIVMSG"] = &CommandRunner::privmsg;
-    // _commandRunners["NOTICE"] = &CommandRunner::notice;
+    _commandRunners["NOTICE"] = &CommandRunner::notice;
     // _commandRunners["WHO"] = &CommandRunner::who;
     // _commandRunners["WHOIS"] = &CommandRunner::whois;}
     _mapInitialized = true;
