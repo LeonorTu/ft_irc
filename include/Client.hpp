@@ -41,6 +41,7 @@ public:
     std::chrono::steady_clock::time_point getLastActivityTime() const;
     // int getTimeForNoActivity() const;
     void forceQuit(const std::string &reason);
+    void informMyChannels(const std::string &msg);
     void markPingSent(const std::string &token);
     bool isWaitingForPong() const;
     void noPongWait();

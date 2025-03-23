@@ -157,6 +157,12 @@ void Client::forceQuit(const std::string &reason)
     }
     _myChannels.clear();
 }
+void Client::informMyChannels(const std::string &msg)
+{
+    for (auto &[_, channel] : _myChannels) {
+        channel->broadcastToOthers(*this, msg);
+    }
+}
 
 void Client::markPingSent(const std::string &token)
 {
