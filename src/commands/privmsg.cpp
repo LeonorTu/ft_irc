@@ -1,4 +1,5 @@
 #include <CommandRunner.hpp>
+#include <Error.hpp>
 
 void CommandRunner::privmsg()
 {
@@ -7,13 +8,14 @@ void CommandRunner::privmsg()
         return;
     for (auto &[type,target] : _targets)
     {
+        std::cout << "Target: " << target << std::endl;
         if(type == CHANNEL)
         {
             Channel *channel = nullptr;
             try{
                 channel = &_channels.getChannel(target);
             }
-            catch(const std::exception &e)
+            catch(const ChannelNotFound &e)
             {
                 sendToClient(_clientFd, ERR_NOSUCHCHANNEL(_nickname, target));
                 return;

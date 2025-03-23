@@ -81,7 +81,7 @@ std::unordered_map<WhichType, std::string> CommandRunner::splitTargets(std::stri
     for (int i = 0; i < MAXTARGETS; i++){
 
         std::getline(iss, tmp, ',');
-        if (target[0] == CHANTYPES[0] || target[0] == CHANTYPES[1]) {
+        if (tmp[0] == CHANTYPES[0] || tmp[0] == CHANTYPES[1]) {
             type = static_cast<WhichType>(CHANNEL);
         }
         else {

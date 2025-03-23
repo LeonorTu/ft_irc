@@ -7,6 +7,8 @@
 #include <ConnectionManager.hpp>
 #include <responses.hpp>
 #include <PongManager.hpp>
+#include <Error.hpp>
+
 
 Server *Server::_instance = nullptr;
 
@@ -34,7 +36,8 @@ Server::Server(int port, std::string password, bool startBlocking)
 
     _serverFd = getSocketManager().initialize();
     if (_serverFd < 0) {
-        std::cerr << "server failed to start" << std::endl;
+        // std::cerr << "server failed to start" << std::endl;
+        throw ServerError("Server failed to start");
         return;
     }
     getEventLoop().addToWatch(_serverFd);
@@ -51,21 +54,21 @@ Server::~Server()
     std::cout << "Server shutdown complete" << std::endl;
 }
 
-
 void Server::loop()
 {
     _running = true;
     int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                       std::chrono::steady_clock::now().time_since_epoch())
                       .count();
+    ConnectionManager &connection = getConnectionManager();
     while (_running) {
         std::vector<Event> events = getEventLoop().waitForEvents(100);
         for (const Event &event : events) {
             if (event.fd == _serverFd) {
-                getConnectionManager().handleNewClient();
+                Error::handleNewClientError(connection); 
             }
             else {
-                getConnectionManager().recieveData(event.fd);
+                Error::receiveDataError(connection, event.fd);
             }
         }
         pingSchedule(now);

@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <IRCValidator.hpp>
+#include <Error.hpp>
 
 int main(int argc, char *argv[])
 {
@@ -22,7 +23,6 @@ int main(int argc, char *argv[])
         portStr = argv[1];
         password = argv[2];
     }
-
     IRCValidator validator;
     if (!validator.isValidPort(portStr)) {
         std::cerr << "Invalid port. Port must be an integer in the range 1-65535." << std::endl;
@@ -35,8 +35,13 @@ int main(int argc, char *argv[])
                   << std::endl;
         return 1;
     }
-
-    Server myserver(port, password, true);
-
+    try {
+        Server myserver(port, password, true);
+    }
+    catch(const ServerError &e)
+    {
+        std::cerr << "Server error: " << e.what() << std::endl;
+        return 1;
+    }
     return 0;
 }

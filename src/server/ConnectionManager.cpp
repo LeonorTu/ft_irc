@@ -1,6 +1,7 @@
 #include <ConnectionManager.hpp>
 #include <common.hpp>
 #include <responses.hpp>
+#include <Error.hpp>
 
 ConnectionManager::ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop,
                                      ClientIndex &clients)
@@ -17,7 +18,6 @@ ConnectionManager::~ConnectionManager()
 void ConnectionManager::handleNewClient()
 {
     sockaddr_in clientAddr;
-
     int clientFd = _socketManager.acceptConnection(&clientAddr);
     std::string ip = inet_ntoa(clientAddr.sin_addr);
     // add new client into ClientIndex
@@ -48,8 +48,8 @@ void ConnectionManager::recieveData(int clientFd)
 
         if (bytesRead < 0) {
             if (errno == EPIPE) {
-                std::cerr << "Broken pipe when sending to client " << clientFd << std::endl;
-                return;
+                throw BrokenPipe("Broken pipe when sending to client " + std::to_string(clientFd));
+
             }
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 // No more data, exit the loop
