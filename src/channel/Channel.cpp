@@ -249,7 +249,6 @@ void Channel::broadcastMessage(const std::string &message)
         return;
     for (auto &[_, client] : _connectedClients) {
         sendToClient(client->getFd(), message);
-        // std::cout << "Sending message to " << client->getNickname() << ": " << message << std::endl;
     }
 }
 
@@ -261,7 +260,6 @@ void Channel::broadcastToOthers(Client &client, const std::string &message)
         if (connected == &client)
             continue;
         sendToClient(connected->getFd(), message);
-        // std::cout << "Sending message to " << client->getNickname() << ": " << message << std::endl;
     }
 }
 
@@ -330,6 +328,31 @@ void Channel::sendTopic(Client &client)
 bool Channel::hasOp(Client &client)
 {
     return _ops.find(client.getNickname()) != _ops.end();
+}
+
+void Channel::eraseNickHistory(const std::string &nick)
+{
+    _invites.erase(nick);
+    _ops.erase(nick);
+    _connectedClients.erase(nick);
+}
+
+void Channel::updateNick(Client &client, const std::string &newNick)
+{
+    std::string oldNick = client.getNickname();
+
+    if (hasOp(client)) {
+        auto opNode = _ops.extract(oldNick);
+        if (!opNode.empty()) {
+            opNode.key() = newNick;
+            _ops.insert(std::move(opNode));
+        }
+    }
+    auto clientNode = _connectedClients.extract(oldNick);
+    if (!clientNode.empty()) {
+        clientNode.key() = newNick;
+        _connectedClients.insert(std::move(clientNode));
+    }
 }
 
 bool Channel::isInvited(Client &client)

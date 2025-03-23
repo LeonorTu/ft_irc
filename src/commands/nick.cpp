@@ -14,8 +14,9 @@ void CommandRunner::nick()
     _client.setNickname(newNickname);
     if (tryRegisterClient())
         _clients.addNick(_clientFd);
-    else
+    else {
         _clients.updateNick(_nickname, newNickname);
+    }
     sendToClient(_clientFd, NICK(_userHost, newNickname));
-    _client.informMyChannels(NICK(_userHost, newNickname));
+    _client.broadcastMyChannels(NICK(_userHost, newNickname));
 }

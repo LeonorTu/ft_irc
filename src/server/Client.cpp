@@ -59,6 +59,7 @@ void Client::setUsername(const std::string username)
 
 void Client::setNickname(const std::string &newNickname)
 {
+    updateMyChannelsNick(newNickname);
     _nickname = newNickname;
     updateUserHost();
 }
@@ -78,7 +79,6 @@ void Client::updateUserHost()
 {
     _userHost = _nickname + "!" + _username + "@" + _ip;
 }
-
 
 void Client::registerUser()
 {
@@ -150,6 +150,13 @@ std::chrono::steady_clock::time_point Client::getLastActivityTime() const
     return _lastactivityTime;
 }
 
+void Client::updateMyChannelsNick(const std::string &newNick)
+{
+    for (auto &[_, channel] : _myChannels) {
+        channel->updateNick(*this, newNick);
+    }
+}
+
 void Client::forceQuit(const std::string &reason)
 {
     for (auto &[_, channel] : _myChannels) {
@@ -157,7 +164,8 @@ void Client::forceQuit(const std::string &reason)
     }
     _myChannels.clear();
 }
-void Client::informMyChannels(const std::string &msg)
+
+void Client::broadcastMyChannels(const std::string &msg)
 {
     for (auto &[_, channel] : _myChannels) {
         channel->broadcastToOthers(*this, msg);

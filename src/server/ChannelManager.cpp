@@ -66,3 +66,27 @@ void ChannelManager::rmEmptyChannels()
         removeChannel(name);
     }
 }
+
+void ChannelManager::clearNickHistory(const std::string &nick)
+{
+    for (const auto &[_, channel] : _channels) {
+        channel->eraseNickHistory(nick);
+    }
+}
+
+void ChannelManager::forEachChannel(std::function<void(Channel &)> callback)
+{
+    // Copy all names first
+    std::vector<std::string> chans;
+    for (const auto &[channel, _] : _channels) {
+        chans.push_back(channel);
+    }
+
+    // Then iterate through the copy
+    for (std::string &channel : chans) {
+        auto it = _channels.find(channel);
+        if (it != _channels.end()) {
+            callback(*it->second);
+        }
+    }
+}

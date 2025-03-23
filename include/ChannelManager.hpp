@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <functional>
 
 class Channel;
 class Client;
@@ -19,6 +20,8 @@ public:
     void removeChannel(const std::string &name);
     Channel &getChannel(const std::string &name) const;
     void rmEmptyChannels();
+    void clearNickHistory(const std::string &nickname);
+    void forEachChannel(std::function<void(Channel &)> callback);
 
 private:
     std::unordered_map<std::string, std::unique_ptr<Channel>> _channels;

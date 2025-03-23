@@ -39,9 +39,10 @@ public:
     std::unordered_map<std::string, Channel *> getMyChannels();
     void updateActivityTime();
     std::chrono::steady_clock::time_point getLastActivityTime() const;
+    void updateMyChannelsNick(const std::string &newNick);
     // int getTimeForNoActivity() const;
     void forceQuit(const std::string &reason);
-    void informMyChannels(const std::string &msg);
+    void broadcastMyChannels(const std::string &msg);
     void markPingSent(const std::string &token);
     bool isWaitingForPong() const;
     void noPongWait();

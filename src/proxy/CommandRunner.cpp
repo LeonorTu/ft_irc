@@ -256,6 +256,7 @@ bool CommandRunner::tryRegisterClient()
     if (canCompleteRegistration()) {
         completeRegistration();
         return true;
+        _channels.clearNickHistory(_client.getNickname());
     }
 
     return false;
