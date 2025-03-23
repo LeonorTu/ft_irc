@@ -207,3 +207,75 @@ TEST_F(TestSetup, InviteCommand)
     EXPECT_TRUE(outputContains(":user2!testuser@127.0.0.1 JOIN #invitetest"));
     clearServerOutput();
 }
+
+TEST_F(TestSetup, KickCommand)
+{
+    // Register three clients with different nicknames
+    int client1 = connectClient();
+    int client2 = connectClient();
+    int client3 = connectClient();
+
+    // Make sure clients are connected successfully
+    ASSERT_GT(client1, 0);
+    ASSERT_GT(client2, 0);
+    ASSERT_GT(client3, 0);
+
+    // Register clients
+    registerClient(client1, "user1");
+    registerClient(client2, "user2");
+    registerClient(client3, "user3");
+
+    // Client1 creates and joins a channel (becomes operator)
+    sendCommand(client1, "JOIN #kicktest");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 JOIN #kicktest"));
+    clearServerOutput();
+
+    // Client2 and Client3 join the channel
+    sendCommand(client2, "JOIN #kicktest");
+    EXPECT_TRUE(outputContains(":user2!testuser@127.0.0.1 JOIN #kicktest"));
+    clearServerOutput();
+
+    sendCommand(client3, "JOIN #kicktest");
+    EXPECT_TRUE(outputContains(":user3!testuser@127.0.0.1 JOIN #kicktest"));
+    clearServerOutput();
+
+    // Client1 kicks Client2 from the channel with a reason
+    sendCommand(client1, "KICK #kicktest user2 :Bad behavior");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 KICK #kicktest user2 :Bad behavior"));
+    clearServerOutput();
+
+    // Client2 tries to rejoin
+    sendCommand(client2, "JOIN #kicktest");
+    EXPECT_TRUE(outputContains(":user2!testuser@127.0.0.1 JOIN #kicktest"));
+    clearServerOutput();
+
+    // Client3 tries to kick Client2 (should fail as non-operator)
+    sendCommand(client3, "KICK #kicktest user2 :Not allowed");
+    EXPECT_TRUE(outputContains("482 user3 #kicktest :You're not channel operator"));
+    clearServerOutput();
+
+    // Client1 kicks multiple users at once
+    sendCommand(client1, "KICK #kicktest user2,user3 :Goodbye everyone");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 KICK #kicktest user2 :Goodbye everyone"));
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 KICK #kicktest user3 :Goodbye everyone"));
+    clearServerOutput();
+
+    // Create a second channel for additional tests
+    sendCommand(client1, "JOIN #secondchan");
+    clearServerOutput();
+
+    // Client2 tries to kick from a channel they're not on
+    sendCommand(client2, "KICK #secondchan user1 :Revenge");
+    EXPECT_TRUE(outputContains("442 user2 #secondchan :You're not on that channel"));
+    clearServerOutput();
+
+    // Client1 tries to kick a user not on the channel
+    sendCommand(client1, "KICK #secondchan user2 :Not here");
+    EXPECT_TRUE(outputContains("441 user1 user2 #secondchan :They aren't on that channel"));
+    clearServerOutput();
+
+    // Client1 tries to kick a nonexistent user
+    sendCommand(client1, "KICK #kicktest nonexistentuser :Who are you?");
+    EXPECT_TRUE(outputContains("401 user1 nonexistentuser :No such nick"));
+    clearServerOutput();
+}
