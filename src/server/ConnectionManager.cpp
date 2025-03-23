@@ -2,13 +2,16 @@
 #include <common.hpp>
 #include <responses.hpp>
 #include <Error.hpp>
+#include <CommandRunner.hpp>
 
 ConnectionManager::ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop,
                                      ClientIndex &clients)
     : _clients(clients)
     , _socketManager(socketManager)
     , _EventLoop(EventLoop)
-{}
+{
+    CommandRunner::initCommandMap();
+}
 
 ConnectionManager::~ConnectionManager()
 {
@@ -127,7 +130,7 @@ void ConnectionManager::rmDisconnectedClients()
         deleteClient(*client);
         client = nullptr;
     }
-    //vector has still the pointers to the deleted clients, so have to clean up the vector
+    // vector has still the pointers to the deleted clients, so have to clean up the vector
     _clientsToDisconnect.clear();
 }
 
