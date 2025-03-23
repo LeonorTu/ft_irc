@@ -105,7 +105,7 @@ void Channel::kick(Client &kicker, Client &target, std::string const &reason)
         sendToClient(kickerFd, ERR_USERNOTINCHANNEL(kickerName, targetName, _channelName));
         return;
     }
-    if (hasMode(ChannelMode::INVITE_ONLY) && !hasOp(kicker)) {
+    if (!hasOp(kicker)) {
         sendToClient(kickerFd, ERR_CHANOPRIVSNEEDED(kickerName, _channelName));
         return;
     }
