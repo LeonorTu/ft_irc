@@ -24,6 +24,7 @@ protected:
     bool verboseOutput;
     std::thread serverThread;
     std::mutex outputMutex;
+    std::vector<int> openSockets;
 
     TestSetup(bool verbose = true)
         : verboseOutput(verbose)
@@ -74,6 +75,12 @@ protected:
         delete server;
         server = nullptr;
 
+        // clean up sockets
+        for (auto &socket : openSockets) {
+            if (socket >= 0)
+                close(socket);
+        }
+
         // Restore original cout
         std::cout.rdbuf(originalCoutBuffer);
 
@@ -82,6 +89,26 @@ protected:
             std::cerr << "Captured output: " << std::endl;
             std::cerr << capturedOutput.str() << std::endl;
         }
+    }
+
+    int basicCreator = -1;
+    int basicRegular1 = -1;
+
+    // basicCreator (op) and basicRegular1 clients, joined to #test
+    void basicSetupTwo()
+    {
+        // Register both clients with different nicknames
+        basicCreator = connectClient();
+        basicRegular1 = connectClient();
+
+        // Make sure clients are connected successfully
+        ASSERT_GT(basicCreator, 0);
+        ASSERT_GT(basicRegular1, 0);
+        registerClient(basicCreator, "basicCreator");
+        registerClient(basicRegular1, "basicRegular1");
+        sendCommand(basicCreator, "JOIN #test");
+        sendCommand(basicRegular1, "JOIN #test");
+        clearServerOutput();
     }
 
     // Helper function to connect a client
@@ -93,6 +120,7 @@ protected:
                 std::cerr << "Error creating socket" << std::endl;
             return -1;
         }
+        openSockets.push_back(clientSocket);
 
         struct sockaddr_in serverAddr;
         memset(&serverAddr, 0, sizeof(serverAddr));

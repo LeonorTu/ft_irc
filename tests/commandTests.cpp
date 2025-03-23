@@ -1,18 +1,3 @@
-#include <gtest/gtest.h>
-#include <Server.hpp>
-#include <thread>
-#include <chrono>
-#include <mutex>
-#include <atomic>
-#include <vector>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <cstring>
-#include <common.hpp>
-#include <sstream>
-#include <fcntl.h>
 #include <ChannelManager.hpp>
 #include "TestSetup.hpp"
 
@@ -139,6 +124,60 @@ TEST_F(TestSetup, TestTopic)
     sendCommand(client1, "TOPIC #test :mew topic");
 
     EXPECT_TRUE(outputContains("user1!testuser@127.0.0.1 TOPIC #test :mew topic"));
+    clearServerOutput();
+}
+
+TEST_F(TestSetup, NickChangeOp)
+{
+    basicSetupTwo();
+
+    // operator status stays through a nick change
+    sendCommand(basicCreator, "NICK creator");
+    sendCommand(basicCreator, "MODE #test +o basicRegular1");
+    // no ERR_CHANOPRIVSNEEDED message in the output
+    EXPECT_FALSE(outputContains("482"));
+    clearServerOutput();
+}
+
+TEST_F(TestSetup, NameStealOp)
+{
+    basicSetupTwo();
+
+    // op changes name to creator
+    sendCommand(basicCreator, "NICK creator");
+    // regular non-op changes name to the old creators op name
+    sendCommand(basicRegular1, "NICK basicCreator");
+    // op status should not be enabled by name for basicRegular now
+    sendCommand(basicRegular1, "MODE #test +l 2");
+    // ERR_CHANOPRIVSNEEDED message should be in the output
+    EXPECT_TRUE(outputContains("482"));
+    clearServerOutput();
+}
+
+TEST_F(TestSetup, NickChangeOp)
+{
+    basicSetupTwo();
+
+    // operator status stays through a nick change
+    sendCommand(basicCreator, "NICK creator");
+    sendCommand(basicCreator, "MODE #test +o basicRegular1");
+    // no ERR_CHANOPRIVSNEEDED message in the output
+    EXPECT_FALSE(outputContains("482"));
+    clearServerOutput();
+}
+
+TEST_F(TestSetup, NameStealOp)
+{
+    basicSetupTwo();
+
+    // op changes name to creator
+    sendCommand(basicCreator, "NICK creator");
+    // regular non-op changes name to the old creators op name
+    sendCommand(basicRegular1, "NICK basicCreator");
+    // op status should not be enabled by name for basicRegular now
+    sendCommand(basicRegular1, "MODE #test +l 2");
+    // ERR_CHANOPRIVSNEEDED message should be in the output
+    EXPECT_TRUE(outputContains("482"));
     clearServerOutput();
 }
 
