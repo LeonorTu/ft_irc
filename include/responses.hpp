@@ -241,7 +241,7 @@ inline std::string ERR_NICKNAMEINUSE(const std::string &client, const std::strin
 inline std::string ERR_USERNOTINCHANNEL(const std::string &client, const std::string &nickname,
                                         const std::string &channel)
 {
-    return "441 " + client + " " + nickname + " " + channel + ": They aren't on that channel";
+    return "441 " + client + " " + nickname + " " + channel + " :They aren't on that channel";
 }
 
 inline std::string ERR_NOTONCHANNEL(const std::string &client, const std::string &channel)
