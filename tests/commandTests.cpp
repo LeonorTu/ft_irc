@@ -141,3 +141,69 @@ TEST_F(TestSetup, TestTopic)
     EXPECT_TRUE(outputContains("user1!testuser@127.0.0.1 TOPIC #test :mew topic"));
     clearServerOutput();
 }
+
+TEST_F(TestSetup, InviteCommand)
+{
+    // Register both clients with different nicknames
+    int client1 = connectClient();
+    int client2 = connectClient();
+
+    // Make sure clients are connected successfully
+    ASSERT_GT(client1, 0);
+    ASSERT_GT(client2, 0);
+
+    // Register clients
+    registerClient(client1, "user1");
+    registerClient(client2, "user2");
+
+    // Client1 creates and joins a channel
+    sendCommand(client1, "JOIN #invitetest");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 JOIN #invitetest"));
+    clearServerOutput();
+
+    // Client1 invites client2 to the channel
+    sendCommand(client1, "INVITE user2 #invitetest");
+
+    // Check for proper invite notification
+    EXPECT_TRUE(outputContains("341 user1 user2 #invitetest")); // RPL_INVITING to user1
+    EXPECT_TRUE(
+        outputContains(":user1!testuser@127.0.0.1 INVITE user2 #invitetest")); // INVITE to user2
+    clearServerOutput();
+
+    // Client2 joins the channel using the invitation
+    sendCommand(client2, "JOIN #invitetest");
+    EXPECT_TRUE(outputContains(":user2!testuser@127.0.0.1 JOIN #invitetest"));
+    clearServerOutput();
+
+    // Test error case: Try to invite client2 again (already in channel)
+    sendCommand(client1, "INVITE user2 #invitetest");
+    EXPECT_TRUE(outputContains("443 user1 user2 #invitetest :is already on channel"));
+    clearServerOutput();
+
+    // Test error case: Client2 tries to invite non-existent user
+    sendCommand(client2, "INVITE nonexistentuser #invitetest");
+    EXPECT_TRUE(outputContains("401 user2 nonexistentuser :No such nick"));
+    clearServerOutput();
+
+    // Test invite-only channel
+    // First, set the channel to invite-only
+    sendCommand(client1, "MODE #invitetest +i");
+    clearServerOutput();
+
+    // Have client2 part the channel, then try to rejoin (should fail without invite)
+    sendCommand(client2, "PART #invitetest");
+    clearServerOutput();
+
+    sendCommand(client2, "JOIN #invitetest");
+    EXPECT_TRUE(outputContains("473 user2 #invitetest :Cannot join channel (+i)"));
+    clearServerOutput();
+
+    // Have client1 (who's still in the channel) invite client2
+    sendCommand(client1, "INVITE user2 #invitetest");
+    clearServerOutput();
+
+    // Now client2 should be able to join
+    sendCommand(client2, "JOIN #invitetest");
+    EXPECT_TRUE(outputContains(":user2!testuser@127.0.0.1 JOIN #invitetest"));
+    clearServerOutput();
+}
