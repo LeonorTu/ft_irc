@@ -730,3 +730,86 @@ TEST_F(TestSetup, PartCommandComprehensive)
     EXPECT_TRUE(outputContains("482 user1 #opmodetest :You're not channel operator"));
     clearServerOutput();
 }
+
+TEST_F(TestSetup, QuitCommandComprehensive)
+{
+    // Register multiple clients
+    int client1 = connectClient();
+    int client2 = connectClient();
+    int client3 = connectClient();
+
+    // Make sure clients are connected successfully
+    ASSERT_GT(client1, 0);
+    ASSERT_GT(client2, 0);
+    ASSERT_GT(client3, 0);
+
+    // Register clients
+    registerClient(client1, "user1");
+    registerClient(client2, "user2");
+    registerClient(client3, "user3");
+    clearServerOutput();
+
+    // Setup: Create channels and join them
+    sendCommand(client1, "JOIN #quitchan1");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 JOIN #quitchan1"));
+    clearServerOutput();
+
+    sendCommand(client2, "JOIN #quitchan1");
+    EXPECT_TRUE(outputContains(":user2!testuser@127.0.0.1 JOIN #quitchan1"));
+    clearServerOutput();
+
+    // Test 1: Basic QUIT command with default reason
+    sendCommand(client1, "QUIT");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 QUIT"));
+    clearServerOutput();
+
+    // Test 2: Verify client1 cannot send commands after quitting
+    // This test is tricky because the socket is already closed
+    // We'll rely on the next tests to verify the client is gone
+
+    // Test 5: QUIT with specific reason
+    sendCommand(client2, "QUIT :Goodbye cruel world");
+    EXPECT_TRUE(outputContains(":user2!testuser@127.0.0.1 QUIT :Quit: Goodbye cruel world"));
+    clearServerOutput();
+
+    // Test 6: Client3 tries to join the abandoned channel
+    // If the implementation auto-removes empty channels, this will create a new one
+    // If not, this will join the existing one
+    sendCommand(client3, "JOIN #quitchan1");
+    EXPECT_TRUE(outputContains(":user3!testuser@127.0.0.1 JOIN #quitchan1"));
+    // Should now be operator if it's a new channel
+    sendCommand(client3, "MODE #quitchan1 +i");
+    // If joining as an operator works, this command should succeed
+    EXPECT_TRUE(outputContains("MODE #quitchan1 +i"));
+    clearServerOutput();
+
+    // Test 7: New clients joining after everyone quit
+    int client4 = connectClient();
+    ASSERT_GT(client4, 0);
+    registerClient(client4, "user4");
+    clearServerOutput();
+
+    // Test 8: Quitting without being in any channels
+    sendCommand(client4, "QUIT :Just passing through");
+    EXPECT_TRUE(outputContains(":user4!testuser@127.0.0.1 QUIT :Quit: Just passing through"));
+    clearServerOutput();
+
+    // Test 9: Quitting when in multiple channels
+    int client5 = connectClient();
+    ASSERT_GT(client5, 0);
+    registerClient(client5, "user5");
+
+    // Join multiple channels
+    sendCommand(client5, "JOIN #multichan1,#multichan2,#multichan3");
+    clearServerOutput();
+
+    // Make sure client3 joins one of the same channels to verify broadcast
+    sendCommand(client3, "JOIN #multichan1");
+    clearServerOutput();
+
+    // Then quit
+    sendCommand(client5, "QUIT :Leaving multiple channels");
+    // Client3 should receive the quit message
+    EXPECT_TRUE(outputContains(":user5!testuser@127.0.0.1 QUIT :Quit: Leaving multiple channels"));
+    clearServerOutput();
+}
