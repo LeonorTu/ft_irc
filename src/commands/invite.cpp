@@ -14,6 +14,5 @@ void CommandRunner::invite()
 
     Client &targetClient = _clients.getByNick(targetNickname);
     Channel &channel = _channels.getChannel(channelName);
-
     channel.invite(_client, targetClient);
 }

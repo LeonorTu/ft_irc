@@ -157,7 +157,14 @@ bool IRCValidator::isValidTarget(const std::unordered_map<WhichType, std::string
 bool IRCValidator::isValidText(int clientFd, const std::string &nickname,
                                const std::string &message)
 {
-    if (!isPrintable(clientFd, nickname, message, TEXT_LIMIT))
+    // std::regex printablePattern("[[:print:]]*");
+    if (message.empty()) {
+        sendToClient(clientFd, ERR_NOTEXTTOSEND(nickname));
         return false;
+    }
+    // if (!std::regex_match(message, printablePattern)) {
+    //     sendToClient(clientFd, ERR_INVALIDTEXT(nickname, message));
+    //     return false;
+    // }
     return true;
 }

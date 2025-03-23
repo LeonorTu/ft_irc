@@ -825,3 +825,112 @@ TEST_F(TestSetup, QuitCommandComprehensive)
     EXPECT_TRUE(outputContains(":user5!testuser@127.0.0.1 QUIT :Quit: Leaving multiple channels"));
     clearServerOutput();
 }
+
+TEST_F(TestSetup, TestPrivmsgEdgeCases)
+{
+    // Register both clients with different nicknames
+    int client1 = connectClient();
+    int client2 = connectClient();
+
+    // Make sure clients are connected successfully
+    ASSERT_GT(client1, 0);
+    ASSERT_GT(client2, 0);
+    registerClient(client1, "user1");
+    registerClient(client2, "user2");
+    sendCommand(client1, "JOIN #test");
+    sendCommand(client2, "JOIN #test");
+    clearServerOutput();
+
+    // Sending a message to a non-existent user
+    sendCommand(client1, "PRIVMSG nonExistentUser :Hello");
+    EXPECT_TRUE(outputContains("401 user1 nonExistentUser :No such nick/channel"));
+    clearServerOutput();
+
+    // Sending a message to yourself
+    sendCommand(client1, "PRIVMSG user1 :Hello myself");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 PRIVMSG user1 :Hello myself"));
+    clearServerOutput();
+
+    // Sending a message to a channel you are not part of
+    sendCommand(client1, "PRIVMSG #nonExistentChannel :Hello");
+    EXPECT_TRUE(outputContains("403 user1 #nonExistentChannel :No such channel"));
+    clearServerOutput();
+
+    // Sending a message with special characters
+    sendCommand(client1, "PRIVMSG #test :Hello, world! @#$%^&*()");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 PRIVMSG #test :Hello, world! @#$%^&*()"));
+    clearServerOutput();
+
+    // Sending a message with maximum length
+    std::string longMessage(299, 'a'); // Assuming 512 is the max length
+    sendCommand(client1, "PRIVMSG #test :" + longMessage);
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 PRIVMSG #test :" + longMessage));
+    clearServerOutput();
+
+    // Sending a message with empty content
+    sendCommand(client1, "PRIVMSG #test :");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 PRIVMSG #test :"));
+    clearServerOutput();
+
+    // Test sending PRIVMSG without a target
+    sendCommand(client1, "PRIVMSG");
+    EXPECT_TRUE(outputContains("461 user1 PRIVMSG :Not enough parameters"));
+    clearServerOutput();
+
+    // Test sending PRIVMSG without a message text
+    sendCommand(client1, "PRIVMSG #test");
+    EXPECT_TRUE(outputContains("461 user1 PRIVMSG :Not enough parameters"));
+    clearServerOutput();
+
+    // Test sending message with invalid command format
+    sendCommand(client1, "PRIVMSG #test Hello without colon");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 PRIVMSG #test :Hello"));
+    clearServerOutput();
+
+    // Test sending message to an invalid target (nickname with invalid characters)
+    sendCommand(client1, "PRIVMSG user@1 :Hello");
+    EXPECT_TRUE(outputContains("432 user1 user@1 :Erroneus nickname"));
+    clearServerOutput();
+
+    // Sending a NOTICE to a channel
+    sendCommand(client1, "NOTICE #test :This is a notice message");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 NOTICE #test :This is a notice message"));
+    clearServerOutput();
+
+    // Sending a NOTICE to a user
+    sendCommand(client1, "NOTICE user2 :This is a direct notice");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 NOTICE user2 :This is a direct notice"));
+    clearServerOutput();
+
+    // Checking that NOTICE doesn't produce errors for nonexistent targets
+    sendCommand(client1, "NOTICE nonexistentuser :Notices should not error");
+    // NOTICE should not generate "No such nick" errors
+    EXPECT_FALSE(outputContains("401"));
+    clearServerOutput();
+
+    // Checking message delivery to channel members
+    int client3 = connectClient();
+    ASSERT_GT(client3, 0);
+    registerClient(client3, "user3");
+    sendCommand(client3, "JOIN #test");
+    clearServerOutput();
+
+    // Send message and check all channel members receive it
+    sendCommand(client1, "PRIVMSG #test :Message to all channel members");
+    // Wait for all recipients to receive the message
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    // Check both other clients received the message
+    EXPECT_TRUE(
+        outputContains(":user1!testuser@127.0.0.1 PRIVMSG #test :Message to all channel members"));
+    clearServerOutput();
+
+    // Check multi-target handling with one valid and one invalid target
+    sendCommand(client1, "PRIVMSG user2,nonexistent :Message to valid and invalid");
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    // Valid recipient should get the message
+    EXPECT_TRUE(
+        outputContains(":user1!testuser@127.0.0.1 PRIVMSG user2 :Message to valid and invalid"));
+    // Invalid recipient should generate an error
+    EXPECT_TRUE(outputContains("401 user1 nonexistent :No such nick/channel"));
+    clearServerOutput();
+}

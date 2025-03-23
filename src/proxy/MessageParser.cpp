@@ -2,6 +2,7 @@
 #include <CommandRunner.hpp>
 #include <responses.hpp>
 #include <Client.hpp>
+#include <Error.hpp>
 
 MessageParser::MessageParser(int clientFd, const std::string &rawString)
     : _context({})
@@ -62,10 +63,8 @@ void MessageParser::checkSource(std::istringstream &iss)
 
 void MessageParser::storeCommand(std::istringstream &iss)
 {
-    // automatically store the first word as the command (ignoring leading whitespace)
     if (!(iss >> _context.command)) {
-        std::cerr << "Error storing command" << std::endl;
-        return;
+        throw MessageError("Error storing command");
     }
 }
 

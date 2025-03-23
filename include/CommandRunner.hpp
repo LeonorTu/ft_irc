@@ -67,8 +67,9 @@ private:
     void silentIgnore();
     void invite();
     void privmsg();
+    void notice();
 
-    //utils
+    // utils
     void leaveAllChannels();
     void handleJoinChannel(const std::string &channelName, const std::string &key);
 

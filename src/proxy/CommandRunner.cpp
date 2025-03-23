@@ -81,7 +81,7 @@ std::unordered_map<WhichType, std::string> CommandRunner::splitTargets(std::stri
     for (int i = 0; i < MAXTARGETS; i++){
 
         std::getline(iss, tmp, ',');
-        if (target[0] == CHANTYPES[0] || target[0] == CHANTYPES[1]) {
+        if (tmp[0] == CHANTYPES[0] || tmp[0] == CHANTYPES[1]) {
             type = static_cast<WhichType>(CHANNEL);
         }
         else {
@@ -230,7 +230,7 @@ void CommandRunner::initCommandMap()
     _commandRunners["PONG"] = &CommandRunner::pong;
     _commandRunners["KICK"] = &CommandRunner::kick;
     _commandRunners["PRIVMSG"] = &CommandRunner::privmsg;
-    // _commandRunners["NOTICE"] = &CommandRunner::notice;
+    _commandRunners["NOTICE"] = &CommandRunner::notice;
     // _commandRunners["WHO"] = &CommandRunner::who;
     // _commandRunners["WHOIS"] = &CommandRunner::whois;}
     _mapInitialized = true;

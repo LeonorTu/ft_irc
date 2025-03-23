@@ -3,10 +3,6 @@
 #include <responses.hpp>
 #include <ClientIndex.hpp>
 #include <Client.hpp>
-#include <Channel.hpp>
-#include <unordered_map>
-#include <chrono>
-// #include <connectionManager.hpp>
 
 class ConnectionManager;
 class PongManager

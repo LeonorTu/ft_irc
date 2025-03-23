@@ -1,13 +1,14 @@
 #if defined(__linux__)
 #include <EventLoopEpoll.hpp>
 #include <common.hpp>
+#include <Error.hpp>
 
 EventLoopEpoll::EventLoopEpoll()
     : _epollFd(epoll_create1(0))
     , _eventsToTrack(EPOLLIN | EPOLLET)
 {
     if (_epollFd < 0) {
-        std::cerr << "epoll create error" << std::endl;
+        throw EventError("epoll create error");
     }
 }
 
@@ -22,14 +23,14 @@ void EventLoopEpoll::addToWatch(int fd)
     ev.data.fd = fd;
     ev.events = _eventsToTrack;
     if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, fd, &ev) == -1) {
-        std::cerr << "Failed to add fd to epoll: " << strerror(errno) << std::endl;
+        throw EventError("Failed to add fd to epoll: " + std::string(strerror(errno)));
     }
 }
 
 void EventLoopEpoll::removeFromWatch(int fd)
 {
     if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, NULL) == -1) {
-        std::cerr << "Failed to remove fd from epoll: " << strerror(errno) << std::endl;
+        throw EventError("Failed to remove fd from epoll: " + std::string(strerror(errno)));
     }
 }
 
@@ -40,7 +41,7 @@ std::vector<Event> EventLoopEpoll::waitForEvents(int timeoutMs)
     int nfds = epoll_wait(_epollFd, epollEvents, EPOLL_MAX_EVENTS, timeoutMs);
     if (nfds < 0) {
         if (errno != EINTR) {
-            std::cerr << "epoll failed: " << strerror(errno) << std::endl;
+            throw EventError("epoll failed: " + std::string(strerror(errno)));
         }
         return results;
     }
