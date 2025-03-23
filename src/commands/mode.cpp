@@ -33,15 +33,14 @@ void CommandRunner::mode()
                     sendToClient(_clientFd, ERR_NEEDMOREPARAMS(_client.getNickname(), "MODE"));
                     return;
                 }
-                IRCValidator validator;
                 std::string param = params[i++];
                 if (mode == 'k' &&
-                    (param.empty() || !validator.isValidChannelKey(_clientFd, _nickname, param))) {
+                    (param.empty() || !IRCValidator::isValidChannelKey(_clientFd, _nickname, param))) {
                     return;
                 }
                 if (mode == 'o' && nickNotFound(param))
                     return;
-                if (mode == 'l' && !validator.isValidChannelLimit(param))
+                if (mode == 'l' && !IRCValidator::isValidChannelLimit(param))
                     return;
                 channel.setMode(_client, adding, mode, param);
             }

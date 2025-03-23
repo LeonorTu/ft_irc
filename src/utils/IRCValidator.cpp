@@ -32,10 +32,22 @@ bool IRCValidator::isValidChannelName(int clientFd, const std::string &channelNa
     return true;
 }
 
+bool IRCValidator::isValidTopic(int clientFd, const std::string &nickname, std::string &text)
+{
+    std::regex printablePattern("[[:print:]]*");
+    if (text.length() > TOPICLEN)
+        text = text.substr(0, TOPICLEN);
+    if (!std::regex_match(text, printablePattern)) {
+        sendToClient(clientFd, ERR_INVALIDTEXT(nickname, text));
+        return false;
+    }
+    return true;
+}
+
 bool IRCValidator::isPrintable(int clientFd, const std::string &nickname, const std::string &text,
                                size_t limit)
 {
-    std::regex printablePattern("[[:print:]]*");
+    std::regex printablePattern("[[:print:]]+");
     if (text.length() > limit || !std::regex_match(text, printablePattern)) {
         sendToClient(clientFd, ERR_INVALIDTEXT(nickname, text));
         return false;
@@ -118,8 +130,8 @@ bool IRCValidator::isValidChannelLimit(const std::string &limit)
         if (numLimit < MIN_CHANNEL_LIMIT || numLimit > MAX_CHANNEL_LIMIT) {
             return false;
         }
-    }catch (const std::exception &e)
-    {
+    }
+    catch (const std::exception &e) {
         return false;
     }
     return true;

@@ -126,7 +126,7 @@ bool CommandRunner::validateParams(size_t min, size_t max,
             break;
 
         case VAL_TOPIC:
-            if (!IRCValidator::isPrintable(_clientFd, _nickname, param, TOPICLEN)) {
+            if (!IRCValidator::isValidTopic(_clientFd, _nickname, param)) {
                 return false;
             }
             break;
