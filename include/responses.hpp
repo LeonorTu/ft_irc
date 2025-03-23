@@ -93,7 +93,7 @@ inline std::string JOIN(const std::string &userHost, const std::string &channel)
 
 inline std::string QUIT(const std::string &userHost, const std::string &reason)
 {
-    return ":" + userHost + " QUIT " + "Quit: :" + reason;
+    return ":" + userHost + " QUIT :" + reason;
 }
 
 inline std::string PART(const std::string &userHost, const std::string &channel,

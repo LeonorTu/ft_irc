@@ -8,7 +8,6 @@ ChannelManager::ChannelManager()
 
 ChannelManager::~ChannelManager()
 {
-    _channels.clear();
     std::cout << "channels cleared" << std::endl;
 }
 

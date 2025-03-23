@@ -117,16 +117,23 @@ void Client::setPasswordVerified(bool verified)
 
 void Client::untrackChannel(Channel *channel)
 {
-    _myChannels.erase(channel->getName());
+    if (channel == nullptr)
+        return;
+    if (!_myChannels.empty())
+        _myChannels.erase(channel->getName());
 }
 
 void Client::trackChannel(Channel *channel)
 {
+    if (channel == nullptr)
+        return;
     _myChannels[channel->getName()] = channel;
 }
 
 bool Client::isOnChannel(Channel *channel)
 {
+    if (channel == nullptr)
+        return false;
     return _myChannels.find(channel->getName()) != this->_myChannels.end();
 }
 
