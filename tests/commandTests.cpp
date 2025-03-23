@@ -129,11 +129,12 @@ TEST_F(TestSetup, TestTopic)
 
 TEST_F(TestSetup, NickChangeOp)
 {
-    basicSetupTwo();
+    std::vector<int> clients = basicSetupMultiple(1);
+    int basicCreator = clients[0];
 
     // operator status stays through a nick change
     sendCommand(basicCreator, "NICK creator");
-    sendCommand(basicCreator, "MODE #test +o basicRegular1");
+    sendCommand(basicCreator, "MODE #test +o basicUser1");
     // no ERR_CHANOPRIVSNEEDED message in the output
     EXPECT_FALSE(outputContains("482"));
     clearServerOutput();
@@ -141,14 +142,16 @@ TEST_F(TestSetup, NickChangeOp)
 
 TEST_F(TestSetup, NameStealOp)
 {
-    basicSetupTwo();
+    std::vector<int> clients = basicSetupMultiple(2);
+    int basicCreator = clients[0];
+    int basicRegular = clients[1];
 
-    // op changes name to creator
+    // op changes name to from basicUser0 creator
     sendCommand(basicCreator, "NICK creator");
-    // regular non-op changes name to the old creators op name
-    sendCommand(basicRegular1, "NICK basicCreator");
+    // regular non-op changes name to the old creators old name
+    sendCommand(basicRegular, "NICK basicUser0");
     // op status should not be enabled by name for basicRegular now
-    sendCommand(basicRegular1, "MODE #test +l 2");
+    sendCommand(basicRegular, "MODE #test +l 2");
     // ERR_CHANOPRIVSNEEDED message should be in the output
     EXPECT_TRUE(outputContains("482"));
     clearServerOutput();
