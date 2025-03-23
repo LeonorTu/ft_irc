@@ -152,7 +152,7 @@ inline std::string RPL_TOPICWHOTIME(const std::string &client, const std::string
 inline std::string RPL_INVITING(const std::string &client, const std::string &nickname,
                                 const std::string &channel)
 {
-    return "341" + client + " " + nickname + " " + channel;
+    return "341 " + client + " " + nickname + " " + channel;
 }
 
 inline std::string RPL_NAMREPLY(const std::string &client, const std::string &channel,
