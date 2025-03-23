@@ -28,23 +28,24 @@ void CommandRunner::mode()
         else if (mode == '-')
             adding = false;
         else {
-            if (mode == 'k' || mode == 'o' || mode == 'l') {
+            if ( mode == 'o'|| (adding && (mode == 'k'|| mode == 'l'))) {
                 if (i >= params.size()) {
                     sendToClient(_clientFd, ERR_NEEDMOREPARAMS(_client.getNickname(), "MODE"));
                     return;
                 }
+                IRCValidator validator;
                 std::string param = params[i++];
-                if (mode == 'k' && (param.empty() || !IRCValidator::isValidChannelKey(
-                                                         _clientFd, _nickname, param))) {
-                    // need to fix IRCValidator send error
-                    sendToClient(_clientFd, ERR_INVALIDKEY(_client.getNickname(), param));
+                if (mode == 'k' &&
+                    (param.empty() || !validator.isValidChannelKey(_clientFd, _nickname, param))) {
                     return;
                 }
                 if (mode == 'o' && nickNotFound(param))
                     return;
+                if (mode == 'l' && !validator.isValidChannelLimit(param))
+                    return;
                 channel.setMode(_client, adding, mode, param);
             }
-            else if (mode == 'i' || mode == 't')
+            else if (mode == 'i' || mode == 't' || (!adding && (mode == 'k' || mode == 'l')))
                 channel.setMode(_client, adding, mode);
         }
     }

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <limits>
 
 // Common constants for the IRC server
 const int MSG_BUFFER_SIZE = 512; // Buffer size for message handling
@@ -23,6 +24,8 @@ const int MAX_PARAMS = 4;
 const int MIN_PASS = 2;
 const int MAX_PASS = 32;
 const int MAXTARGETS = 4;
+const unsigned long MIN_CHANNEL_LIMIT = 1;
+const unsigned long MAX_CHANNEL_LIMIT = std::numeric_limits<unsigned long>::max();
 // server info
 const int SERVER_PORT = 6667;
 const std::string SERVER_NAME = "JAS 42";

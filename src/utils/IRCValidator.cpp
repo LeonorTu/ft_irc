@@ -107,25 +107,43 @@ bool IRCValidator::isValidChannelKey(int clientFd, const std::string &nickname,
     return true;
 }
 
-bool IRCValidator::isValidTarget(const std::unordered_map<WhichType, std::string> &targets, int clientFd, std::string nickname)
+bool IRCValidator::isValidChannelLimit(const std::string &limit)
+{
+    std::regex digitPattern(R"(^\d+$)");
+    if (!std::regex_match(limit, digitPattern)) {
+        return false;
+    }
+    try {
+        unsigned long numLimit = std::stoul(limit);
+        if (numLimit < MIN_CHANNEL_LIMIT || numLimit > MAX_CHANNEL_LIMIT) {
+            return false;
+        }
+    }catch (const std::exception &e)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool IRCValidator::isValidTarget(const std::unordered_map<WhichType, std::string> &targets,
+                                 int clientFd, std::string nickname)
 {
 
     for (auto &it : targets) {
-        if (it.first == CHANNEL)
-        {
-            if(!isValidChannelName(clientFd, it.second))
+        if (it.first == CHANNEL) {
+            if (!isValidChannelName(clientFd, it.second))
                 return false;
         }
-        else if(it.first == NICKNAME)
-        {
-            if(!isValidNickname(clientFd, nickname, it.second))
+        else if (it.first == NICKNAME) {
+            if (!isValidNickname(clientFd, nickname, it.second))
                 return false;
         }
     }
     return true;
 }
 
-bool IRCValidator::isValidText(int clientFd, const std::string &nickname, const std::string &message)
+bool IRCValidator::isValidText(int clientFd, const std::string &nickname,
+                               const std::string &message)
 {
     if (!isPrintable(clientFd, nickname, message, TEXT_LIMIT))
         return false;

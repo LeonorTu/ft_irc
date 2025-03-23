@@ -24,7 +24,9 @@ public:
     static bool isValidPort(const std::string &portStr);
     static bool isValidServerPassword(const std::string &password);
     static bool isValidChannelKey(int clientFd, const std::string &nickname, const std::string &key);
-    static bool isValidTarget(const std::unordered_map<WhichType, std::string> &targets, int clientFd, std::string nickname);
+    bool isValidChannelLimit(const std::string &limit);
+    static bool isValidTarget(const std::unordered_map<WhichType, std::string> &targets,
+                              int clientFd, std::string nickname);
     static bool isValidText(int clientFd, const std::string &nickname, const std::string &message);
 private:
 };
