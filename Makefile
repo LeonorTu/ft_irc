@@ -19,6 +19,7 @@ SRCS				=	src/main.cpp \
                         src/commands/pass.cpp \
                         src/commands/ping.cpp \
                         src/commands/pong.cpp \
+                        src/commands/privmsg.cpp \
                         src/commands/quit.cpp \
                         src/commands/silentIgnore.cpp \
                         src/commands/topic.cpp \
