@@ -64,7 +64,7 @@ void Channel::quit(Client &client, const std::string &reason)
     std::string nick = client.getNickname();
     _connectedClients.erase(nick);
     removeOp(nick);
-    broadcastMessage(quitMessage);
+    broadcastToOthers(client, quitMessage);
 }
 
 void Channel::invite(Client &inviter, Client &target)

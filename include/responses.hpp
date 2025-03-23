@@ -131,6 +131,11 @@ inline std::string KICK(const std::string &userHost, const std::string &target,
     return ":" + userHost + " KICK " + channel + " " + target + " :" + reason;
 }
 
+inline std::string ERROR(const std::string &reason)
+{
+    return "ERROR :" + reason;
+}
+
 /* INFORMATIONAL RESPONSES (RPL_*) */
 inline std::string RPL_NOTOPIC(const std::string &client, const std::string &channel)
 {
@@ -169,7 +174,7 @@ inline std::string RPL_ENDOFNAMES(const std::string &client, const std::string &
 inline std::string RPL_CHANNELMODEIS(const std::string &client, const std::string &channel,
                                      const std::string &modeString)
 {
-    return "324 " + client + " " + channel + " " +  modeString;
+    return "324 " + client + " " + channel + " " + modeString;
 }
 
 inline std::string RPL_CREATIONTIME(const std::string &client, const std::string &channel,

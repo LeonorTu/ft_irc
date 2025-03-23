@@ -781,7 +781,7 @@ TEST_F(TestSetup, QuitCommandComprehensive)
 
     // Test 5: QUIT with specific reason
     sendCommand(client2, "QUIT :Goodbye cruel world");
-    EXPECT_TRUE(outputContains(":user2!testuser@127.0.0.1 QUIT :Quit: Goodbye cruel world"));
+    EXPECT_TRUE(outputContains("ERROR :Quit: Goodbye cruel world"));
     clearServerOutput();
 
     // Test 6: Client3 tries to join the abandoned channel
@@ -803,7 +803,7 @@ TEST_F(TestSetup, QuitCommandComprehensive)
 
     // Test 8: Quitting without being in any channels
     sendCommand(client4, "QUIT :Just passing through");
-    EXPECT_TRUE(outputContains(":user4!testuser@127.0.0.1 QUIT :Quit: Just passing through"));
+    EXPECT_TRUE(outputContains("ERROR :Quit: Just passing through"));
     clearServerOutput();
 
     // Test 9: Quitting when in multiple channels

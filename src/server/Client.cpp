@@ -170,6 +170,7 @@ void Client::forceQuit(const std::string &reason)
         channel->quit(*this, reason);
     }
     _myChannels.clear();
+    sendToClient(_fd, ERROR(reason));
 }
 
 void Client::broadcastMyChannels(const std::string &msg)
