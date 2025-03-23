@@ -279,3 +279,126 @@ TEST_F(TestSetup, KickCommand)
     EXPECT_TRUE(outputContains("401 user1 nonexistentuser :No such nick"));
     clearServerOutput();
 }
+
+TEST_F(TestSetup, ModeCommand)
+{
+    // Register three clients with different nicknames
+    int client1 = connectClient();
+    int client2 = connectClient();
+    int client3 = connectClient();
+
+    // Make sure clients are connected successfully
+    ASSERT_GT(client1, 0);
+    ASSERT_GT(client2, 0);
+    ASSERT_GT(client3, 0);
+
+    // Register clients
+    registerClient(client1, "user1");
+    registerClient(client2, "user2");
+    registerClient(client3, "user3");
+
+    // Client1 creates and joins a channel (becomes operator)
+    sendCommand(client1, "JOIN #modetest");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 JOIN #modetest"));
+    clearServerOutput();
+
+    // Client2 joins the channel
+    sendCommand(client2, "JOIN #modetest");
+    EXPECT_TRUE(outputContains(":user2!testuser@127.0.0.1 JOIN #modetest"));
+    clearServerOutput();
+
+    // Test viewing channel modes (should show default modes)
+    sendCommand(client1, "MODE #modetest");
+    EXPECT_TRUE(outputContains("324 user1 #modetest"));
+    clearServerOutput();
+
+    // Test setting invite-only mode
+    sendCommand(client1, "MODE #modetest +i");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 MODE #modetest +i"));
+    clearServerOutput();
+
+    // Test client3 trying to join (should fail due to +i)
+    sendCommand(client3, "JOIN #modetest");
+    EXPECT_TRUE(outputContains("473 user3 #modetest :Cannot join channel (+i)"));
+    clearServerOutput();
+
+    // Test setting channel key
+    sendCommand(client1, "MODE #modetest +k testkey");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 MODE #modetest +k testkey"));
+    clearServerOutput();
+
+    // Test client3 trying to join with wrong key
+    sendCommand(client1, "INVITE user3 #modetest");
+    sendCommand(client3, "JOIN #modetest wrongkey");
+    EXPECT_TRUE(outputContains("475 user3 #modetest :Cannot join channel (+k)"));
+    clearServerOutput();
+
+    // Test client3 joining with correct key
+    sendCommand(client3, "JOIN #modetest testkey");
+    EXPECT_TRUE(outputContains(":user3!testuser@127.0.0.1 JOIN #modetest"));
+    clearServerOutput();
+
+    // Test protected topic mode
+    sendCommand(client1, "MODE #modetest +t");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 MODE #modetest +t"));
+    clearServerOutput();
+
+    // Test non-operator trying to change topic (should fail due to +t)
+    sendCommand(client2, "TOPIC #modetest :This is a new topic");
+    EXPECT_TRUE(outputContains("482 user2 #modetest :You're not channel operator"));
+    clearServerOutput();
+
+    // Test setting user limit
+    sendCommand(client1, "MODE #modetest +l 3");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 MODE #modetest +l 3"));
+    clearServerOutput();
+
+    // Test client4 trying to join (should fail due to +l)
+    int client4 = connectClient();
+    ASSERT_GT(client4, 0);
+    registerClient(client4, "user4");
+    sendCommand(client1, "INVITE user4 #modetest");
+    sendCommand(client4, "JOIN #modetest testkey");
+    EXPECT_TRUE(outputContains("471 user4 #modetest :Cannot join channel (+l)"));
+    clearServerOutput();
+
+    // Test giving operator status
+    sendCommand(client1, "MODE #modetest +o user2");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 MODE #modetest +o user2"));
+    clearServerOutput();
+
+    // Test new operator changing topic (should now succeed)
+    sendCommand(client2, "TOPIC #modetest :This is a new topic");
+    EXPECT_TRUE(outputContains(":user2!testuser@127.0.0.1 TOPIC #modetest :This is a new topic"));
+    clearServerOutput();
+
+    // Test removing operator status
+    sendCommand(client1, "MODE #modetest -o user2");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 MODE #modetest -o user2"));
+    clearServerOutput();
+
+    // Test removing modes
+    sendCommand(client1, "MODE #modetest -i-t-k-l");
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 MODE #modetest -i"));
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 MODE #modetest -t"));
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 MODE #modetest -k"));
+    EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 MODE #modetest -l"));
+    clearServerOutput();
+
+    // Test viewing channel modes again (should show empty or default modes)
+    sendCommand(client1, "MODE #modetest");
+    EXPECT_TRUE(outputContains("324 user1 #modetest"));
+    EXPECT_FALSE(outputContains("324 user1 #modetest +i"));
+    EXPECT_FALSE(outputContains("324 user1 #modetest +t"));
+    clearServerOutput();
+
+    // Test non-operator trying to set modes
+    sendCommand(client2, "MODE #modetest +i");
+    EXPECT_TRUE(outputContains("482 user2 #modetest :You're not channel operator"));
+    clearServerOutput();
+
+    // Test invalid mode parameter
+    sendCommand(client1, "MODE #modetest +k");
+    EXPECT_TRUE(outputContains("461 user1 MODE :Not enough parameters"));
+    clearServerOutput();
+}
