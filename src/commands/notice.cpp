@@ -9,23 +9,18 @@ void CommandRunner::notice()
     _message = _params[1];
     for (auto &[type, target] : _targets) {
         if (type == CHANNEL) {
-            Channel *channel = nullptr;
-            try {
-                channel = &_channels.getChannel(target);
-            }
-            catch (const ChannelNotFound &e) {
+            if (!_channels.channelExists(target))
                 continue;
-            }
-            channel->broadcastToOthers(_client, ":" + _client.getUserHost() + " NOTICE " +
-                                                    channel->getName() + " :" + _message);
+            Channel &channel = _channels.getChannel(target);
+            channel.broadcastToOthers(_client,
+                                      NOTICE(_client.getUserHost(), channel.getName(), _message));
         }
         else if (type == NICKNAME) {
-            if (!_clients.nickExists(target)) {
+            if (!_clients.nickExists(target))
                 continue;
-            }
             Client &targetClient = _clients.getByNick(target);
-            sendToClient(targetClient.getFd(), ":" + _client.getUserHost() + " NOTICE " +
-                                                   targetClient.getNickname() + " :" + _message);
+            sendToClient(targetClient.getFd(),
+                         NOTICE(_client.getUserHost(), targetClient.getNickname(), _message));
         }
     }
 }

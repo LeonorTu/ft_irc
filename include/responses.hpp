@@ -131,6 +131,18 @@ inline std::string KICK(const std::string &userHost, const std::string &target,
     return ":" + userHost + " KICK " + channel + " " + target + " :" + reason;
 }
 
+inline std::string PRIVMSG(const std::string &userHost, const std::string &target,
+                           const std::string &msg)
+{
+    return ":" + userHost + " PRIVMSG " + target + " :" + msg;
+}
+
+inline std::string NOTICE(const std::string &userHost, const std::string &target,
+                          const std::string &msg)
+{
+    return ":" + userHost + " PRIVMSG " + target + " :" + msg;
+}
+
 inline std::string ERROR(const std::string &reason)
 {
     return "ERROR :" + reason;
