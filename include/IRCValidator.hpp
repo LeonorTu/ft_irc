@@ -27,7 +27,7 @@ public:
     static bool isValidChannelKey(int clientFd, const std::string &nickname,
                                   const std::string &key);
     static bool isValidChannelLimit(const std::string &limit);
-    static bool isValidTarget(const std::unordered_map<WhichType, std::string> &targets,
+    static bool isValidTarget(const std::unordered_multimap<WhichType, std::string> &targets,
                               int clientFd, std::string nickname);
     static bool isValidText(int clientFd, const std::string &nickname, const std::string &message);
 

@@ -9,7 +9,6 @@ void CommandRunner::privmsg()
 
     for (auto &[type,target] : _targets)
     {
-        // std::cout << "Target: " << target << std::endl;
         if(type == CHANNEL)
         {
             Channel *channel = nullptr;

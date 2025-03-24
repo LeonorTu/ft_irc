@@ -72,22 +72,25 @@ void CommandRunner::execute()
 }
 
 
-std::unordered_map<WhichType, std::string> CommandRunner::splitTargets(std::string target)
+std::unordered_multimap<WhichType, std::string> CommandRunner::splitTargets(std::string target)
 {
-    std::unordered_map<WhichType, std::string> targets;
+    std::unordered_multimap<WhichType, std::string> targets;
     std::istringstream iss(target);
     std::string tmp;
     WhichType type;
-    for (int i = 0; i < MAXTARGETS; i++){
 
-        std::getline(iss, tmp, ',');
+    for (int i = 0; i < MAXTARGETS; i++)
+    {
+        if (!std::getline(iss, tmp, ',')) {
+            break;
+        }
         if (tmp[0] == CHANTYPES[0] || tmp[0] == CHANTYPES[1]) {
             type = static_cast<WhichType>(CHANNEL);
         }
         else {
             type = static_cast<WhichType>(NICKNAME);
         }
-        targets[type] = tmp;
+        targets.insert(std::make_pair(type, tmp));
     }
     return targets;
 }
@@ -163,7 +166,7 @@ bool CommandRunner::validateParams(size_t min, size_t max,
             break;
 
         case VAL_TEXT:
-            if (!IRCValidator::isPrintable(_clientFd, _nickname, param, MSG_BUFFER_SIZE)) {
+            if (!IRCValidator::isValidText(_clientFd, _nickname, param)) {
                 return false;
             }
             break;
