@@ -5,10 +5,11 @@
 #include <CommandRunner.hpp>
 
 ConnectionManager::ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop,
-                                     ClientIndex &clients)
+                                     ClientIndex &clients, ChannelManager &channels)
     : _clients(clients)
     , _socketManager(socketManager)
     , _EventLoop(EventLoop)
+    , _channels(channels)
 {
     CommandRunner::initCommandMap();
 }
@@ -38,6 +39,7 @@ void ConnectionManager::disconnectClient(Client &client, const std::string &reas
 {
     markClientForDisconnection(client);
     client.forceQuit(reason);
+    _channels.clearNickHistory(client.getNickname());
 }
 
 void ConnectionManager::receiveData(int clientFd)
@@ -52,7 +54,6 @@ void ConnectionManager::receiveData(int clientFd)
         if (bytesRead < 0) {
             if (errno == EPIPE) {
                 throw BrokenPipe("Broken pipe when sending to client " + std::to_string(clientFd));
-
             }
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 // No more data, exit the loop

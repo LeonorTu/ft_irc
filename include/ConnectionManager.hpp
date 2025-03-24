@@ -10,11 +10,13 @@
 #include <EventLoop.hpp>
 #include <MessageParser.hpp>
 #include <PongManager.hpp>
+#include <ChannelManager.hpp>
 
 class ConnectionManager
 {
 public:
-    ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop, ClientIndex &clients);
+    ConnectionManager(SocketManager &socketManager, EventLoop &EventLoop, ClientIndex &clients,
+                      ChannelManager &channels);
     ~ConnectionManager();
 
     void handleNewClient();
@@ -26,9 +28,11 @@ public:
 
     void cleanUp();
 
-    private : ClientIndex &_clients;
+private:
+    ClientIndex &_clients;
     SocketManager &_socketManager;
     EventLoop &_EventLoop;
+    ChannelManager &_channels;
     std::vector<Client *> _clientsToDisconnect;
 
     void extractFullMessages(Client &client, std::string &messageBuffer);

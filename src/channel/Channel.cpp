@@ -333,8 +333,6 @@ bool Channel::hasOp(Client &client)
 void Channel::eraseNickHistory(const std::string &nick)
 {
     _invites.erase(nick);
-    _ops.erase(nick);
-    _connectedClients.erase(nick);
 }
 
 void Channel::updateNick(Client &client, const std::string &newNick)

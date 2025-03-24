@@ -9,7 +9,6 @@
 #include <PongManager.hpp>
 #include <Error.hpp>
 
-
 Server *Server::_instance = nullptr;
 
 Server::Server(int port, std::string password, bool startBlocking)
@@ -24,7 +23,7 @@ Server::Server(int port, std::string password, bool startBlocking)
     , _eventLoop(createEventLoop())
     , _PongManager(std::make_unique<PongManager>())
     , _connectionManager(
-          std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop, *_clients))
+          std::make_unique<ConnectionManager>(*_socketManager, *_eventLoop, *_clients, *_channels))
     , _createdTime(getCurrentTime())
 {
     // setup signalshandlers
@@ -49,12 +48,10 @@ Server::~Server() noexcept
 {
     _connectionManager->cleanUp();
     _socketManager->closeServerSocket();
-    try
-    {
+    try {
         _eventLoop->removeFromWatch(_serverFd);
     }
-    catch(const EventError& e)
-    {
+    catch (const EventError &e) {
         std::cerr << e.what() << '\n';
     }
     std::cout << "Server shutdown complete" << std::endl;
