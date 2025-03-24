@@ -84,6 +84,7 @@ private:
 
     // common error handlers
     bool nickNotFound(std::string &nickname);
+    bool nickNotInChannel(Channel &channel, std::string &target);
     bool nickInUse(std::string &nickname);
     bool channelNotFound(std::string &channel);
     bool channelInUse(std::string &channel);

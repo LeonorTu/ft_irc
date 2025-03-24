@@ -53,6 +53,10 @@ void CommandRunner::processModeString(Channel &channel, const std::string &modeS
             continue;
         }
 
+        if (std::string("iklot").find(mode) == std::string::npos) {
+            continue; // Skip this mode character
+        }
+
         if (needsParameter(mode, adding)) {
             if (paramIndex >= params.size()) {
                 sendToClient(_clientFd, ERR_NEEDMOREPARAMS(_client.getNickname(), "MODE"));
@@ -63,7 +67,7 @@ void CommandRunner::processModeString(Channel &channel, const std::string &modeS
                 (param.empty() || !IRCValidator::isValidChannelKey(_clientFd, _nickname, param))) {
                 return;
             }
-            if (mode == 'o' && nickNotFound(param)) {
+            if (mode == 'o' && (nickNotFound(param) || nickNotInChannel(channel, param))) {
                 return;
             }
             if (mode == 'l' && !IRCValidator::isValidChannelLimit(param)) {
