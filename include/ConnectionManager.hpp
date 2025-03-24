@@ -19,7 +19,7 @@ public:
 
     void handleNewClient();
     void disconnectClient(Client &client, const std::string &reason);
-    void recieveData(int clientFd);
+    void receiveData(int clientFd);
     std::vector<Client *> &getDisconnectedClients();
     void markClientForDisconnection(Client &client);
     void rmDisconnectedClients();

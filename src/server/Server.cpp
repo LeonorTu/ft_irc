@@ -36,7 +36,6 @@ Server::Server(int port, std::string password, bool startBlocking)
 
     _serverFd = getSocketManager().initialize();
     if (_serverFd < 0) {
-        // std::cerr << "server failed to start" << std::endl;
         throw ServerError("Server failed to start");
         return;
     }
@@ -67,56 +66,50 @@ void Server::loop()
     int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                       std::chrono::steady_clock::now().time_since_epoch())
                       .count();
-    ConnectionManager &connection = getConnectionManager();
     while (_running) {
-        std::vector<Event> events = getEventLoop().waitForEvents(100);
-        for (const Event &event : events) {
-            if (event.fd == _serverFd) {
-                Error::handleNewClientError(connection); 
+        try{
+            std::vector<Event> events = getEventLoop().waitForEvents(100);
+            for (const Event &event : events) {
+                if (event.fd == _serverFd) {
+                    getConnectionManager().handleNewClient();
+                }
+                else {
+                    getConnectionManager().receiveData(event.fd);
+                }
             }
-            else {
-                Error::receiveDataError(connection, event.fd);
+            pingSchedule(now);
+            getConnectionManager().rmDisconnectedClients();
+            getChannels().rmEmptyChannels();
+            if (_paused) {
+                std::cout << "Server paused. Waiting for SIGTSTP to resume..." << std::endl;
+                while (_paused && _running) {
+                    sleep(1);
+                }
+                std::cout << "Server resumed!" << std::endl;
             }
         }
-        pingSchedule(now);
-        getConnectionManager().rmDisconnectedClients();
-        getChannels().rmEmptyChannels();
-        if (_paused) {
-            std::cout << "Server paused. Waiting for SIGTSTP to resume..." << std::endl;
-            while (_paused && _running) {
-                sleep(1);
-            }
-            std::cout << "Server resumed!" << std::endl;
+        catch(const std::exception& e)
+        {
+            Error::catchError(e);
+        }
+        catch(...)
+        {
+            std::cerr << "Unknown error : " << std::endl;
         }
     }
 }
-
-// void Server::sendPingToInactivityClients(int timeoutMs, const int pingTimeout)
-// {
-//     // Check for inactive clients and send PING if needed
-//     getClients().forEachClient([this, timeoutMs](Client &client) {
-//         if (client.getTimeForNoActivity() > timeoutMs) {
-//             std::cout << "Client " << client.getNickname() << " inactive for "
-//                       << client.getTimeForNoActivity() / 1000 << " seconds. Sending PING."
-//                       << std::endl;
-//             getPongManager().sendPingToClient(client);
-//         }
-//     });
-// }
 
 void Server::pingSchedule(int64_t &last_ping)
 {
     int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                       std::chrono::steady_clock::now().time_since_epoch())
                       .count();
-    const int pingCheckInterval = 120 * 1000;
-    const int pingTimeout = 60 * 1000;
-    // const int inactivityTimeout = 120 * 1000;
+    const int pingCheckInterval = PING_INTERVAL_SEC * 1000;
+    const int pingTimeout = PING_TIMEOUT_SEC * 1000;
     if (now - last_ping > pingCheckInterval) {
         getPongManager().sendPingToAllClients(*_clients);
         last_ping = now;
     }
-    // getConnectionManager().checkInactivityClients(inactivityTimeout);
     getPongManager().checkAllPingTimeouts(pingTimeout, *_clients, *_connectionManager);
 }
 

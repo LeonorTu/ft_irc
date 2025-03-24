@@ -3,10 +3,10 @@
 
 void CommandRunner::notice()
 {
-    std::array<ParamType, MAX_PARAMS> pattern = {VAL_TARGET, VAL_NONE};
-    if (!validateParams(2, 2, pattern))
+    if (_params.size() != 2)
         return;
-
+    _targets = splitTargets(_params[0]);
+    _message = _params[1];
     for (auto &[type, target] : _targets) {
         if (type == CHANNEL) {
             Channel *channel = nullptr;
