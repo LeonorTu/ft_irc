@@ -137,7 +137,7 @@ bool IRCValidator::isValidChannelLimit(const std::string &limit)
     return true;
 }
 
-bool IRCValidator::isValidTarget(const std::unordered_map<WhichType, std::string> &targets,
+bool IRCValidator::isValidTarget(const std::unordered_multimap<WhichType, std::string> &targets,
                                  int clientFd, std::string nickname)
 {
 
@@ -157,14 +157,14 @@ bool IRCValidator::isValidTarget(const std::unordered_map<WhichType, std::string
 bool IRCValidator::isValidText(int clientFd, const std::string &nickname,
                                const std::string &message)
 {
-    // std::regex printablePattern("[[:print:]]*");
+    std::regex printablePattern("[[:print:]]*");
     if (message.empty()) {
         sendToClient(clientFd, ERR_NOTEXTTOSEND(nickname));
         return false;
     }
-    // if (!std::regex_match(message, printablePattern)) {
-    //     sendToClient(clientFd, ERR_INVALIDTEXT(nickname, message));
-    //     return false;
-    // }
+    if (!std::regex_match(message, printablePattern)) {
+        sendToClient(clientFd, ERR_INVALIDTEXT(nickname, message));
+        return false;
+    }
     return true;
 }
