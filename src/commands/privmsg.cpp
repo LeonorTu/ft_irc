@@ -20,13 +20,18 @@ void CommandRunner::privmsg()
                 sendToClient(_clientFd, ERR_NOSUCHCHANNEL(_nickname, target));
                 continue;
             }
-            channel->broadcastToOthers( _client, ":" + _client.getUserHost() + " PRIVMSG " + target + " :" + _message);
-            std::cout << "Sending message to channel: " << target << std::endl;
-            
+            if (channel->isOnChannel(_client))
+            {
+                channel->broadcastToOthers(_client, ":" + _client.getUserHost() + " PRIVMSG " +
+                                                        target + " :" + _message);
+                std::cout << "Sending message to channel: " << target << std::endl;
+            }
+            else
+                sendToClient(_clientFd, ERR_NOTONCHANNEL(_nickname, target));
         }
         else if (type == NICKNAME)
         {
-            if (!_clients.nickExists(target)) 
+            if (!_clients.nickExists(target))
             {
                 sendToClient(_clientFd, ERR_NOSUCHNICK(_nickname, target));
                 continue;;

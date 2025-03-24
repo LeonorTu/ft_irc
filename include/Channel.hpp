@@ -39,6 +39,7 @@ public:
     bool hasOp(Client &client);
     void eraseNickHistory(const std::string &nick);
     void updateNick(Client &client, const std::string &newNick);
+    bool isOnChannel(Client &client);
 
 private:
     std::string _channelName;
@@ -61,7 +62,6 @@ private:
     void sendTopic(Client &client);
     bool isInvited(Client &client);
     bool isJoinable(Client &client, std::string key);
-    bool isOnChannel(Client &client);
     void removeFromInvites(Client &client);
     void addOp(std::string &nick, const std::string &modeMsg = "");
     void removeOp(const std::string &nick, const std::string &modeMsg = "");
