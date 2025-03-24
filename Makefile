@@ -24,6 +24,8 @@ SRCS				=	src/main.cpp \
                         src/commands/silentIgnore.cpp \
                         src/commands/topic.cpp \
                         src/commands/user.cpp \
+                        src/commands/notice.cpp \
+                        src/error/Error.cpp \
                         src/proxy/CommandRunner.cpp \
                         src/proxy/MessageParser.cpp \
                         src/server/ConnectionManager.cpp \
