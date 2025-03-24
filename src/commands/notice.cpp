@@ -16,16 +16,16 @@ void CommandRunner::notice()
             catch (const ChannelNotFound &e) {
                 continue;
             }
-            channel->broadcastToOthers(_client, ":" + _client.getUserHost() + " NOTICE " + target +
-                                                    " :" + _message);
+            channel->broadcastToOthers(_client, ":" + _client.getUserHost() + " NOTICE " +
+                                                    channel->getName() + " :" + _message);
         }
         else if (type == NICKNAME) {
             if (!_clients.nickExists(target)) {
                 continue;
             }
             Client &targetClient = _clients.getByNick(target);
-            sendToClient(targetClient.getFd(),
-                         ":" + _client.getUserHost() + " NOTICE " + target + " :" + _message);
+            sendToClient(targetClient.getFd(), ":" + _client.getUserHost() + " NOTICE " +
+                                                   targetClient.getNickname() + " :" + _message);
         }
     }
 }
