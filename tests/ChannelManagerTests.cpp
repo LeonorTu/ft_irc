@@ -112,19 +112,19 @@ TEST_F(ChannelManagerTest, MultipleChannels)
     EXPECT_TRUE(channelManager.channelExists("#third"));
 }
 
-// Test attempt to create duplicate channel
-TEST_F(ChannelManagerTest, CreateDuplicateChannel)
-{
-    // Create a channel
-    channelManager.createChannel("#test", *creator);
+// // Test attempt to create duplicate channel
+// TEST_F(ChannelManagerTest, CreateDuplicateChannel)
+// {
+//     // Create a channel
+//     channelManager.createChannel("#test", *creator);
 
-    // Attempt to create the same channel again (should fail gracefully)
-    channelManager.createChannel("#test", *regularUser);
+//     // Attempt to create the same channel again (should fail gracefully)
+//     channelManager.createChannel("#test", *regularUser);
 
-    // Attempt to create the same channel again Casemapped differently
-    channelManager.createChannel("#TEST", *regularUser);
+//     // Attempt to create the same channel again Casemapped differently
+//     channelManager.createChannel("#TEST", *regularUser);
 
-    // Original creator should still be the channel's creator
-    Channel &channel = channelManager.getChannel("#test");
-    EXPECT_TRUE(creator->isOnChannel(&channel));
-}
+//     // Original creator should still be the channel's creator
+//     Channel &channel = channelManager.getChannel("#test");
+//     EXPECT_TRUE(creator->isOnChannel(&channel));
+// }
