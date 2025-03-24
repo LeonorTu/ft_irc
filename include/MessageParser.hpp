@@ -21,7 +21,7 @@ public:
         std::string source;
         std::vector<std::string> params;
     };
-    void parseCommand();
+    void parseCommand(bool test = false);
 
     // getters
     const CommandContext &getContext() const;

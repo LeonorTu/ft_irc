@@ -2,7 +2,6 @@
 #include <unordered_set>
 #include <array>
 
-bool CommandRunner::_mapInitialized = false;
 std::unordered_map<std::string, void (CommandRunner::*)()> CommandRunner::_commandRunners;
 
 CommandRunner::CommandRunner(const MessageParser::CommandContext &ctx)
@@ -20,8 +19,6 @@ CommandRunner::CommandRunner(const MessageParser::CommandContext &ctx)
     , _targets({})
     , _message("")
 {
-    if (!_mapInitialized)
-        initCommandMap();
 }
 
 bool CommandRunner::validateCommandAccess()
@@ -233,7 +230,6 @@ void CommandRunner::initCommandMap()
     _commandRunners["NOTICE"] = &CommandRunner::notice;
     // _commandRunners["WHO"] = &CommandRunner::who;
     // _commandRunners["WHOIS"] = &CommandRunner::whois;}
-    _mapInitialized = true;
 }
 
 bool CommandRunner::canCompleteRegistration()

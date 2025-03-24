@@ -30,6 +30,7 @@ class CommandRunner
 {
 public:
     CommandRunner(const MessageParser::CommandContext &ctx);
+    static void initCommandMap();
     void execute();
 
 private:
@@ -83,9 +84,8 @@ private:
     bool nickInUse(std::string &nickname);
     bool channelNotFound(std::string &channel);
     bool channelInUse(std::string &channel);
+
     // static command map
-    static bool _mapInitialized;
-    static void initCommandMap();
     static std::unordered_map<std::string, void (CommandRunner::*)()> _commandRunners;
 
     // registration

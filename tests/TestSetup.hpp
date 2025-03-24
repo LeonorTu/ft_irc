@@ -91,24 +91,28 @@ protected:
         }
     }
 
-    int basicCreator = -1;
-    int basicRegular1 = -1;
-
-    // basicCreator (op) and basicRegular1 clients, joined to #test
-    void basicSetupTwo()
+    // all names are basicUser(i) eg basicUser0 and basicUser1
+    std::vector<int> basicSetupMultiple(int numUsers)
     {
-        // Register both clients with different nicknames
-        basicCreator = connectClient();
-        basicRegular1 = connectClient();
+        std::vector<int> clients;
 
-        // Make sure clients are connected successfully
-        ASSERT_GT(basicCreator, 0);
-        ASSERT_GT(basicRegular1, 0);
-        registerClient(basicCreator, "basicCreator");
-        registerClient(basicRegular1, "basicRegular1");
-        sendCommand(basicCreator, "JOIN #test");
-        sendCommand(basicRegular1, "JOIN #test");
+        // Create and register the specified number of clients
+        for (int i = 0; i < numUsers; ++i) {
+            int client = connectClient();
+            EXPECT_GT(client, 0);
+            std::string nickname = "basicUser" + std::to_string(i);
+            registerClient(client, nickname);
+            clients.push_back(client);
+
+            // All users join the test channel
+            sendCommand(client, "JOIN #test");
+        }
+
+        // Make the first user (index 0) the channel operator by default
+        // This matches the behavior of basicSetupTwo where basicCreator is the op
+
         clearServerOutput();
+        return clients;
     }
 
     // Helper function to connect a client

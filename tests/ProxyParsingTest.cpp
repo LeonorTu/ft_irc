@@ -23,7 +23,7 @@ TEST(ProxyParsingTest, StandardPrivmsg)
     std::cout << "TEST: " << testString << std::endl;
 
     MessageParser testing(1, testString);
-    testing.parseCommand();
+    testing.parseCommand(true);
 
     EXPECT_EQ(testing.getContext().source, "dan!d@localhost");
     EXPECT_EQ(testing.getContext().command, "PRIVMSG");
@@ -40,7 +40,7 @@ TEST(ProxyParsingTest, PrivmsgWithEmoticon)
     std::cout << "TEST: " << testString << std::endl;
 
     MessageParser testing(1, testString);
-    testing.parseCommand();
+    testing.parseCommand(true);
 
     EXPECT_EQ(testing.getContext().source, "dan!d@localhost");
     EXPECT_EQ(testing.getContext().command, "PRIVMSG");
@@ -57,7 +57,7 @@ TEST(ProxyParsingTest, CapCommand)
     std::cout << "TEST: " << testString << std::endl;
 
     MessageParser testing(1, testString);
-    testing.parseCommand();
+    testing.parseCommand(true);
 
     EXPECT_EQ(testing.getContext().source, "");
     EXPECT_EQ(testing.getContext().command, "CAP");
@@ -74,7 +74,7 @@ TEST(ProxyParsingTest, TaggedPrivmsg)
     std::cout << "TEST: " << testString << std::endl;
 
     MessageParser testing(1, testString);
-    testing.parseCommand();
+    testing.parseCommand(true);
 
     EXPECT_EQ(testing.getContext().source, "dan!d@localhost");
     EXPECT_EQ(testing.getContext().command, "PRIVMSG");
@@ -91,7 +91,7 @@ TEST(ProxyParsingTest, ServerCapabilityListing)
     std::cout << "TEST: " << testString << std::endl;
 
     MessageParser testing(1, testString);
-    testing.parseCommand();
+    testing.parseCommand(true);
 
     EXPECT_EQ(testing.getContext().source, "irc.example.com");
     EXPECT_EQ(testing.getContext().command, "CAP");
@@ -110,7 +110,7 @@ TEST(ProxyParsingTest, MultipleTagsPrivmsg)
     std::cout << "TEST: " << testString << std::endl;
 
     MessageParser testing(1, testString);
-    testing.parseCommand();
+    testing.parseCommand(true);
 
     EXPECT_EQ(testing.getContext().source, "nick!user@host");
     EXPECT_EQ(testing.getContext().command, "PRIVMSG");
@@ -127,7 +127,7 @@ TEST(ProxyParsingEdgeCases, EmptyMessage)
     std::cout << "TEST: Empty message" << std::endl;
 
     MessageParser testing(1, testString);
-    testing.parseCommand();
+    testing.parseCommand(true);
 
     EXPECT_EQ(testing.getContext().source, "");
     EXPECT_EQ(testing.getContext().command, "");
@@ -142,7 +142,7 @@ TEST(ProxyParsingEdgeCases, OnlyWhitespace)
     std::cout << "TEST: Only whitespace" << std::endl;
 
     MessageParser testing(1, testString);
-    testing.parseCommand();
+    testing.parseCommand(true);
 
     EXPECT_EQ(testing.getContext().source, "");
     EXPECT_EQ(testing.getContext().command, "");
@@ -157,7 +157,7 @@ TEST(ProxyParsingEdgeCases, NoSourceJustCommand)
     std::cout << "TEST: No source, just command" << std::endl;
 
     MessageParser testing(1, testString);
-    testing.parseCommand();
+    testing.parseCommand(true);
 
     EXPECT_EQ(testing.getContext().source, "");
     EXPECT_EQ(testing.getContext().command, "PING");
@@ -172,7 +172,7 @@ TEST(ProxyParsingEdgeCases, NoSourceCommandWithParams)
     std::cout << "TEST: No source, command with params" << std::endl;
 
     MessageParser testing(1, testString);
-    testing.parseCommand();
+    testing.parseCommand(true);
 
     EXPECT_EQ(testing.getContext().source, "");
     EXPECT_EQ(testing.getContext().command, "JOIN");
@@ -189,7 +189,7 @@ TEST(ProxyParsingEdgeCases, MultipleParamsWithoutTrailing)
     std::cout << "TEST: " << testString << std::endl;
 
     MessageParser testing(1, testString);
-    testing.parseCommand();
+    testing.parseCommand(true);
 
     EXPECT_EQ(testing.getContext().source, "");
     EXPECT_EQ(testing.getContext().command, "MODE");

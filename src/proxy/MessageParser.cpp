@@ -26,7 +26,7 @@ void MessageParser::executeCommand()
     runner.execute();
 }
 
-void MessageParser::parseCommand()
+void MessageParser::parseCommand(bool test)
 {
     logMessage(_clientFd, _rawString, false);
     _context.clientFd = _clientFd;
@@ -40,7 +40,8 @@ void MessageParser::parseCommand()
     storeCommand(iss);
     param(iss);
 
-    executeCommand();
+    if (!test)
+        executeCommand();
 }
 
 void MessageParser::ignoreTag(std::istringstream &iss)
