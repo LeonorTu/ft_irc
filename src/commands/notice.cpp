@@ -3,7 +3,7 @@
 
 void CommandRunner::notice()
 {
-    std::array<ParamType, MAX_PARAMS> pattern = {VAL_TARGET};
+    std::array<ParamType, MAX_PARAMS> pattern = {VAL_TARGET, VAL_NONE};
     if (!validateParams(2, 2, pattern))
         return;
 

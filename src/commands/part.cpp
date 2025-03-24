@@ -2,10 +2,9 @@
 
 void CommandRunner::part()
 {
-    if (_params.empty()) {
-        sendToClient(_clientFd, ERR_NEEDMOREPARAMS(_client.getNickname(), "PART"));
+    std::array<ParamType, MAX_PARAMS> pattern = {VAL_NONE, VAL_NONE};
+    if (!validateParams(1, 2, pattern))
         return;
-    }
 
     std::istringstream channelList(_params[0]);
     std::string channelName;
