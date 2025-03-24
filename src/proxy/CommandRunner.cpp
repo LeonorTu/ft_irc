@@ -18,8 +18,7 @@ CommandRunner::CommandRunner(const MessageParser::CommandContext &ctx)
     , _params(ctx.params)
     , _targets({})
     , _message("")
-{
-}
+{}
 
 bool CommandRunner::validateCommandAccess()
 {
@@ -68,7 +67,6 @@ void CommandRunner::execute()
     }
 }
 
-
 std::unordered_multimap<WhichType, std::string> CommandRunner::splitTargets(std::string target)
 {
     std::unordered_multimap<WhichType, std::string> targets;
@@ -76,8 +74,7 @@ std::unordered_multimap<WhichType, std::string> CommandRunner::splitTargets(std:
     std::string tmp;
     WhichType type;
 
-    for (int i = 0; i < MAXTARGETS; i++)
-    {
+    for (int i = 0; i < MAXTARGETS; i++) {
         if (!std::getline(iss, tmp, ',')) {
             break;
         }
@@ -176,12 +173,19 @@ bool CommandRunner::validateParams(size_t min, size_t max,
     return true;
 }
 
-
-
 bool CommandRunner::nickNotFound(std::string &target)
 {
     if (!_clients.nickExists(target)) {
         sendToClient(_clientFd, ERR_NOSUCHNICK(_nickname, target));
+        return true;
+    }
+    return false;
+}
+
+bool CommandRunner::nickNotInChannel(Channel &channel, std::string &target)
+{
+    if (!channel.isOnChannel(_clients.getByNick(target))) {
+        sendToClient(_clientFd, ERR_USERNOTINCHANNEL(_nickname, target, channel.getName()));
         return true;
     }
     return false;

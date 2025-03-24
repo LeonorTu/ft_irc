@@ -3,7 +3,6 @@
 
 void CommandRunner::notice()
 {
-    // std::array<ParamType, MAX_PARAMS> pattern = {VAL_NONE};
     if (_params.size() != 2)
         return;
     _targets = splitTargets(_params[0]);
