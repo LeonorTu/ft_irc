@@ -73,6 +73,9 @@ private:
     // utils
     void leaveAllChannels();
     void handleJoinChannel(const std::string &channelName, const std::string &key);
+    bool needsParameter(char mode, bool adding);
+    void processModeString(Channel &channel, const std::string &modeString,
+                           const std::vector<std::string> &params);
 
     // validation
     bool validateCommandAccess();

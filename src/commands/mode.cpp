@@ -2,9 +2,14 @@
 
 void CommandRunner::mode()
 {
+    std::array<ParamType, MAX_PARAMS> pattern = {VAL_CHAN};
+    if (!validateParams(1, 5, pattern))
+        return;
+
     std::string target = _params[0];
     if (CHANTYPES.find(target[0]) == std::string::npos)
         return;
+
     if (!_channels.channelExists(target)) {
         sendToClient(_clientFd, ERR_NOSUCHCHANNEL(_client.getNickname(), target));
         return;
@@ -20,32 +25,54 @@ void CommandRunner::mode()
     if (modeString.empty())
         channel.printModes(_client);
 
+    processModeString(channel, modeString, params);
+}
+
+bool CommandRunner::needsParameter(char mode, bool adding)
+{
+    if (mode == 'o')
+        return true; // Both +o and -o need parameters
+    if (adding && (mode == 'k' || mode == 'l'))
+        return true; // +k and +l need parameters
+
+    return false;
+}
+
+void CommandRunner::processModeString(Channel &channel, const std::string &modeString,
+                                      const std::vector<std::string> &params)
+{
     bool adding = true;
-    size_t i = 0;
+    size_t paramIndex = 0;
     for (char mode : modeString) {
-        if (mode == '+')
+        if (mode == '+') {
             adding = true;
-        else if (mode == '-')
+            continue;
+        }
+        else if (mode == '-') {
             adding = false;
-        else {
-            if ( mode == 'o'|| (adding && (mode == 'k'|| mode == 'l'))) {
-                if (i >= params.size()) {
-                    sendToClient(_clientFd, ERR_NEEDMOREPARAMS(_client.getNickname(), "MODE"));
-                    return;
-                }
-                std::string param = params[i++];
-                if (mode == 'k' &&
-                    (param.empty() || !IRCValidator::isValidChannelKey(_clientFd, _nickname, param))) {
-                    return;
-                }
-                if (mode == 'o' && nickNotFound(param))
-                    return;
-                if (mode == 'l' && !IRCValidator::isValidChannelLimit(param))
-                    return;
-                channel.setMode(_client, adding, mode, param);
+            continue;
+        }
+
+        if (needsParameter(mode, adding)) {
+            if (paramIndex >= params.size()) {
+                sendToClient(_clientFd, ERR_NEEDMOREPARAMS(_client.getNickname(), "MODE"));
+                return;
             }
-            else if (mode == 'i' || mode == 't' || (!adding && (mode == 'k' || mode == 'l')))
-                channel.setMode(_client, adding, mode);
+            std::string param = params[paramIndex++];
+            if (mode == 'k' &&
+                (param.empty() || !IRCValidator::isValidChannelKey(_clientFd, _nickname, param))) {
+                return;
+            }
+            if (mode == 'o' && nickNotFound(param)) {
+                return;
+            }
+            if (mode == 'l' && !IRCValidator::isValidChannelLimit(param)) {
+                return;
+            }
+            channel.setMode(_client, adding, mode, param);
+        }
+        else {
+            channel.setMode(_client, adding, mode);
         }
     }
 }
