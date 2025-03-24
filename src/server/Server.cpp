@@ -46,11 +46,18 @@ Server::Server(int port, std::string password, bool startBlocking)
     }
 }
 
-Server::~Server()
+Server::~Server() noexcept
 {
     _connectionManager->cleanUp();
     _socketManager->closeServerSocket();
-    _eventLoop->removeFromWatch(_serverFd);
+    try
+    {
+        _eventLoop->removeFromWatch(_serverFd);
+    }
+    catch(const EventError& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
     std::cout << "Server shutdown complete" << std::endl;
 }
 

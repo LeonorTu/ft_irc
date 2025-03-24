@@ -18,7 +18,7 @@ class Server
 {
 public:
     Server(int port, std::string password, bool startBlocking = true);
-    ~Server();
+    ~Server() noexcept;
     void loop();
     void shutdown();
 

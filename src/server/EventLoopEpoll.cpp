@@ -30,7 +30,7 @@ void EventLoopEpoll::addToWatch(int fd)
 void EventLoopEpoll::removeFromWatch(int fd)
 {
     if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, NULL) == -1) {
-        // throw EventError("Failed to remove fd from epoll: " + std::string(strerror(errno)));
+        throw EventError("Failed to remove fd from epoll: " + std::string(strerror(errno)));
     }
 }
 

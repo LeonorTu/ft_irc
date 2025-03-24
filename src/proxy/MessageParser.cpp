@@ -34,7 +34,8 @@ void MessageParser::parseCommand(bool test)
         return;
     std::istringstream iss(_rawString);
     iss >> std::ws; // skip whitespace
-
+    if (iss.eof())
+        return;
     ignoreTag(iss);
     checkSource(iss);
     storeCommand(iss);
