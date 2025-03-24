@@ -44,17 +44,6 @@ bool IRCValidator::isValidTopic(int clientFd, const std::string &nickname, std::
     return true;
 }
 
-bool IRCValidator::isPrintable(int clientFd, const std::string &nickname, const std::string &text,
-                               size_t limit)
-{
-    std::regex printablePattern("[[:print:]]+");
-    if (text.length() > limit || !std::regex_match(text, printablePattern)) {
-        sendToClient(clientFd, ERR_INVALIDTEXT(nickname, text));
-        return false;
-    }
-    return true;
-}
-
 bool IRCValidator::isValidUsername(int clientFd, const std::string &nickname, std::string &username)
 {
     if (username.length() > USERLEN) {
@@ -157,7 +146,7 @@ bool IRCValidator::isValidTarget(const std::unordered_multimap<WhichType, std::s
 bool IRCValidator::isValidText(int clientFd, const std::string &nickname,
                                const std::string &message)
 {
-    std::regex printablePattern("[[:print:]]*");
+    std::regex printablePattern("([^\007\r]*)");
     if (message.empty()) {
         sendToClient(clientFd, ERR_NOTEXTTOSEND(nickname));
         return false;

@@ -58,6 +58,15 @@ TEST_F(TestSetup, NickCommandInvalidName)
 
     // Check if error message was sent
     EXPECT_TRUE(outputContains("432 user1 1invalid"));
+
+    clearServerOutput();
+    sendCommand(client, "NICK inva,lid");
+
+    // Wait for response
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    // Check if error message was sent
+    EXPECT_TRUE(outputContains("432 user1 inva,lid"));
 }
 
 // Test nickname too long

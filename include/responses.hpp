@@ -306,7 +306,7 @@ inline std::string ERR_INVITEONLYCHAN(const std::string &client, const std::stri
 
 inline std::string ERR_INVALIDTEXT(const std::string &client, const std::string &text)
 {
-    return "479 " + client + text + " :Invalid  "; // selfmade
+    return "479 " + client + " " + text + " :Invalid  "; // selfmade
 }
 
 inline std::string ERR_CHANOPRIVSNEEDED(const std::string &client, const std::string &channel)

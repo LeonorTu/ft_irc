@@ -34,7 +34,6 @@ TEST_F(TestSetup, TestPrivmsgNonExistentChannel)
     EXPECT_TRUE(outputContains("403 user1 #nonExistentChannel :No such channel"));
 }
 
-
 TEST_F(TestSetup, TestPrivmsgWithSpecialChars)
 {
     int client1 = connectClient();
@@ -242,7 +241,8 @@ TEST_F(TestSetup, TestPrivmsgMaxMultipleTargets)
     registerClient(client6, "user6");
     clearServerOutput();
 
-    sendCommand(client1, "PRIVMSG user1,user2,user3,user4,user5,user6 :Message to valid and invalid");
+    sendCommand(client1,
+                "PRIVMSG user1,user2,user3,user4,user5,user6 :Message to valid and invalid");
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     EXPECT_TRUE(
         outputContains(":user1!testuser@127.0.0.1 PRIVMSG user1 :Message to valid and invalid"));
@@ -252,7 +252,6 @@ TEST_F(TestSetup, TestPrivmsgMaxMultipleTargets)
         outputContains(":user1!testuser@127.0.0.1 PRIVMSG user3 :Message to valid and invalid"));
     EXPECT_TRUE(
         outputContains(":user1!testuser@127.0.0.1 PRIVMSG user4 :Message to valid and invalid"));
-
 }
 
 TEST_F(TestSetup, TestNoticeMultipleTargets)
