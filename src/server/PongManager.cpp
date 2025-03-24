@@ -38,7 +38,6 @@ void PongManager::sendPingToAllClients(ClientIndex &clients)
     });
 }
 
-// check pong responses within 60s
 void PongManager::checkAllPingTimeouts(int timeoutMs, ClientIndex &clients,
                                        ConnectionManager &connManager)
 {

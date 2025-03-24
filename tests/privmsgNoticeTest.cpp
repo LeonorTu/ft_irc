@@ -1,7 +1,6 @@
 #include <ChannelManager.hpp>
 #include "TestSetup.hpp"
 
-// 비존재 사용자에게 메시지 전송
 TEST_F(TestSetup, TestPrivmsgNonExistentUser)
 {
     int client1 = connectClient();
@@ -13,7 +12,6 @@ TEST_F(TestSetup, TestPrivmsgNonExistentUser)
     EXPECT_TRUE(outputContains("401 user1 nonExistentUser :No such nick/channel"));
 }
 
-// 자기 자신에게 메시지 전송
 TEST_F(TestSetup, TestPrivmsgToSelf)
 {
     int client1 = connectClient();
@@ -25,7 +23,6 @@ TEST_F(TestSetup, TestPrivmsgToSelf)
     EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 PRIVMSG user1 :Hello myself"));
 }
 
-// 존재하지 않는 채널에 메시지 전송
 TEST_F(TestSetup, TestPrivmsgNonExistentChannel)
 {
     int client1 = connectClient();
@@ -37,7 +34,7 @@ TEST_F(TestSetup, TestPrivmsgNonExistentChannel)
     EXPECT_TRUE(outputContains("403 user1 #nonExistentChannel :No such channel"));
 }
 
-// 특수 문자가 포함된 메시지 전송
+
 TEST_F(TestSetup, TestPrivmsgWithSpecialChars)
 {
     int client1 = connectClient();
@@ -54,7 +51,6 @@ TEST_F(TestSetup, TestPrivmsgWithSpecialChars)
     EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 PRIVMSG #test :Hello, world! @#$%^&*()"));
 }
 
-// 최대 길이 메시지 전송
 TEST_F(TestSetup, TestPrivmsgMaxLength)
 {
     int client1 = connectClient();
@@ -72,7 +68,6 @@ TEST_F(TestSetup, TestPrivmsgMaxLength)
     EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 PRIVMSG #test :" + longMessage));
 }
 
-// 빈 내용의 메시지 전송
 TEST_F(TestSetup, TestPrivmsgEmptyContent)
 {
     int client1 = connectClient();
@@ -90,7 +85,6 @@ TEST_F(TestSetup, TestPrivmsgEmptyContent)
     EXPECT_TRUE(outputContains("412 user1 :No text to send"));
 }
 
-// 대상 없이 PRIVMSG 명령 전송
 TEST_F(TestSetup, TestPrivmsgNoTarget)
 {
     int client1 = connectClient();
@@ -102,7 +96,6 @@ TEST_F(TestSetup, TestPrivmsgNoTarget)
     EXPECT_TRUE(outputContains("461 user1 PRIVMSG :Not enough parameters"));
 }
 
-// 메시지 없이 PRIVMSG 명령 전송
 TEST_F(TestSetup, TestPrivmsgNoMessage)
 {
     int client1 = connectClient();
@@ -115,7 +108,6 @@ TEST_F(TestSetup, TestPrivmsgNoMessage)
     EXPECT_TRUE(outputContains("461 user1 PRIVMSG :Not enough parameters"));
 }
 
-// 콜론 없이 메시지 전송
 TEST_F(TestSetup, TestPrivmsgWithoutColon)
 {
     int client1 = connectClient();
@@ -132,7 +124,6 @@ TEST_F(TestSetup, TestPrivmsgWithoutColon)
     EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 PRIVMSG #test :Hello"));
 }
 
-// 잘못된 대상에게 메시지 전송
 TEST_F(TestSetup, TestPrivmsgInvalidTarget)
 {
     int client1 = connectClient();
@@ -144,7 +135,6 @@ TEST_F(TestSetup, TestPrivmsgInvalidTarget)
     EXPECT_TRUE(outputContains("432 user1 user@1 :Erroneus nickname"));
 }
 
-// 채널에 NOTICE 전송
 TEST_F(TestSetup, TestNoticeToChannel)
 {
     int client1 = connectClient();
@@ -161,7 +151,6 @@ TEST_F(TestSetup, TestNoticeToChannel)
     EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 NOTICE #test :This is a notice message"));
 }
 
-// 사용자에게 NOTICE 전송
 TEST_F(TestSetup, TestNoticeToUser)
 {
     int client1 = connectClient();
@@ -176,7 +165,6 @@ TEST_F(TestSetup, TestNoticeToUser)
     EXPECT_TRUE(outputContains(":user1!testuser@127.0.0.1 NOTICE user2 :This is a direct notice"));
 }
 
-// 존재하지 않는 대상에게 NOTICE 전송 (에러가 발생하지 않아야 함)
 TEST_F(TestSetup, TestNoticeToNonExistentTarget)
 {
     int client1 = connectClient();
@@ -188,7 +176,6 @@ TEST_F(TestSetup, TestNoticeToNonExistentTarget)
     EXPECT_FALSE(outputContains("401"));
 }
 
-// 채널 멤버 모두에게 메시지 전달 확인
 TEST_F(TestSetup, TestPrivmsgToAllChannelMembers)
 {
     int client1 = connectClient();
@@ -211,7 +198,6 @@ TEST_F(TestSetup, TestPrivmsgToAllChannelMembers)
         outputContains(":user1!testuser@127.0.0.1 PRIVMSG #test :Message to all channel members"));
 }
 
-// 다중 대상 처리 (유효한 대상과 유효하지 않은 대상)
 TEST_F(TestSetup, TestPrivmsgMultipleTargets)
 {
     int client1 = connectClient();
@@ -269,7 +255,6 @@ TEST_F(TestSetup, TestPrivmsgMaxMultipleTargets)
 
 }
 
-// 다중 대상 NOTICE 테스트
 TEST_F(TestSetup, TestNoticeMultipleTargets)
 {
     int client1 = connectClient();
@@ -284,5 +269,5 @@ TEST_F(TestSetup, TestNoticeMultipleTargets)
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     EXPECT_TRUE(
         outputContains(":user1!testuser@127.0.0.1 NOTICE user2 :Notice to valid and invalid"));
-    EXPECT_FALSE(outputContains("401")); // NOTICE는 에러를 반환하지 않아야 함
+    EXPECT_FALSE(outputContains("401"));
 }

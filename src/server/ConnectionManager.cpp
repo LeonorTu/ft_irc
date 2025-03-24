@@ -40,7 +40,7 @@ void ConnectionManager::disconnectClient(Client &client, const std::string &reas
     client.forceQuit(reason);
 }
 
-void ConnectionManager::recieveData(int clientFd)
+void ConnectionManager::receiveData(int clientFd)
 {
     Client &client = _clients.getByFd(clientFd);
 

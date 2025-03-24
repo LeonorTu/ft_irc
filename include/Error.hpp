@@ -16,13 +16,11 @@ class Error : public std::exception
     {
         return _message.c_str();
     }
-
-    static void handleNewClientError(ConnectionManager &server);
-
-    static void receiveDataError(ConnectionManager &server, int eventFd);
+    static void catchError(const std::exception &e);
 
     private:
     std::string _message;
+
 };
 
 class ChannelNotCreated : public Error

@@ -4,6 +4,9 @@
 
 // Common constants for the IRC server
 const int MSG_BUFFER_SIZE = 512; // Buffer size for message handling
+
+const int PING_INTERVAL_SEC = 120;
+const int PING_TIMEOUT_SEC = 60;
 // ISUPPORT
 const std::string CASEMAPPING = "ascii";
 const int CHANNELLEN = 50;

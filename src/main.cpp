@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     try {
         Server myserver(port, password, true);
     }
-    catch(const ServerError &e)
+    catch(const std::exception &e)
     {
         std::cerr << "Server error: " << e.what() << std::endl;
         return 1;
