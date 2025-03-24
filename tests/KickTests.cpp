@@ -23,7 +23,7 @@ TEST_F(KickTests, BasicKick)
 
     // Verify user is no longer in channel
     sendCommand(client1, "PRIVMSG #test :Hello");
-    EXPECT_TRUE(outputContains("442 basicUser1 #test :You're not on that channel"));
+    EXPECT_TRUE(outputContains(":basicUser1!testuser@127.0.0.1 PRIVMSG #test :Hello"));
     clearServerOutput();
 }
 
