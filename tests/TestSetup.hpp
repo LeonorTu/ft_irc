@@ -17,7 +17,6 @@
 #include <future>
 #include <condition_variable>
 
-#define SERVER_STARTUP_DELAY 5
 #define SEND_COMMAND_DELAY 1
 #define RECHECK_OUTPUT_DELAY 5
 #define MAX_WAIT_OUTPUT 200
@@ -28,13 +27,14 @@ class TestSetup : public ::testing::Test
 {
 protected:
     Server *server = nullptr;
+    bool verboseOutput;
+    std::promise<Server *> serverPromise;
+    std::future<Server *> serverFuture;
     std::stringstream capturedOutput;
     std::streambuf *originalCoutBuffer;
-    bool verboseOutput;
     std::vector<std::thread> clientThreads;
     std::mutex outputMutex;
     std::vector<int> openSockets;
-    std::atomic<bool> serverRunning{false};
     std::thread serverThread;
     std::mutex clientsMutex;
     std::condition_variable clientsReady;
@@ -43,6 +43,7 @@ protected:
 
     TestSetup(bool verbose = true)
         : verboseOutput(verbose)
+        , serverFuture(serverPromise.get_future())
     {}
 
     void SetUp() override
@@ -51,35 +52,32 @@ protected:
         originalCoutBuffer = std::cout.rdbuf();
         std::cout.rdbuf(capturedOutput.rdbuf());
 
-        // Create server in non-blocking mode
-        server = new Server(6667, "42", false);
-
         // Start the server in its own thread
-        serverRunning.store(true);
         serverThread = std::thread([this]() {
             try {
-                if (this->server) {
-                    // Start the server
-                    this->server->loop();
-                }
+                Server *newServer = new Server(6667, "42", false);
+                serverPromise.set_value(newServer);
+                newServer->loop();
             }
             catch (const std::exception &e) {
+                serverPromise.set_exception(std::current_exception());
                 std::cerr << "Server exception: " << e.what() << std::endl;
             }
         });
 
-        // Give the server time to initialize
-        std::this_thread::sleep_for(std::chrono::milliseconds(SERVER_STARTUP_DELAY));
-
-        if (verboseOutput) {
-            std::cerr << "Server started with password 42" << std::endl;
+        try {
+            server = serverFuture.get();
+            if (verboseOutput) {
+                std::cerr << "Server started with password 42" << std::endl;
+            }
+        }
+        catch (const std::exception &e) {
+            std::cerr << "Server failed to start: " << e.what() << std::endl;
         }
     }
 
     void TearDown() override
     {
-        // Signal server to stop
-        serverRunning.store(false);
 
         // Stop the server if it exists
         if (server) {
