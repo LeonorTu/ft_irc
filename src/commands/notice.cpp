@@ -3,6 +3,8 @@
 
 void CommandRunner::notice()
 {
+    if (_command != "NOTICE")
+        return;
     if (_params.size() != 2)
         return;
     _targets = splitTargets(_params[0]);

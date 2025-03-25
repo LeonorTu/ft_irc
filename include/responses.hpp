@@ -140,7 +140,7 @@ inline std::string PRIVMSG(const std::string &userHost, const std::string &targe
 inline std::string NOTICE(const std::string &userHost, const std::string &target,
                           const std::string &msg)
 {
-    return ":" + userHost + " PRIVMSG " + target + " :" + msg;
+    return ":" + userHost + " NOTICE " + target + " :" + msg;
 }
 
 inline std::string ERROR(const std::string &reason)
