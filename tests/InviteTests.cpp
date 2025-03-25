@@ -1,4 +1,5 @@
-#include "TestSetup.hpp"
+// #include "TestSetup.hpp"
+#include "TestRunner.hpp"
 
 class InviteTests : public TestSetup
 {
