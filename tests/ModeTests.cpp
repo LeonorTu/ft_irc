@@ -202,9 +202,12 @@ TEST_F(ModeTests, NickChangeOp)
 // Test error cases
 TEST_F(ModeTests, ErrorCases)
 {
-    std::vector<int> clients = basicSetupMultiple(1);
+    std::vector<int> clients = basicSetupMultiple(2);
     int client0 = clients[0];
+    int otherClient = clients[1];
 
+    sendCommand(otherClient, "PART #test");
+    sendCommand(otherClient, "NICK outsider");
     // Test invalid mode parameter
     sendCommand(client0, "MODE #test +k");
     EXPECT_TRUE(outputContains("461 basicUser0 MODE :Not enough parameters"));
@@ -221,9 +224,6 @@ TEST_F(ModeTests, ErrorCases)
     clearServerOutput();
 
     // Test user not in channel
-    int otherClient = connectClient();
-    ASSERT_GT(otherClient, 0);
-    registerClient(otherClient, "outsider");
 
     sendCommand(client0, "MODE #test +o outsider");
     EXPECT_TRUE(outputContains("441 basicUser0 outsider #test :They aren't on that channel"));
