@@ -21,18 +21,24 @@ ConnectionManager::~ConnectionManager()
 
 void ConnectionManager::handleNewClient()
 {
-    sockaddr_in clientAddr;
-    int clientFd = _socketManager.acceptConnection(&clientAddr);
-    std::string ip = inet_ntoa(clientAddr.sin_addr);
-    // add new client into ClientIndex
-    _clients.add(clientFd);
-    Client &client = _clients.getByFd(clientFd);
-    client.setIp(ip);
-    // add new client to epoll list
-    _EventLoop.addToWatch(clientFd);
-    std::cout << "New client" << std::endl;
-    std::cout << "  Socket: " << clientFd << std::endl;
-    std::cout << "  IP:     " << ip << std::endl;
+    while (true) {
+        sockaddr_in clientAddr;
+        int clientFd = _socketManager.acceptConnection(&clientAddr);
+        // only EAGAIN and EWOULDBLOCK are not thrown, so we hit eagain if fd is -1
+        if (clientFd < 0) {
+            break;
+        }
+        std::string ip = inet_ntoa(clientAddr.sin_addr);
+        // add new client into ClientIndex
+        _clients.add(clientFd);
+        Client &client = _clients.getByFd(clientFd);
+        client.setIp(ip);
+        // add new client to epoll list
+        _EventLoop.addToWatch(clientFd);
+        std::cout << "New client" << std::endl;
+        std::cout << "  Socket: " << clientFd << std::endl;
+        std::cout << "  IP:     " << ip << std::endl;
+    }
 }
 
 void ConnectionManager::disconnectClient(Client &client, const std::string &reason)

@@ -217,6 +217,7 @@ TEST_F(StressTest, MassClientConnections)
     std::atomic<int> registered{0};
     std::atomic<int> failed{0};
 
+
     // Create client threads in batches to avoid overwhelming the server
     const int BATCH_SIZE = 200;
     for (int batch = 0; batch < (NUM_CLIENTS + BATCH_SIZE - 1) / BATCH_SIZE; batch++) {

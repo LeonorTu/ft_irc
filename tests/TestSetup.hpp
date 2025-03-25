@@ -14,20 +14,36 @@
 #include <arpa/inet.h>
 #include <mutex>
 #include <atomic>
+#include <future>
+#include <condition_variable>
 
+#define SEND_COMMAND_DELAY 1
+#define RECHECK_OUTPUT_DELAY 5
+#define MAX_WAIT_OUTPUT 200
+
+// Runs the test on the main thread
+// Runs server and clients on separate threads
 class TestSetup : public ::testing::Test
 {
 protected:
     Server *server = nullptr;
+    bool verboseOutput;
+    std::promise<Server *> serverPromise;
+    std::future<Server *> serverFuture;
     std::stringstream capturedOutput;
     std::streambuf *originalCoutBuffer;
-    bool verboseOutput;
-    std::thread serverThread;
+    std::vector<std::thread> clientThreads;
     std::mutex outputMutex;
     std::vector<int> openSockets;
+    std::thread serverThread;
+    std::mutex clientsMutex;
+    std::condition_variable clientsReady;
+    int readyClients = 0;
+    int totalClients = 0;
 
     TestSetup(bool verbose = true)
         : verboseOutput(verbose)
+        , serverFuture(serverPromise.get_future())
     {}
 
     void SetUp() override
@@ -36,34 +52,43 @@ protected:
         originalCoutBuffer = std::cout.rdbuf();
         std::cout.rdbuf(capturedOutput.rdbuf());
 
-        // Create server in non-blocking mode
-        server = new Server(6667, "42", false);
-
-        // Start the server in a separate thread
+        // Start the server in its own thread
         serverThread = std::thread([this]() {
             try {
-                if (this->server) {
-                    this->server->loop();
-                }
+                Server *newServer = new Server(6667, "42", false);
+                serverPromise.set_value(newServer);
+                newServer->loop();
             }
             catch (const std::exception &e) {
+                serverPromise.set_exception(std::current_exception());
                 std::cerr << "Server exception: " << e.what() << std::endl;
             }
         });
 
-        // Add a delay to ensure the server is fully running
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-
-        if (verboseOutput) {
-            std::cerr << "Server started with password 42" << std::endl;
+        try {
+            server = serverFuture.get();
+            if (verboseOutput) {
+                std::cerr << "Server started with password 42" << std::endl;
+            }
+        }
+        catch (const std::exception &e) {
+            std::cerr << "Server failed to start: " << e.what() << std::endl;
         }
     }
 
     void TearDown() override
     {
+
         // Stop the server if it exists
         if (server) {
             server->shutdown();
+        }
+
+        // Join all client threads
+        for (auto &t : clientThreads) {
+            if (t.joinable()) {
+                t.join();
+            }
         }
 
         // Join the server thread
@@ -75,7 +100,7 @@ protected:
         delete server;
         server = nullptr;
 
-        // clean up sockets
+        // Clean up sockets
         for (auto &socket : openSockets) {
             if (socket >= 0)
                 close(socket);
@@ -91,31 +116,65 @@ protected:
         }
     }
 
-    // all names are basicUser(i) eg basicUser0 and basicUser1
     std::vector<int> basicSetupMultiple(int numUsers)
     {
         std::vector<int> clients;
 
-        // Create and register the specified number of clients
+        // First create all client sockets and add them to the clients vector in correct order
         for (int i = 0; i < numUsers; ++i) {
-            int client = connectClient();
-            EXPECT_GT(client, 0);
-            std::string nickname = "basicUser" + std::to_string(i);
-            registerClient(client, nickname);
-            clients.push_back(client);
-
-            // All users join the test channel
-            sendCommand(client, "JOIN #test");
+            int clientSocket = connectClient();
+            EXPECT_GT(clientSocket, 0);
+            clients.push_back(clientSocket);
         }
 
-        // Make the first user (index 0) the channel operator by default
-        // This matches the behavior of basicSetupTwo where basicCreator is the op
+        // Set up thread synchronization
+        {
+            std::lock_guard<std::mutex> lock(clientsMutex);
+            totalClients = numUsers;
+            readyClients = 0;
+        }
 
+        // Register clients
+        for (int i = 0; i < numUsers; ++i) {
+            int clientSocket = clients[i];
+            std::string nickname = "basicUser" + std::to_string(i);
+
+            clientThreads.emplace_back([this, clientSocket, nickname]() {
+                // Register client
+                this->registerClient(clientSocket, nickname);
+
+                // Signal that registration is complete
+                {
+                    std::lock_guard<std::mutex> lock(this->clientsMutex);
+                    this->readyClients++;
+                }
+                this->clientsReady.notify_all();
+
+                // Wait for all clients to be ready
+                {
+                    std::unique_lock<std::mutex> lock(this->clientsMutex);
+                    this->clientsReady.wait(
+                        lock, [this]() { return this->readyClients == this->totalClients; });
+                }
+            });
+        }
+
+        // Wait for all clients to be registered
+        {
+            std::unique_lock<std::mutex> lock(clientsMutex);
+            clientsReady.wait(lock, [this]() { return readyClients == totalClients; });
+        }
+
+        for (int i = 0; i < numUsers; ++i) {
+            sendCommand(clients[i], "JOIN #test");
+        }
+
+        // Clear output before returning
         clearServerOutput();
+
         return clients;
     }
 
-    // Helper function to connect a client
     int connectClient()
     {
         int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -124,7 +183,11 @@ protected:
                 std::cerr << "Error creating socket" << std::endl;
             return -1;
         }
-        openSockets.push_back(clientSocket);
+
+        {
+            std::lock_guard<std::mutex> lock(outputMutex);
+            openSockets.push_back(clientSocket);
+        }
 
         struct sockaddr_in serverAddr;
         memset(&serverAddr, 0, sizeof(serverAddr));
@@ -132,29 +195,9 @@ protected:
         serverAddr.sin_port = htons(6667);
         serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-        // Try connecting multiple times in case the server isn't ready yet
-        int retries = 5;
-        bool connected = false;
-
-        while (retries > 0 && !connected) {
-            if (connect(clientSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
-                if (verboseOutput)
-                    std::cerr << "Connection attempt failed, retrying... (" << retries << " left)"
-                              << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(200));
-                retries--;
-            }
-            else {
-                connected = true;
-            }
-        }
-
-        // a little wait between connections
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-
-        if (!connected) {
+        if (connect(clientSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
             if (verboseOutput)
-                std::cerr << "Error connecting to server after multiple attempts" << std::endl;
+                std::cerr << "Error connecting to server" << std::endl;
             close(clientSocket);
             return -1;
         }
@@ -173,30 +216,13 @@ protected:
         std::string nickCommand = "NICK " + nickname + "\r\n";
         std::string userCommand = "USER " + username + " 0 * :" + realname + "\r\n";
 
-        if (send(clientSocket, passCommand.c_str(), passCommand.length(), 0) < 0) {
+        if (send(clientSocket, passCommand.c_str(), passCommand.length(), 0) < 0 ||
+            send(clientSocket, nickCommand.c_str(), nickCommand.length(), 0) < 0 ||
+            send(clientSocket, userCommand.c_str(), userCommand.length(), 0) < 0) {
             if (verboseOutput)
-                std::cerr << "Error sending PASS command" << std::endl;
+                std::cerr << "Error sending registration commands" << std::endl;
             return false;
         }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-
-        if (send(clientSocket, nickCommand.c_str(), nickCommand.length(), 0) < 0) {
-            if (verboseOutput)
-                std::cerr << "Error sending NICK command" << std::endl;
-            return false;
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-
-        if (send(clientSocket, userCommand.c_str(), userCommand.length(), 0) < 0) {
-            if (verboseOutput)
-                std::cerr << "Error sending USER command" << std::endl;
-            return false;
-        }
-
-        // Wait for registration to complete
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
         if (verboseOutput)
             std::cerr << "Client registered with nickname: " << nickname << std::endl;
@@ -206,20 +232,22 @@ protected:
     // Helper function to send a command
     bool sendCommand(int clientSocket, const std::string &command)
     {
+        // allow commands to process in correct order from test
+        std::this_thread::sleep_for(std::chrono::milliseconds(SEND_COMMAND_DELAY));
         std::string fullCommand = command + "\r\n";
+
+        if (verboseOutput) {
+            std::cerr << "Socket " << clientSocket << " sending command: " << command << std::endl;
+        }
+
         if (send(clientSocket, fullCommand.c_str(), fullCommand.length(), 0) < 0) {
             if (verboseOutput)
                 std::cerr << "Error sending command: " << command << std::endl;
             return false;
         }
 
-        // Add a small delay to give the server time to process
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-
-        if (verboseOutput) {
+        if (verboseOutput)
             std::cerr << "Command sent: " << command << std::endl;
-        }
-
         return true;
     }
 
@@ -239,15 +267,40 @@ protected:
         capturedOutput.clear();
     }
 
+    bool waitForOutput(const std::string &text, int maxWaitMs = MAX_WAIT_OUTPUT)
+    {
+        auto startTime = std::chrono::steady_clock::now();
+
+        while (true) {
+            // Check if text is in current output
+            {
+                std::string output = getServerOutput();
+                if (output.find(text) != std::string::npos) {
+                    return true;
+                }
+            }
+
+            // Check if we've exceeded the timeout
+            auto currentTime = std::chrono::steady_clock::now();
+            auto elapsedMs =
+                std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime)
+                    .count();
+
+            if (elapsedMs > maxWaitMs) {
+                if (verboseOutput) {
+                    std::cerr << "Timeout waiting for output: " << text << std::endl;
+                }
+                return false;
+            }
+
+            // Wait a bit before checking again
+            std::this_thread::sleep_for(std::chrono::milliseconds(RECHECK_OUTPUT_DELAY));
+        }
+    }
+
+    // Override outputContains to use the waiting mechanism
     bool outputContains(const std::string &text)
     {
-        std::string output = getServerOutput();
-        bool contains = output.find(text) != std::string::npos;
-
-        if (verboseOutput && !contains) {
-            std::cerr << "Text not found in output: " << text << std::endl;
-        }
-
-        return contains;
+        return waitForOutput(text);
     }
 };
