@@ -117,13 +117,6 @@ protected:
     {
         std::vector<int> clients;
 
-        // Set up synchronization for client threads
-        {
-            std::lock_guard<std::mutex> lock(clientsMutex);
-            totalClients = numUsers;
-            readyClients = 0;
-        }
-
         // First create all client sockets and add them to the clients vector in correct order
         for (int i = 0; i < numUsers; ++i) {
             int clientSocket = connectClient();
@@ -131,56 +124,54 @@ protected:
             clients.push_back(clientSocket);
         }
 
-        // Now register each client on its own thread with its corresponding nickname
+        // Set up thread synchronization
+        {
+            std::lock_guard<std::mutex> lock(clientsMutex);
+            totalClients = numUsers;
+            readyClients = 0;
+        }
+
+        // Register clients and have them join the test channel
         for (int i = 0; i < numUsers; ++i) {
             int clientSocket = clients[i];
             std::string nickname = "basicUser" + std::to_string(i);
 
-            // Register in a separate thread
-            clientThreads.emplace_back([this, clientSocket, nickname, i]() {
+            clientThreads.emplace_back([this, clientSocket, nickname]() {
+                // Register client
                 this->registerClient(clientSocket, nickname);
 
-                // Signal that client is ready
+                // Signal that registration is complete
                 {
                     std::lock_guard<std::mutex> lock(this->clientsMutex);
                     this->readyClients++;
-                    if (this->verboseOutput) {
-                        std::cerr << "Client " << nickname << " ready, socket " << clientSocket
-                                  << " (" << this->readyClients << "/" << this->totalClients << ")"
-                                  << std::endl;
-                    }
                 }
                 this->clientsReady.notify_all();
 
-                // Wait for all clients to be ready before joining channel
+                // Wait for all clients to be ready
                 {
                     std::unique_lock<std::mutex> lock(this->clientsMutex);
                     this->clientsReady.wait(
                         lock, [this]() { return this->readyClients == this->totalClients; });
                 }
 
-                // Join channel #test
+                // Join the test channel
                 this->sendCommand(clientSocket, "JOIN #test");
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
             });
         }
 
-        // Wait for all clients to be ready
+        // Wait for all clients to be registered
         {
             std::unique_lock<std::mutex> lock(clientsMutex);
             clientsReady.wait(lock, [this]() { return readyClients == totalClients; });
         }
 
-        // DO NOT join threads here - let them continue running
-        // Instead, add a small delay to ensure all JOINs are processed
-        std::this_thread::sleep_for(std::chrono::milliseconds(100 * numUsers));
-
-        // Now clear the output to start fresh
+        // Clear output before returning
         clearServerOutput();
 
         return clients;
     }
 
-    // Helper function to connect a client
     int connectClient()
     {
         int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -201,29 +192,9 @@ protected:
         serverAddr.sin_port = htons(6667);
         serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-        // Try connecting multiple times in case the server isn't ready yet
-        int retries = 5;
-        bool connected = false;
-
-        while (retries > 0 && !connected) {
-            if (connect(clientSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
-                if (verboseOutput)
-                    std::cerr << "Connection attempt failed, retrying... (" << retries << " left)"
-                              << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(200));
-                retries--;
-            }
-            else {
-                connected = true;
-            }
-        }
-
-        // Remove unnecessary delay between connections - server should handle multiple connections
-        // std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-        if (!connected) {
+        if (connect(clientSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
             if (verboseOutput)
-                std::cerr << "Error connecting to server after multiple attempts" << std::endl;
+                std::cerr << "Error connecting to server" << std::endl;
             close(clientSocket);
             return -1;
         }
@@ -242,31 +213,13 @@ protected:
         std::string nickCommand = "NICK " + nickname + "\r\n";
         std::string userCommand = "USER " + username + " 0 * :" + realname + "\r\n";
 
-        if (send(clientSocket, passCommand.c_str(), passCommand.length(), 0) < 0) {
+        if (send(clientSocket, passCommand.c_str(), passCommand.length(), 0) < 0 ||
+            send(clientSocket, nickCommand.c_str(), nickCommand.length(), 0) < 0 ||
+            send(clientSocket, userCommand.c_str(), userCommand.length(), 0) < 0) {
             if (verboseOutput)
-                std::cerr << "Error sending PASS command" << std::endl;
+                std::cerr << "Error sending registration commands" << std::endl;
             return false;
         }
-
-        // No need for delay - server's extractFullMessages handles messages one by one
-
-        if (send(clientSocket, nickCommand.c_str(), nickCommand.length(), 0) < 0) {
-            if (verboseOutput)
-                std::cerr << "Error sending NICK command" << std::endl;
-            return false;
-        }
-
-        // No need for delay - server's extractFullMessages handles messages one by one
-
-        if (send(clientSocket, userCommand.c_str(), userCommand.length(), 0) < 0) {
-            if (verboseOutput)
-                std::cerr << "Error sending USER command" << std::endl;
-            return false;
-        }
-
-        // We should still wait briefly to ensure registration completes before returning,
-        // but we can reduce this further since we use waitForOutput in tests
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
         if (verboseOutput)
             std::cerr << "Client registered with nickname: " << nickname << std::endl;
@@ -278,7 +231,6 @@ protected:
     {
         std::string fullCommand = command + "\r\n";
 
-        // Add debug output of which socket is sending which command
         if (verboseOutput) {
             std::cerr << "Socket " << clientSocket << " sending command: " << command << std::endl;
         }
@@ -289,12 +241,11 @@ protected:
             return false;
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        // allow commands to process in correct order from test
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-        if (verboseOutput) {
+        if (verboseOutput)
             std::cerr << "Command sent: " << command << std::endl;
-        }
-
         return true;
     }
 
@@ -343,6 +294,7 @@ protected:
             // Wait a bit before checking again
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
+        clearServerOutput();
     }
 
     // Override outputContains to use the waiting mechanism
