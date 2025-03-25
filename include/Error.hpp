@@ -15,7 +15,8 @@ class Error : public std::exception
     virtual const char *what() const noexcept override
     {
         return _message.c_str();
-    }
+    };
+    
     static void catchError(const std::exception &e);
 
     private:

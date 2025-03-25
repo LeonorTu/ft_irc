@@ -1,26 +1,6 @@
 #include <Error.hpp>
 #include <ConnectionManager.hpp>
 
-// void Error::handleNewClientError(ConnectionManager &server)
-// {
-//     try
-//     {
-//         server.handleNewClient();
-//     }
-//     catch(const SocketError &e)
-//     {
-//         std::cerr << "Socket error: " << e.what() << std::endl;
-//     }
-//     catch(const EventError &e)
-//     {
-//         std::cerr << "Event error: " << e.what() << std::endl;
-//     }
-//     catch(const std::out_of_range &e)
-//     {
-//         std::cerr << "Out_of_range error: " << e.what() << std::endl;
-//     }
-// }
-
 void Error::catchError(const std::exception &e)
 {
     try
