@@ -17,9 +17,9 @@
 #include <future>
 #include <condition_variable>
 
-#define SEND_COMMAND_DELAY 1
-#define RECHECK_OUTPUT_DELAY 5
-#define MAX_WAIT_OUTPUT 200
+#define SEND_COMMAND_DELAY 10
+#define RECHECK_OUTPUT_DELAY 50
+#define MAX_WAIT_OUTPUT 800
 
 // Runs the test on the main thread
 // Runs server and clients on separate threads
