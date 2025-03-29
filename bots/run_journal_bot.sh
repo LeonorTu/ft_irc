@@ -3,12 +3,12 @@
 # Default IRC settings - can be overridden with environment variables
 SERVER=${IRC_SERVER:-"127.0.0.1"}
 PORT=${IRC_PORT:-6667}
-PASSWORD=${IRC_PASSWORD:-"password"}
+PASSWORD=${IRC_PASSWORD:-"42"}
 NICKNAME=${IRC_NICKNAME:-"JournalBot"}
 CHANNEL=${IRC_CHANNEL:-"#logs"}
 
 # journalctl options - modify as needed
-JOURNAL_OPTS="-f --no-hostname"
+JOURNAL_OPTS="-u ft_irc -f"
 
 echo "Starting Journal IRC Bot..."
 echo "Server: $SERVER:$PORT"
