@@ -143,7 +143,13 @@ void ConnectionManager::rmDisconnectedClients()
 
 void ConnectionManager::deleteClient(Client &client)
 {
-    _EventLoop.removeFromWatch(client.getFd());
+    try {
+        _EventLoop.removeFromWatch(client.getFd());
+    }
+    catch (const EventError &e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
     _socketManager.closeConnection(client.getFd());
     std::cout << "Client " << client.getNickname() << " data deleted" << std::endl;
     _clients.remove(client);

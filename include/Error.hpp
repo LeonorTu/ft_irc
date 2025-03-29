@@ -17,7 +17,7 @@ class Error : public std::exception
         return _message.c_str();
     };
     
-    static void catchError(const std::exception &e);
+    static void catchError();
 
     private:
     std::string _message;

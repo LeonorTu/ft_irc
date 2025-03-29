@@ -1,11 +1,11 @@
 #include <Error.hpp>
 #include <ConnectionManager.hpp>
 
-void Error::catchError(const std::exception &e)
+void Error::catchError()
 {
     try
     {
-        throw e;
+        throw;
     }
     catch(const ChannelNotCreated &e)
     {
@@ -37,7 +37,7 @@ void Error::catchError(const std::exception &e)
     }
     catch(const ServerError &e)
     {
-        std::cerr << "ChannelError: " << e.what() << std::endl;
+        std::cerr << "ServerError: " << e.what() << std::endl;
     }
     catch(const std::exception &e)
     {
