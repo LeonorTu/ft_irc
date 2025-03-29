@@ -1,0 +1,19 @@
+[Unit]
+Description=IRC Journal Log Bot
+After=network.target
+
+[Service]
+Type=simple
+User=yourusername
+WorkingDirectory=/home/kasutaja/ft_irc/bots
+ExecStart=/home/kasutaja/ft_irc/bots/run_journal_bot.sh
+Restart=on-failure
+Environment="IRC_SERVER=127.0.0.1"
+Environment="IRC_PORT=6667"
+Environment="IRC_PASSWORD=42"
+Environment="IRC_NICKNAME=JournalBot"
+Environment="IRC_CHANNEL=#logs"
+Environment="JOURNAL_OPTS=-u ft_irc -f"
+
+[Install]
+WantedBy=multi-user.target
