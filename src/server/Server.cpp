@@ -52,7 +52,7 @@ Server::~Server() noexcept
         _eventLoop->removeFromWatch(_serverFd);
     }
     catch (const EventError &e) {
-        std::cerr << e.what() << '\n';
+        Error::catchError();
     }
     std::cout << "Server shutdown complete" << std::endl;
 }
@@ -87,7 +87,7 @@ void Server::loop()
         }
         catch(const std::exception& e)
         {
-            Error::catchError(e);
+            Error::catchError();
         }
         catch(...)
         {
