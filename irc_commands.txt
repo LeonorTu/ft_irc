@@ -1,7 +1,0 @@
-PASS 42
-NICK bob
-USER TestUser 0 * :Test User
-JOIN #test
-PRIVMSG #test :Hello World!
-TOPIC #test :I'm a topic that gets cleared in a second
-TOPIC #test :
