@@ -63,10 +63,7 @@ int SocketManager::acceptConnection(sockaddr_in *clientAddr)
         addrPtr = clientAddr;
     int clientFd = accept(_serverFd, (struct sockaddr *)addrPtr, &addrLen);
     if (clientFd < 0) {
-        if (errno != EAGAIN && errno != EWOULDBLOCK) {
-            throw SocketError("Failed to accept connection: " + std::string(strerror(errno)));
-        }
-        return -1;
+        throw SocketError("Failed to accept connection: " + std::string(strerror(errno)));
     }
     fcntl(clientFd, F_SETFL, O_NONBLOCK);
     return clientFd;

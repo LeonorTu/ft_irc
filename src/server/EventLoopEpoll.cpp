@@ -5,7 +5,7 @@
 
 EventLoopEpoll::EventLoopEpoll()
     : _epollFd(epoll_create1(0))
-    , _eventsToTrack(EPOLLIN | EPOLLET)
+    , _eventsToTrack(EPOLLIN)
 {
     if (_epollFd < 0) {
         throw EventError("epoll create error");
@@ -40,10 +40,7 @@ std::vector<Event> EventLoopEpoll::waitForEvents(int timeoutMs)
     std::vector<Event> results;
     int nfds = epoll_wait(_epollFd, epollEvents, EPOLL_MAX_EVENTS, timeoutMs);
     if (nfds < 0) {
-        if (errno != EINTR) {
-            throw EventError("epoll failed: " + std::string(strerror(errno)));
-        }
-        return results;
+        throw EventError("epoll failed: " + std::string(strerror(errno)));
     }
     for (int i = 0; i < nfds; i++) {
         Event event;

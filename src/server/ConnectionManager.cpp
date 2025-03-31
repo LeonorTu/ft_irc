@@ -21,24 +21,18 @@ ConnectionManager::~ConnectionManager()
 
 void ConnectionManager::handleNewClient()
 {
-    while (true) {
-        sockaddr_in clientAddr;
-        int clientFd = _socketManager.acceptConnection(&clientAddr);
-        // only EAGAIN and EWOULDBLOCK are not thrown, so we hit eagain if fd is -1
-        if (clientFd < 0) {
-            break;
-        }
-        std::string ip = inet_ntoa(clientAddr.sin_addr);
-        // add new client into ClientIndex
-        _clients.add(clientFd);
-        Client &client = _clients.getByFd(clientFd);
-        client.setIp(ip);
-        // add new client to epoll list
-        _EventLoop.addToWatch(clientFd);
-        std::cout << "New client" << std::endl;
-        std::cout << "  Socket: " << clientFd << std::endl;
-        std::cout << "  IP:     " << ip << std::endl;
-    }
+    sockaddr_in clientAddr;
+    int clientFd = _socketManager.acceptConnection(&clientAddr);
+    std::string ip = inet_ntoa(clientAddr.sin_addr);
+    // add new client into ClientIndex
+    _clients.add(clientFd);
+    Client &client = _clients.getByFd(clientFd);
+    client.setIp(ip);
+    // add new client to epoll list
+    _EventLoop.addToWatch(clientFd);
+    std::cout << "New client" << std::endl;
+    std::cout << "  Socket: " << clientFd << std::endl;
+    std::cout << "  IP:     " << ip << std::endl;
 }
 
 void ConnectionManager::disconnectClient(Client &client, const std::string &reason)
@@ -54,31 +48,19 @@ void ConnectionManager::receiveData(int clientFd)
 
     char buffer[MSG_BUFFER_SIZE];
     std::string &messageBuf = client.getMessageBuf();
-    while (true) {
         int bytesRead = recv(clientFd, buffer, sizeof(buffer), 0);
 
         if (bytesRead < 0) {
-            if (errno == EPIPE) {
-                throw BrokenPipe("Broken pipe when sending to client " + std::to_string(clientFd));
-            }
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                // No more data, exit the loop
-                break;
-            }
-            else {
-                // Handle error
+                throw BrokenPipe("recv failed: " + std::string(strerror(errno)));
                 disconnectClient(client, "Connection error: " + std::string(strerror(errno)));
                 return;
             }
-        }
         else if (bytesRead == 0) {
             // Client disconnected
             disconnectClient(client, "Connection closed");
             return;
         }
-
         messageBuf.append(buffer, bytesRead);
-    }
     extractFullMessages(client, messageBuf);
 }
 
