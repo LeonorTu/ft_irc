@@ -237,7 +237,7 @@ void CommandRunner::initCommandMap()
     _commandRunners["KICK"] = &CommandRunner::kick;
     _commandRunners["PRIVMSG"] = &CommandRunner::privmsg;
     _commandRunners["NOTICE"] = &CommandRunner::notice;
-    // _commandRunners["WHO"] = &CommandRunner::who;
+    _commandRunners["WHO"] = &CommandRunner::silentIgnore;
     // _commandRunners["WHOIS"] = &CommandRunner::whois;}
 }
 
