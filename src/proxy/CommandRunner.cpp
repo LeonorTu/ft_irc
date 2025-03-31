@@ -153,7 +153,9 @@ bool CommandRunner::validateParams(size_t min, size_t max,
             }
             break;
         case VAL_REAL:
-            // Usually no validation for realname
+            if (!IRCValidator::isValidText(_clientFd, _nickname, param)) {
+                return false;
+            }
             break;
         case VAL_NONE:
             // No validation needed
