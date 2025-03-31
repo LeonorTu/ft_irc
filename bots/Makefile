@@ -1,4 +1,4 @@
-NAME = logbot
+NAME = gemBot
 
 CC					=	g++
 CXXFLAGS			=	-Wall -Wextra -Werror -std=c++17
@@ -7,8 +7,8 @@ OBJ_DIR				=	./obj
 SRC_DIR				=	.
 
 SRCS				=	IRCBot.cpp \
-						LogBot.cpp \
-						main.cpp
+						GeminiBot.cpp \
+						GeminiBotMain.cpp
 
 OBJECTS				=	$(addprefix $(OBJ_DIR)/, $(SRCS:%.cpp=%.o))
 
