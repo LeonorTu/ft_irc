@@ -29,7 +29,6 @@ SRCS				=	src/main.cpp \
                         src/proxy/CommandRunner.cpp \
                         src/proxy/MessageParser.cpp \
                         src/server/ConnectionManager.cpp \
-                        src/server/EventLoopPoll.cpp \
                         src/server/Server.cpp \
                         src/utils/IRCValidator.cpp \
                         src/server/Client.cpp \
