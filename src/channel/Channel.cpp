@@ -19,9 +19,7 @@ Channel::Channel(const std::string &name, Client &creator)
 
 Channel::~Channel()
 {
-    for (auto &[_, client] : _connectedClients) {
-        client->untrackChannel(this);
-    }
+    std::cout << "Channel " << _channelName << " destroyed." << std::endl;
 }
 
 void Channel::join(Client &client, const std::string &key)
