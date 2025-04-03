@@ -30,7 +30,7 @@ const unsigned long MIN_CHANNEL_LIMIT = 1;
 const unsigned long MAX_CHANNEL_LIMIT = std::numeric_limits<unsigned long>::max();
 // server info
 const int SERVER_PORT = 6667;
-const std::string SERVER_NAME = "JAS 42";
+const std::string SERVER_NAME = "JAS.42";
 const std::string NETWORK_NAME = "J-A-S";
 const std::string SERVER_VERSION = "0210";
 const std::string USER_MODES = "";
