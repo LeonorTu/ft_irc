@@ -36,7 +36,7 @@ private:
     std::vector<Client *> _clientsToDisconnect;
 
     void extractFullMessages(Client &client, std::string &messageBuffer);
-    void handleOversized(Client &client, std::string &messageBuffer);
+    void truncateAndProcessMessage(Client &client, std::string &message);
 
     void deleteClient(Client &client);
 };
