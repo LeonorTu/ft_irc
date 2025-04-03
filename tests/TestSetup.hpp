@@ -41,6 +41,29 @@ protected:
     int readyClients = 0;
     int totalClients = 0;
 
+    // Helper function to send raw data without adding \r\n
+    bool sendRawData(int clientSocket, const std::string &data)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(SEND_COMMAND_DELAY));
+        if (verboseOutput) {
+            std::cerr << "Socket " << clientSocket << " sending raw data of size: " << data.length()
+                      << std::endl;
+        }
+
+        if (send(clientSocket, data.c_str(), data.length(), 0) < 0) {
+            if (verboseOutput)
+                std::cerr << "Error sending raw data" << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    // Create a string of specified size
+    std::string createLargeString(size_t size, char fillChar = 'X')
+    {
+        return std::string(size, fillChar);
+    }
+
     TestSetup(bool verbose = true)
         : verboseOutput(verbose)
         , serverFuture(serverPromise.get_future())
