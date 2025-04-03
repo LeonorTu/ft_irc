@@ -63,40 +63,42 @@ void ConnectionManager::receiveData(int clientFd)
     extractFullMessages(client, messageBuf);
 }
 
-// extract a valid IRC message with /r/n ending, send the message as std::string to commandHandler
-// command handler will get the message WIHTOUT /r/n
+// extract a valid IRC message with /r/n ending, send the message as std::string to MessageParser
+// MessageParser will get the message WIHTOUT /r/n
 void ConnectionManager::extractFullMessages(Client &client, std::string &messageBuffer)
 {
-    if (messageBuffer.size() > MSG_BUFFER_SIZE) {
-        handleOversized(client, messageBuffer);
-        return;
-    }
     size_t pos;
     while ((pos = messageBuffer.find("\n")) != std::string::npos) {
         size_t end = pos;
         if (end > 0 && messageBuffer[end - 1] == '\r') {
             end--;
         }
+
         std::string completedMessage = messageBuffer.substr(0, end);
         messageBuffer.erase(0, pos + 1);
-        // Call the command handler, currently just printing out the log message.
-        MessageParser parser(client.getFd(), completedMessage);
-        parser.parseCommand();
+
+        // Handle message with possible truncation
+        truncateAndProcessMessage(client, completedMessage);
+    }
+
+    // Check for oversized incomplete messages in buffer
+    if (messageBuffer.size() > MSG_BUFFER_SIZE) {
+        std::string oversizedBuffer = messageBuffer;
+        messageBuffer.clear();
+        truncateAndProcessMessage(client, oversizedBuffer);
     }
 }
 
-// if the message is over buffer limit, truncate and delete therest of the message.
-void ConnectionManager::handleOversized(Client &client, std::string &messageBuffer)
+void ConnectionManager::truncateAndProcessMessage(Client &client, std::string &message)
 {
-    if (messageBuffer.size() > MSG_BUFFER_SIZE) {
-        std::cerr << "Message too large from client: " << client.getFd() << std::endl;
-        std::cerr << "Truncating message" << std::endl;
-        std::string truncatedMessage = messageBuffer.substr(0, MSG_BUFFER_SIZE - 2);
-        messageBuffer.clear();
-        // call commandhandler, executer or whatever
-        MessageParser parser(client.getFd(), truncatedMessage);
-        parser.parseCommand();
+    // truncate message if oversized
+    if (message.size() > MSG_BUFFER_SIZE) {
+        std::cerr << "Message too large from client: " << client.getFd() << " - truncating..."
+                  << std::endl;
+        message = message.substr(0, MSG_BUFFER_SIZE - 2);
     }
+    MessageParser parser(client.getFd(), message);
+    parser.parseCommand();
 }
 
 std::vector<Client *> &ConnectionManager::getDisconnectedClients()
@@ -127,8 +129,7 @@ void ConnectionManager::deleteClient(Client &client)
     try {
         _EventLoop.removeFromWatch(client.getFd());
     }
-    catch (const EventError &e)
-    {
+    catch (const EventError &e) {
         std::cerr << e.what() << std::endl;
     }
     _socketManager.closeConnection(client.getFd());
