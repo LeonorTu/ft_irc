@@ -19,7 +19,7 @@ Client::Client(int fd)
 
 Client::~Client()
 {
-    std::cout << "Client destructor called" << std::endl;
+    std::cout << "Client " << _userHost << " destroyed" << std::endl;
 }
 
 int Client::getFd() const
@@ -119,8 +119,7 @@ void Client::untrackChannel(Channel *channel)
 {
     if (channel == nullptr)
         return;
-    if (!_myChannels.empty())
-        _myChannels.erase(channel->getName());
+    _myChannels.erase(channel->getName());
 }
 
 void Client::trackChannel(Channel *channel)
