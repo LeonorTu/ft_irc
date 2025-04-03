@@ -48,19 +48,18 @@ void ConnectionManager::receiveData(int clientFd)
 
     char buffer[MSG_BUFFER_SIZE];
     std::string &messageBuf = client.getMessageBuf();
-        int bytesRead = recv(clientFd, buffer, sizeof(buffer), 0);
+    int bytesRead = recv(clientFd, buffer, sizeof(buffer), 0);
 
-        if (bytesRead < 0) {
-                throw BrokenPipe("recv failed: " + std::string(strerror(errno)));
-                disconnectClient(client, "Connection error: " + std::string(strerror(errno)));
-                return;
-            }
-        else if (bytesRead == 0) {
-            // Client disconnected
-            disconnectClient(client, "Connection closed");
-            return;
-        }
-        messageBuf.append(buffer, bytesRead);
+    if (bytesRead < 0) {
+        disconnectClient(client, "Connection error: " + std::string(strerror(errno)));
+        return;
+    }
+    // Client disconnected
+    else if (bytesRead == 0) {
+        disconnectClient(client, "Connection closed");
+        return;
+    }
+    messageBuf.append(buffer, bytesRead);
     extractFullMessages(client, messageBuf);
 }
 
