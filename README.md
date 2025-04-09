@@ -1,6 +1,6 @@
 # ft_irc - IRC Server Implementation
 
-A modern IRC (Internet Relay Chat) server implementation written in C++17, featuring a robust event-driven architecture and comprehensive command support.
+An IRC (Internet Relay Chat) server implementation written in C++17, featuring a robust event-driven architecture and basic command support.
 
 ## Features
 
@@ -11,13 +11,13 @@ A modern IRC (Internet Relay Chat) server implementation written in C++17, featu
 - **Modern C++ Design**: Built with C++17 standards and practices
 - **Comprehensive Testing**: Unit and integration tests using Google Test framework
 
-## Architecture
+## System Components
 
-The server is built on a modular architecture:
+The server consists of several key components working together:
 
 - **ConnectionManager**: Handles client connections, message parsing, and disconnection
 - **ClientIndex**: Manages client registration and lookup
-- **ChannelManager**: Handles channel creation, permissions, and modes
+- **ChannelManager**: Handles channel creation and lookup
 - **EventLoop**: Manages the epoll-based event loop for non-blocking I/O
 - **CommandRunner**: Processes and executes IRC commands
 - **MessageParser**: Parses incoming messages according to IRC protocol
@@ -99,13 +99,6 @@ make test
 - **Message Handling Tests**: Tests for oversized message handling, chunked messages, etc.
 - **Command Tests**: Comprehensive tests for all supported commands
 - **Edge Case Tests**: Tests for various error conditions and edge cases
-
-## Implementation Details
-
-- Message buffer size: 512 bytes (RFC compliant)
-- Nickname length limit: 30 characters
-- Channel name length limit: 50 characters
-- Maximum targets per command: 4
 
 ## Contributors
 
